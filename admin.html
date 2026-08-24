@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerador de Códigos — Gestão de Negócio</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#0F766E;--teal-l:#E4F5F3;
+  --red:#B91C1C;--red-l:#FCE8E8;
+  --ink:#1C1917;--ink2:#57534E;
+  --paper:#FAF7F1;--paper2:#FFFFFF;
+  --line:rgba(28,25,23,.12);
+  --radius:10px;
+}
+body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
+.box{background:var(--paper2);border:1px solid var(--line);border-radius:16px;box-shadow:0 4px 20px rgba(28,25,23,.08);padding:2rem;width:100%;max-width:420px}
+h1{font-size:18px;margin-bottom:4px}
+.sub{font-size:12px;color:var(--ink2);margin-bottom:1.25rem}
+.form-group{margin-bottom:.85rem}
+label{display:block;font-size:11px;font-weight:600;color:var(--ink2);margin-bottom:4px}
+input{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:var(--radius);font-size:13px;background:var(--paper)}
+input:focus{outline:2px solid var(--teal);outline-offset:1px}
+button{width:100%;padding:10px;border:none;border-radius:var(--radius);background:var(--teal);color:#fff;font-size:13px;font-weight:600;cursor:pointer;margin-top:.35rem}
+button:disabled{opacity:.6;cursor:default}
+button.secondary{background:transparent;color:var(--ink2);border:1px solid var(--line);margin-top:.6rem}
+.msg-err{display:none;background:var(--red-l);color:var(--red);border-radius:var(--radius);padding:8px 10px;font-size:12px;margin-bottom:10px}
+.msg-ok{display:none;background:var(--teal-l);color:var(--teal);border-radius:var(--radius);padding:8px 10px;font-size:12px;margin-bottom:10px}
+.hidden{display:none !important}
+.link-out{display:flex;gap:.5rem;margin-top:.6rem}
+.link-out input{background:var(--teal-l);color:var(--teal);font-weight:600}
+.link-out button{width:auto;padding:9px 14px;margin-top:0}
+</style>
+</head>
+<body>
+
+<div class="box" id="loginBox">
+  <h1>Gerador de Códigos</h1>
+  <div class="sub">Entra com a tua conta de administrador</div>
+  <div class="msg-err" id="loginErr"></div>
+  <div class="form-group">
+    <label>Email</label>
+    <input type="email" id="loginEmail" placeholder="o-teu-email@exemplo.com">
+  </div>
+  <div class="form-group">
+    <label>Password</label>
+    <input type="password" id="loginPass">
+  </div>
+  <button id="loginBtn" onclick="doLogin()">Entrar</button>
+</div>
+
+<div class="box hidden" id="adminBox">
+  <h1>Gerador de Códigos</h1>
+  <div class="sub" id="adminSub">Cria um link de acesso para um cliente novo</div>
+  <div class="msg-err" id="adminErr"></div>
+  <div class="msg-ok" id="adminOk"></div>
+  <div id="adminForm">
+    <div class="form-group">
+      <label>Nome do cliente</label>
+      <input type="text" id="nomeCliente" placeholder="Ex: João Tombola">
+    </div>
+    <button id="gerarBtn" onclick="gerarCodigo()">Gerar link</button>
+    <div class="link-out hidden" id="linkWrap">
+      <input type="text" id="linkGerado" readonly onclick="this.select()">
+      <button onclick="copiarLink()">Copiar</button>
+    </div>
+  </div>
+  <button class="secondary" onclick="doLogout()">Terminar sessão</button>
+</div>
+
+<script>
+const SUPA_URL='https://xkfshzlcwiuvztfdwvjm.supabase.co';
+const SUPA_KEY='sb_publishable_SGjww6C455tzA6wpIevT-w_t2X9lqMJ';
+const supaClient=window.supabase.createClient(SUPA_URL,SUPA_KEY);
+
+function show(id){document.getElementById(id).classList.remove('hidden');}
+function hide(id){document.getElementById(id).classList.add('hidden');}
+function setErr(id,msg){const el=document.getElementById(id); if(msg){el.textContent=msg; el.style.display='block';} else {el.style.display='none';}}
+
+function traduzErro(error){
+  const m=(error&&error.message)||'';
+  if(/invalid login credentials/i.test(m))return'Email ou password incorretos.';
+  if(/email not confirmed/i.test(m))return'Confirma primeiro o teu email.';
+  return m||'Ocorreu um erro. Tenta novamente.';
+}
+
+async function doLogin(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const pass=document.getElementById('loginPass').value;
+  setErr('loginErr','');
+  const btn=document.getElementById('loginBtn');
+  btn.disabled=true; btn.textContent='A entrar...';
+  try{
+    const{error}=await supaClient.auth.signInWithPassword({email,password:pass});
+    if(error){ setErr('loginErr',traduzErro(error)); }
+    // sucesso: onAuthStateChange trata do resto
+  }catch(e){ setErr('loginErr','Erro de ligação. Tenta novamente.'); }
+  btn.disabled=false; btn.textContent='Entrar';
+}
+
+async function doLogout(){
+  await supaClient.auth.signOut();
+  hide('adminBox'); show('loginBox');
+  document.getElementById('loginPass').value='';
+}
+
+async function checkAdminAndShow(){
+  try{
+    const{data,error}=await supaClient.rpc('sou_admin');
+    if(error||!data){
+      document.getElementById('adminSub').textContent='Esta conta não tem acesso a esta ferramenta.';
+      hide('adminForm');
+      setErr('adminErr','A tua conta iniciou sessão, mas não tem permissão para gerar códigos.');
+    }else{
+      document.getElementById('adminSub').textContent='Cria um link de acesso para um cliente novo';
+      show('adminForm');
+      setErr('adminErr','');
+    }
+  }catch(e){
+    setErr('adminErr','Não foi possível confirmar a permissão. Tenta novamente.');
+    hide('adminForm');
+  }
+}
+
+async function gerarCodigo(){
+  const nome=document.getElementById('nomeCliente').value.trim();
+  setErr('adminErr',''); document.getElementById('adminOk').style.display='none'; hide('linkWrap');
+  if(!nome){ setErr('adminErr','Escreve o nome do cliente.'); return; }
+  const btn=document.getElementById('gerarBtn');
+  btn.disabled=true; btn.textContent='A gerar...';
+  try{
+    const{data,error}=await supaClient.rpc('criar_codigo_ativacao',{p_cliente:nome});
+    if(error||!data){
+      setErr('adminErr','Não foi possível gerar. Tenta novamente.');
+    }else{
+      document.getElementById('linkGerado').value='https://gerirmais.com/?codigo='+encodeURIComponent(data);
+      show('linkWrap');
+      document.getElementById('nomeCliente').value='';
+    }
+  }catch(e){ setErr('adminErr','Erro de ligação. Tenta novamente.'); }
+  btn.disabled=false; btn.textContent='Gerar link';
+}
+
+function copiarLink(){
+  const inp=document.getElementById('linkGerado'); if(!inp.value)return;
+  inp.select(); inp.setSelectionRange(0,99999);
+  try{ if(navigator.clipboard)navigator.clipboard.writeText(inp.value); }catch(e){}
+  const ok=document.getElementById('adminOk'); ok.textContent='Link copiado!'; ok.style.display='block';
+  setTimeout(()=>{ok.style.display='none';},2000);
+}
+
+supaClient.auth.onAuthStateChange((event,session)=>{
+  if(event==='SIGNED_IN'&&session){
+    hide('loginBox'); show('adminBox');
+    checkAdminAndShow();
+  }
+  if(event==='SIGNED_OUT'){
+    hide('adminBox'); show('loginBox');
+  }
+});
+
+(async function start(){
+  const{data}=await supaClient.auth.getSession();
+  if(data&&data.session){ hide('loginBox'); show('adminBox'); checkAdminAndShow(); }
+})();
+</script>
+</body>
+</html>
