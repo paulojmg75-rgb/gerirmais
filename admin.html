@@ -173,10 +173,11 @@ function estadoValidade(validade){
 async function carregarClientes(){
   setErr('listaMsg','');
   try{
-    const{data,error}=await supaClient.rpc('listar_clientes_admin');
+    const{data:dataBruta,error}=await supaClient.rpc('listar_clientes_admin');
     const body=document.getElementById('tabelaClientesBody');
     if(error){ setErr('listaMsg','Não foi possível carregar a lista.'); return; }
-    if(!data||!data.length){ body.innerHTML='<tr><td colspan="7" style="color:var(--ink2)">Ainda não geraste nenhum código.</td></tr>'; return; }
+    const data=(dataBruta||[]).filter(r=>!r.eliminado);
+    if(!data.length){ body.innerHTML='<tr><td colspan="7" style="color:var(--ink2)">Ainda não geraste nenhum código.</td></tr>'; return; }
     body.innerHTML=data.map(row=>{
       const est=estadoValidade(row.validade);
       const codigoSeguro=row.codigo.replace(/"/g,'&quot;');
@@ -200,7 +201,8 @@ async function carregarClientes(){
           </div>
           <div style="margin-top:4px">
             ${usado
-              ? `<button style="background:${bloqueado?'var(--teal)':'var(--red)'}" onclick="alternarBloqueio('${codigoSeguro}',${!bloqueado})">${bloqueado?'Desbloquear':'Bloquear acesso'}</button>`
+              ? `<button style="background:${bloqueado?'var(--teal)':'var(--red)'}" onclick="alternarBloqueio('${codigoSeguro}',${!bloqueado})">${bloqueado?'Desbloquear':'Bloquear acesso'}</button>
+                 <button style="background:var(--ink2)" onclick="eliminarCliente('${codigoSeguro}')">Eliminar</button>`
               : `<button style="background:var(--red)" onclick="eliminarCodigo('${codigoSeguro}')">Eliminar</button>`}
           </div>
         </td>
@@ -236,6 +238,14 @@ async function alternarBloqueio(codigo,bloquear){
   try{
     const{data,error}=await supaClient.rpc('alternar_bloqueio_cliente',{p_codigo:codigo,p_bloquear:bloquear});
     if(error||!data){ setErr('listaMsg','Não foi possível atualizar o bloqueio.'); return; }
+    carregarClientes();
+  }catch(e){ setErr('listaMsg','Erro de ligação.'); }
+}
+async function eliminarCliente(codigo){
+  if(!confirm('Eliminar este cliente? Isto bloqueia o acesso dele já e esconde-o desta lista. Não dá para desfazer aqui — só voltando à tabela codigos_ativacao no Supabase.'))return;
+  try{
+    const{data,error}=await supaClient.rpc('eliminar_cliente',{p_codigo:codigo});
+    if(error||!data){ setErr('listaMsg','Não foi possível eliminar este cliente.'); return; }
     carregarClientes();
   }catch(e){ setErr('listaMsg','Erro de ligação.'); }
 }
