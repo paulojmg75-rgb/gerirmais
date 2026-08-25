@@ -143,6 +143,18 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.875rem}
 .modal-header h2{font-size:14px;font-weight:700}
 .modal-footer{display:flex;justify-content:flex-end;gap:6px;margin-top:.875rem;padding-top:.75rem;border-top:1px solid var(--border)}
+
+/* BOTÃO FLUTUANTE DE AJUDA */
+.ajuda-float-btn{display:none;position:fixed;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple) 55%,var(--coral));color:#fff;align-items:center;justify-content:center;font-size:21px;box-shadow:var(--shadow-md);cursor:grab;z-index:250;touch-action:none;user-select:none}
+.ajuda-float-btn::after{content:'';position:absolute;inset:-7px;border-radius:50%;border:2px solid var(--blue);opacity:.45;animation:ajudaPulso 2.4s ease-out infinite}
+@keyframes ajudaPulso{0%{transform:scale(.82);opacity:.55}100%{transform:scale(1.4);opacity:0}}
+.ajuda-float-btn.dragging{cursor:grabbing;opacity:.85}
+.ajuda-float-btn.dragging::after{animation:none;opacity:0}
+.ajuda-faq-item{border-top:1px dashed var(--border2);padding:.6rem 0}
+.ajuda-faq-item:first-child{border-top:none;padding-top:0}
+.ajuda-faq-q{display:flex;align-items:center;justify-content:space-between;gap:.5rem;cursor:pointer;font-weight:700;font-size:12.5px;color:var(--text)}
+.ajuda-faq-a{display:none;margin-top:.5rem;font-size:12px;color:var(--text2);line-height:1.6}
+.ajuda-faq-a.aberta{display:block}
 .close-btn{background:none;border:none;cursor:pointer;color:var(--text2);font-size:16px;display:flex;align-items:center;padding:2px}
 .close-btn:hover{color:var(--text)}
 
@@ -664,21 +676,6 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
       <span id="minhaValidadeBadge" style="padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700"></span>
     </div>
   </div>
-  <div class="card" id="cardAdminCodigos" style="margin-top:.75rem;display:none">
-    <div class="card-title"><i class="ti ti-key"></i> Criar acesso de cliente</div>
-    <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end">
-      <div class="form-group" style="flex:1;min-width:200px;margin-bottom:0">
-        <label class="form-label">Nome do cliente</label>
-        <input type="text" id="admNomeCliente" placeholder="Ex: João Tombola">
-      </div>
-      <button class="btn btn-teal" id="admGerarBtn" onclick="gerarCodigoCliente()"><i class="ti ti-link"></i> Gerar link</button>
-    </div>
-    <div id="admGerarMsg" style="font-size:11px;color:var(--red);margin-top:6px"></div>
-    <div id="admLinkWrap" style="display:none;margin-top:10px;gap:.5rem;flex-wrap:wrap;align-items:center">
-      <input type="text" id="admLinkGerado" readonly onclick="this.select()" style="flex:1;min-width:220px;background:var(--teal-l);color:var(--teal);font-weight:600">
-      <button class="btn btn-sm" onclick="copiarLinkAdmin()"><i class="ti ti-copy"></i> Copiar</button>
-    </div>
-  </div>
   <div class="card" style="margin-top:.75rem;position:relative;overflow:hidden">
     <div style="position:absolute;inset:0;background:linear-gradient(120deg,var(--blue-l),var(--purple-l) 50%,var(--coral-l));opacity:.6;pointer-events:none"></div>
     <div style="position:relative;display:flex;align-items:center;gap:.85rem;flex-wrap:wrap">
@@ -858,6 +855,18 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 
 </div><!-- /main -->
 </div><!-- /app -->
+
+<!-- BOTÃO FLUTUANTE DE AJUDA — arrastável, para não tapar botões/texto -->
+<div id="ajudaFloatBtn" class="ajuda-float-btn" title="Ajuda — arrasta para mudar de sítio"><i class="ti ti-headset"></i></div>
+
+<!-- MODAL DE AJUDA / TUTORIAL -->
+<div class="overlay" id="ajudaModal">
+<div class="modal" style="width:480px">
+  <div class="modal-header"><h2><i class="ti ti-headset" style="color:var(--blue)"></i> Ajuda</h2><button class="close-btn" onclick="fecharAjuda()"><i class="ti ti-x"></i></button></div>
+  <p style="font-size:12px;color:var(--text2);margin:-.4rem 0 .75rem">Perguntas frequentes sobre como usar a app. Toca numa pergunta para veres a resposta.</p>
+  <div id="ajudaFaqBox"></div>
+</div>
+</div>
 
 <!-- ===== MODAIS ===== -->
 
@@ -2726,9 +2735,20 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='2.1';
-const APP_UPDATE_DATE='2026-08-24'; // formato AAAA-MM-DD
+const APP_VERSION='2.3';
+const APP_UPDATE_DATE='2026-08-25'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'2.3',data:'2026-08-25',notas:[
+    'Em Configurações, as listas (categorias, feiras, empregados, viaturas) já têm setas ▲▼ para reordenar, além de continuar a dar para arrastar.',
+    'Ícone do botão de Ajuda atualizado, mais alusivo a apoio/suporte.'
+  ]},
+  {v:'2.2',data:'2026-08-25',notas:[
+    'Nova chave de "Terminar sessão" no topo da app (ambiente principal e telemóvel) — já não é preciso ir a Configurações para sair da conta.',
+    'Novo Lançamento passa a abrir predefinido em Receita.',
+    'Configurações mostra agora até quando a tua conta está válida, com aviso a aproximar-se da renovação.',
+    'A gestão de acessos de clientes passou a ser feita só na área de administração — deixou de aparecer dentro da app.',
+    'Novo botão de Ajuda (?) flutuante — arrasta para qualquer sítio do ecrã caso tape algum botão ou texto, e toca para veres respostas às perguntas mais frequentes sobre a app.'
+  ]},
   {v:'2.1',data:'2026-08-24',notas:[
     'Código de acesso individual por cliente — dá para ligar/desligar o acesso de cada cliente sem afetar os outros.',
     'Link de convite com código já incluído — basta enviar um link, sem mensagens à parte.',
@@ -2892,8 +2912,34 @@ async function loadAllFromCloud(){
 }
 
 /* ---- CONFIGURAÇÕES ---- */
-function cfgItem(nome, onEdit, onDel, idx, grupo){
-  return`<div class="cfg-item" draggable="true" data-idx="${idx}" data-grupo="${grupo||''}" 
+/* Cada lista destas pode ser reordenada de duas formas: arrastando (para quem
+   já está habituado) ou com as setas ▲▼ (mais simples para quem não usa
+   arrastar-e-largar). As duas formas mexem na mesma lista, por isso nunca
+   ficam dessincronizadas. */
+function cfgListagem(grupo){
+  if(grupo==='receita')return catsRec;
+  if(grupo==='despesa')return catsDesp;
+  if(grupo==='contas')return contas;
+  if(grupo==='feiras')return fairs;
+  if(grupo==='emps')return emps;
+  if(grupo==='viats')return viats;
+  return null;
+}
+function cfgMove(grupo,idx,dir){
+  const list=cfgListagem(grupo); if(!list)return;
+  const alvo=idx+dir;
+  if(alvo<0||alvo>=list.length)return;
+  const item=list.splice(idx,1)[0];
+  list.splice(alvo,0,item);
+  renderConfiguracoes();
+}
+function cfgSetas(grupo,idx,total){
+  const noTopo=idx===0, noFim=idx===total-1;
+  return`<button class="btn btn-sm btn-icon" onclick="cfgMove('${grupo}',${idx},-1)" title="Mover para cima" ${noTopo?'disabled':''} style="${noTopo?'opacity:.3':''}"><i class="ti ti-chevron-up" style="font-size:11px"></i></button>
+    <button class="btn btn-sm btn-icon" onclick="cfgMove('${grupo}',${idx},1)" title="Mover para baixo" ${noFim?'disabled':''} style="${noFim?'opacity:.3':''}"><i class="ti ti-chevron-down" style="font-size:11px"></i></button>`;
+}
+function cfgItem(nome, onEdit, onDel, idx, grupo, total){
+  return`<div class="cfg-item" draggable="true" data-idx="${idx}" data-grupo="${grupo||''}"
     ondragstart="cfgDragStart(event)" ondragover="cfgDragOver(event)" ondrop="cfgDrop(event,this)"
     style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg);border-radius:var(--radius);margin-bottom:6px;border:.5px solid var(--border);cursor:grab">
     <div style="display:flex;align-items:center;gap:8px">
@@ -2901,6 +2947,7 @@ function cfgItem(nome, onEdit, onDel, idx, grupo){
       <span style="font-size:12px;color:var(--text)">${nome}</span>
     </div>
     <div style="display:flex;gap:4px">
+      ${cfgSetas(grupo,idx,total)}
       <button class="btn btn-sm btn-icon btn-edit" onclick="${onEdit}" title="Editar"><i class="ti ti-pencil" style="font-size:11px"></i></button>
       <button class="btn btn-sm btn-icon btn-del" onclick="${onDel}" title="Eliminar"><i class="ti ti-trash" style="font-size:11px"></i></button>
     </div>
@@ -2919,14 +2966,7 @@ function cfgDrop(e,el){
   const toIdx=parseInt(el.dataset.idx);
   const grupo=el.dataset.grupo;
   if(cfgDragIdx===null||cfgDragIdx===toIdx)return;
-  let list;
-  if(grupo==='receita')list=catsRec;
-  else if(grupo==='despesa')list=catsDesp;
-  else if(grupo==='contas')list=contas;
-  else if(grupo==='feiras')list=fairs;
-  else if(grupo==='emps')list=emps;
-  else if(grupo==='viats')list=viats;
-  else return;
+  const list=cfgListagem(grupo); if(!list)return;
   const item=list.splice(cfgDragIdx,1)[0];
   list.splice(toIdx,0,item);
   cfgDragIdx=null;
@@ -2946,6 +2986,7 @@ function renderConfiguracoes(){
         <div><div style="font-size:12px;font-weight:500;color:var(--text)">${f.nome}</div><div style="font-size:10px;color:var(--text2)">${f.inicio} → ${f.fim} · ${f.ano}</div></div>
       </div>
       <div style="display:flex;gap:4px">
+        ${cfgSetas('feiras',i,fairs.length)}
         <button class="btn btn-sm btn-icon btn-edit" onclick="editFair(${f.id})"><i class="ti ti-pencil" style="font-size:11px"></i></button>
         <button class="btn btn-sm btn-icon btn-del" onclick="deleteFairCfg(${f.id})"><i class="ti ti-trash" style="font-size:11px"></i></button>
       </div>
@@ -2963,6 +3004,7 @@ function renderConfiguracoes(){
         <div><div style="font-size:12px;font-weight:500;color:var(--text)">${e.nome}</div><div style="font-size:10px;color:var(--text2)">${e.local||'—'} · ${e.sal?fmt(e.sal)+'/dia':'—'}</div></div>
       </div>
       <div style="display:flex;gap:4px">
+        ${cfgSetas('emps',i,emps.length)}
         <button class="btn btn-sm btn-icon btn-edit" onclick="editEmp(${e.id})"><i class="ti ti-pencil" style="font-size:11px"></i></button>
         <button class="btn btn-sm btn-icon btn-del" onclick="deleteEmpCfg(${e.id})"><i class="ti ti-trash" style="font-size:11px"></i></button>
       </div>
@@ -2970,18 +3012,18 @@ function renderConfiguracoes(){
 
   // CATS RECEITA
   document.getElementById('cfg-cats-rec').innerHTML=catsRec.length?
-    catsRec.map((c,i)=>cfgItem(c,`editCfgCat('receita',${i})`,`deleteCfgCat('receita',${i})`,i,'receita')).join('')
+    catsRec.map((c,i)=>cfgItem(c,`editCfgCat('receita',${i})`,`deleteCfgCat('receita',${i})`,i,'receita',catsRec.length)).join('')
     :`<div class="empty" style="padding:.875rem">Sem categorias</div>`;
 
   // CATS DESPESA
   document.getElementById('cfg-cats-desp').innerHTML=catsDesp.length?
-    catsDesp.map((c,i)=>cfgItem(c,`editCfgCat('despesa',${i})`,`deleteCfgCat('despesa',${i})`,i,'despesa')).join('')
+    catsDesp.map((c,i)=>cfgItem(c,`editCfgCat('despesa',${i})`,`deleteCfgCat('despesa',${i})`,i,'despesa',catsDesp.length)).join('')
     :`<div class="empty" style="padding:.875rem">Sem categorias</div>`;
 
   // CONTAS (removido da UI — lista de locais deixou de existir; feira/evento é o local)
   const cfgContasEl=document.getElementById('cfg-contas');
   if(cfgContasEl)cfgContasEl.innerHTML=contas.length?
-    contas.map((c,i)=>cfgItem(c,`editCfgConta(${i})`,`deleteCfgConta(${i})`,i,'contas')).join('')
+    contas.map((c,i)=>cfgItem(c,`editCfgConta(${i})`,`deleteCfgConta(${i})`,i,'contas',contas.length)).join('')
     :`<div class="empty" style="padding:.875rem">Sem locais</div>`;
 
   // VIATURAS
@@ -2996,6 +3038,7 @@ function renderConfiguracoes(){
         <div><div style="font-size:12px;font-weight:500;color:var(--text)">${v.nome}${v.matricula?` <span style="color:var(--text2);font-weight:400">· ${v.matricula}</span>`:''}</div><div style="font-size:10px;color:var(--text2)">${v.tipo}</div></div>
       </div>
       <div style="display:flex;gap:4px">
+        ${cfgSetas('viats',i,viats.length)}
         <button class="btn btn-sm btn-icon btn-edit" onclick="editViat(${v.id})"><i class="ti ti-pencil" style="font-size:11px"></i></button>
         <button class="btn btn-sm btn-icon btn-del" onclick="deleteViatCfg(${v.id})"><i class="ti ti-trash" style="font-size:11px"></i></button>
       </div>
@@ -3705,39 +3748,6 @@ async function renderMinhaValidade(){
     wrap.style.display='block';
   }catch(e){ wrap.style.display='none'; }
 }
-/* ---- GERADOR DE CÓDIGOS (só visível/ativo para a conta admin) ---- */
-async function initAdminGerador(){
-  const card=document.getElementById('cardAdminCodigos'); if(!card)return;
-  try{
-    const{data,error}=await supaClient.rpc('sou_admin');
-    card.style.display=(!error&&data)?'':'none';
-  }catch(e){ card.style.display='none'; }
-}
-async function gerarCodigoCliente(){
-  const nome=document.getElementById('admNomeCliente').value.trim();
-  const msgEl=document.getElementById('admGerarMsg'),wrap=document.getElementById('admLinkWrap');
-  msgEl.textContent=''; wrap.style.display='none';
-  if(!nome){ msgEl.textContent='Escreve o nome do cliente.'; return; }
-  const btn=document.getElementById('admGerarBtn');
-  btn.disabled=true; const label=btn.innerHTML; btn.innerHTML='<i class="ti ti-loader-2"></i> A gerar...';
-  try{
-    const{data,error}=await supaClient.rpc('criar_codigo_ativacao',{p_cliente:nome});
-    if(error||!data){
-      msgEl.textContent='Não foi possível gerar. Tenta novamente.';
-    }else{
-      document.getElementById('admLinkGerado').value=location.origin+location.pathname+'?codigo='+encodeURIComponent(data);
-      wrap.style.display='flex';
-      document.getElementById('admNomeCliente').value='';
-    }
-  }catch(e){ msgEl.textContent='Erro de ligação. Tenta novamente.'; }
-  btn.disabled=false; btn.innerHTML=label;
-}
-function copiarLinkAdmin(){
-  const inp=document.getElementById('admLinkGerado'); if(!inp||!inp.value)return;
-  inp.select(); inp.setSelectionRange(0,99999);
-  try{ if(navigator.clipboard)navigator.clipboard.writeText(inp.value); }catch(e){}
-  showSyncStatus('Link copiado!',true);
-}
 /* ---- VERSÃO / NOVIDADES ---- */
 function formatarDataPT(iso){
   const p=iso.split('-'); const meses=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
@@ -3759,19 +3769,123 @@ function toggleChangelog(){
   }
   if(icon){ icon.className='ti '+(aberto?'ti-chevron-down':'ti-chevron-up'); }
 }
+/* ---- AJUDA / TUTORIAL (botão flutuante com perguntas frequentes) ----
+   Acrescenta aqui novas perguntas sempre que fizeres uma funcionalidade nova —
+   basta adicionar mais um objeto {p:'pergunta', r:'resposta'} à lista. */
+const AJUDA_FAQ=[
+  {p:'Como lanço uma receita ou despesa?',r:'Vai a "Lançamentos" e clica em "+ Novo lançamento". Escolhe o Tipo (Receita já vem selecionada por defeito), a data, o valor, a categoria e o local/conta. Depois de guardares, aparece logo na lista e nos totais do Dashboard.'},
+  {p:'Como corrijo ou apago um lançamento?',r:'Na lista de "Lançamentos", cada linha tem um lápis azul (editar) e um caixote vermelho (apagar) do lado direito. Basta clicar no que precisas.'},
+  {p:'Como crio uma feira ou evento novo?',r:'Vai a "Feiras/Eventos" e adiciona uma feira (religiosa/recorrente) ou um evento (organizado). Depois, ao lançares receitas/despesas, associa-as a essa feira para veres os resultados dela em separado, no Relatório e no Comparar.'},
+  {p:'Como acompanho os pagamentos aos empregados?',r:'Em "Empregados" adicionas cada membro da equipa e registas os pagamentos por mês e local. Também podes associar um empregado a um lançamento, no formulário de Novo Lançamento.'},
+  {p:'Como controlo o combustível e a quilometragem das viaturas?',r:'Em "Viaturas & Combustível" registas cada viatura e os respetivos abastecimentos. Ao lançares uma despesa de combustível, podes indicar logo a viatura abastecida.'},
+  {p:'Como vejo relatórios e comparo anos ou feiras?',r:'Usa "Filtros" para procurar lançamentos por qualquer critério, "Relatório" para ver totais por mês, local, categoria, feira ou ano, e "Comparar" para pôr lado a lado dois anos, feiras ou edições diferentes.'},
+  {p:'Como exporto ou importo os meus dados?',r:'No topo da app tens os botões de Exportar (seta para baixo) e Importar (seta para cima) Excel. Exportas para guardar ou editar no computador, e importas de novo para atualizar a app com essas alterações.'},
+  {p:'Para que serve o botão do Google Drive?',r:'Liga a tua conta Google para guardar o logo do negócio na tua Drive, e conseguires recuperá-lo em qualquer dispositivo onde entres com essa mesma conta.'},
+  {p:'Onde crio ou edito categorias e locais/contas?',r:'Em "Configurações" tens as listas de categorias (para Receitas e Despesas) e de locais/contas, para as ajustares ao teu negócio.'},
+  {p:'Como termino a sessão?',r:'Clica no ícone da chave no topo da app (também disponível no telemóvel), ou em "Terminar sessão" dentro de Configurações.'},
+  {p:'Até quando é válido o meu acesso?',r:'Em Configurações, por baixo de "Terminar sessão", aparece um aviso com a data até à qual a tua conta está ativa. Contacta-nos com antecedência para renovares antes de expirar.'}
+];
+function renderAjudaFaq(){
+  const box=document.getElementById('ajudaFaqBox'); if(!box)return;
+  box.innerHTML=AJUDA_FAQ.map((f,i)=>`<div class="ajuda-faq-item"><div class="ajuda-faq-q" onclick="toggleAjudaItem(${i})"><span>${f.p}</span><i class="ti ti-chevron-down" id="ajudaIcon${i}"></i></div><div class="ajuda-faq-a" id="ajudaResp${i}">${f.r}</div></div>`).join('');
+}
+function toggleAjudaItem(i){
+  const a=document.getElementById('ajudaResp'+i),ic=document.getElementById('ajudaIcon'+i);
+  if(!a)return;
+  const aberta=a.classList.toggle('aberta');
+  if(ic)ic.className='ti '+(aberta?'ti-chevron-up':'ti-chevron-down');
+}
+function abrirAjuda(){
+  const box=document.getElementById('ajudaFaqBox');
+  if(box&&!box.innerHTML)renderAjudaFaq();
+  const m=document.getElementById('ajudaModal'); if(m)m.style.display='flex';
+}
+function fecharAjuda(){
+  const m=document.getElementById('ajudaModal'); if(m)m.style.display='none';
+}
+/* Posição do botão flutuante — arrastável, fica guardada neste dispositivo/
+   browser (localStorage), para cada cliente poder pôr o botão onde não lhe
+   tape nada. */
+function posicionarAjudaBtn(x,y){
+  const btn=document.getElementById('ajudaFloatBtn'); if(!btn)return;
+  const w=btn.offsetWidth||50,h=btn.offsetHeight||50;
+  const maxX=Math.max(window.innerWidth-w-6,6),maxY=Math.max(window.innerHeight-h-6,6);
+  x=Math.min(Math.max(x,6),maxX); y=Math.min(Math.max(y,6),maxY);
+  btn.style.left=x+'px'; btn.style.top=y+'px'; btn.style.right='auto'; btn.style.bottom='auto';
+}
+function initAjudaBtn(){
+  const btn=document.getElementById('ajudaFloatBtn'); if(!btn||btn.dataset.init)return;
+  btn.dataset.init='1';
+  let salvo=null;
+  try{ salvo=JSON.parse(localStorage.getItem('ajudaBtnPos')||'null'); }catch(e){}
+  if(salvo&&typeof salvo.x==='number'&&typeof salvo.y==='number'){ posicionarAjudaBtn(salvo.x,salvo.y); }
+  else{ posicionarAjudaBtn(window.innerWidth-66,window.innerHeight-96); }
+  let dragging=false,moveu=false,offX=0,offY=0,startX=0,startY=0;
+  btn.addEventListener('pointerdown',e=>{
+    dragging=true; moveu=false;
+    const r=btn.getBoundingClientRect();
+    offX=e.clientX-r.left; offY=e.clientY-r.top;
+    startX=e.clientX; startY=e.clientY;
+    try{ btn.setPointerCapture(e.pointerId); }catch(err){}
+    btn.classList.add('dragging');
+  });
+  btn.addEventListener('pointermove',e=>{
+    if(!dragging)return;
+    if(Math.abs(e.clientX-startX)>5||Math.abs(e.clientY-startY)>5)moveu=true;
+    if(moveu)posicionarAjudaBtn(e.clientX-offX,e.clientY-offY);
+  });
+  function soltar(){
+    if(!dragging)return;
+    dragging=false;
+    btn.classList.remove('dragging');
+    if(moveu){
+      const r=btn.getBoundingClientRect();
+      try{ localStorage.setItem('ajudaBtnPos',JSON.stringify({x:r.left,y:r.top})); }catch(err){}
+    }else{
+      abrirAjuda();
+    }
+  }
+  btn.addEventListener('pointerup',soltar);
+  btn.addEventListener('pointercancel',soltar);
+  window.addEventListener('resize',()=>{ const r=btn.getBoundingClientRect(); posicionarAjudaBtn(r.left,r.top); });
+  btn.style.display='flex';
+}
+
+/* ---- BLOQUEIO DE ACESSO (comando do admin.html) ----
+   Se o dono da app marcar este cliente como "bloqueado" (ex.: deixou de
+   pagar), esta verificação impede a entrada mesmo com a conta/password
+   corretas — mostra um aviso e termina logo a sessão. */
+async function mostrarBloqueioAcesso(){
+  try{ await supaClient.auth.signOut(); }catch(e){}
+  const overlay=document.getElementById('authOverlay');
+  if(overlay){
+    overlay.style.display='flex';
+    overlay.innerHTML=`<div class="auth-box" style="text-align:center">
+      <div class="auth-title">Acesso suspenso</div>
+      <div class="auth-sub" style="margin-top:6px">A tua conta está temporariamente bloqueada. Contacta quem te deu acesso ao programa para mais informações.</div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:16px" onclick="location.reload()"><i class="ti ti-refresh"></i> Voltar ao início</button>
+    </div>`;
+  }
+  const root=document.getElementById('appRoot'); if(root)root.style.display='none';
+}
+
 /* ---- ARRANQUE: nada carrega sem sessão válida ---- */
 let appStarted=false;
-function enterApp(session){
+async function enterApp(session){
   if(appStarted||!session)return;
   appStarted=true;
   currentUser=session.user;
+  try{
+    const{data:bloqueado}=await supaClient.rpc('cliente_bloqueado');
+    if(bloqueado){ mostrarBloqueioAcesso(); return; }
+  }catch(e){ /* se a verificação falhar, não bloqueia por precaução */ }
   const overlay=document.getElementById('authOverlay'); if(overlay)overlay.style.display='none';
   const root=document.getElementById('appRoot'); if(root)root.style.display='';
   const emailEl=document.getElementById('cfgAccountEmail'); if(emailEl)emailEl.value=currentUser.email||'';
   loadBusinessName();
   renderVersionCard();
-  initAdminGerador();
   renderMinhaValidade();
+  initAjudaBtn();
   initApp();
 }
 async function checkAuthAndStart(){

@@ -180,17 +180,29 @@ async function carregarClientes(){
     body.innerHTML=data.map(row=>{
       const est=estadoValidade(row.validade);
       const codigoSeguro=row.codigo.replace(/"/g,'&quot;');
+      const usado=!!row.usado_por_email;
+      const bloqueado=!!row.bloqueado;
       return `<tr data-codigo="${codigoSeguro}">
         <td>${row.cliente||'—'}</td>
         <td style="font-family:monospace;font-size:11px">${row.codigo}</td>
         <td style="font-size:11px">${row.usado_por_email?row.usado_por_email:'<em>por usar</em>'}</td>
         <td style="font-size:11px">${formatarDataHora(row.ultimo_acesso)}</td>
         <td><input type="date" value="${row.validade||''}" class="inp-validade"></td>
-        <td><span class="badge" style="background:${est.bg};color:${est.color}">${est.label}</span></td>
+        <td>
+          <span class="badge" style="background:${est.bg};color:${est.color}">${est.label}</span>
+          ${bloqueado?'<span class="badge" style="background:var(--red-l);color:var(--red);margin-left:4px">Bloqueado</span>':''}
+        </td>
         <td style="white-space:nowrap">
-          <button onclick="ajustarValidade('${codigoSeguro}',1)">+1 ano</button>
-          <button onclick="ajustarValidade('${codigoSeguro}',2)">+2 anos</button>
-          <button onclick="guardarValidadeManual('${codigoSeguro}',this)">Guardar</button>
+          <div>
+            <button onclick="ajustarValidade('${codigoSeguro}',1)">+1 ano</button>
+            <button onclick="ajustarValidade('${codigoSeguro}',2)">+2 anos</button>
+            <button onclick="guardarValidadeManual('${codigoSeguro}',this)">Guardar</button>
+          </div>
+          <div style="margin-top:4px">
+            ${usado
+              ? `<button style="background:${bloqueado?'var(--teal)':'var(--red)'}" onclick="alternarBloqueio('${codigoSeguro}',${!bloqueado})">${bloqueado?'Desbloquear':'Bloquear acesso'}</button>`
+              : `<button style="background:var(--red)" onclick="eliminarCodigo('${codigoSeguro}')">Eliminar</button>`}
+          </div>
         </td>
       </tr>`;
     }).join('');
@@ -215,6 +227,23 @@ async function salvarValidade(codigo,dataStr){
   try{
     const{data,error}=await supaClient.rpc('atualizar_validade_codigo',{p_codigo:codigo,p_validade:dataStr});
     if(error||!data){ setErr('listaMsg','Não foi possível guardar a validade.'); return; }
+    carregarClientes();
+  }catch(e){ setErr('listaMsg','Erro de ligação.'); }
+}
+
+async function alternarBloqueio(codigo,bloquear){
+  if(bloquear && !confirm('Bloquear o acesso deste cliente? Ele deixa logo de conseguir usar a app, até desbloqueares.'))return;
+  try{
+    const{data,error}=await supaClient.rpc('alternar_bloqueio_cliente',{p_codigo:codigo,p_bloquear:bloquear});
+    if(error||!data){ setErr('listaMsg','Não foi possível atualizar o bloqueio.'); return; }
+    carregarClientes();
+  }catch(e){ setErr('listaMsg','Erro de ligação.'); }
+}
+async function eliminarCodigo(codigo){
+  if(!confirm('Eliminar este código de acesso? Só é possível se ainda não tiver sido usado. Esta ação não pode ser desfeita.'))return;
+  try{
+    const{data,error}=await supaClient.rpc('eliminar_codigo_ativacao',{p_codigo:codigo});
+    if(error||!data){ setErr('listaMsg','Não foi possível eliminar (só é possível eliminar códigos ainda não usados).'); return; }
     carregarClientes();
   }catch(e){ setErr('listaMsg','Erro de ligação.'); }
 }
