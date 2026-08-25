@@ -32,6 +32,15 @@ button.secondary{background:transparent;color:var(--ink2);border:1px solid var(-
 .link-out{display:flex;gap:.5rem;margin-top:.6rem}
 .link-out input{background:var(--teal-l);color:var(--teal);font-weight:600}
 .link-out button{width:auto;padding:9px 14px;margin-top:0}
+#adminBox{max-width:960px}
+h2{font-size:14px;margin-bottom:.75rem}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);font-size:11px;color:var(--ink2)}
+td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+td input[type=date]{width:auto;padding:5px}
+td button{width:auto;padding:5px 8px;font-size:10px;margin:0 4px 0 0;background:var(--ink2)}
+.badge{padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;white-space:nowrap}
+.tabela-wrap{overflow-x:auto}
 </style>
 </head>
 <body>
@@ -67,6 +76,28 @@ button.secondary{background:transparent;color:var(--ink2);border:1px solid var(-
       <button onclick="copiarLink()">Copiar</button>
     </div>
   </div>
+
+  <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--line)">
+    <h2>Clientes e anuidades</h2>
+    <div class="msg-err" id="listaMsg"></div>
+    <div class="tabela-wrap">
+      <table id="tabelaClientes">
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Código</th>
+            <th>Email</th>
+            <th>Último acesso</th>
+            <th>Validade</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tabelaClientesBody"></tbody>
+      </table>
+    </div>
+  </div>
+
   <button class="secondary" onclick="doLogout()">Terminar sessão</button>
 </div>
 
@@ -117,11 +148,75 @@ async function checkAdminAndShow(){
       document.getElementById('adminSub').textContent='Cria um link de acesso para um cliente novo';
       show('adminForm');
       setErr('adminErr','');
+      carregarClientes();
     }
   }catch(e){
     setErr('adminErr','Não foi possível confirmar a permissão. Tenta novamente.');
     hide('adminForm');
   }
+}
+
+function formatarDataHora(iso){
+  if(!iso)return'Nunca entrou';
+  const d=new Date(iso);
+  return d.toLocaleDateString('pt-PT')+' '+d.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});
+}
+function estadoValidade(validade){
+  if(!validade)return{label:'Sem validade definida',color:'var(--ink2)',bg:'#EFEBE3'};
+  const hoje=new Date(); hoje.setHours(0,0,0,0);
+  const v=new Date(validade+'T00:00:00');
+  const dias=Math.round((v-hoje)/86400000);
+  if(dias<0)return{label:'Expirado',color:'var(--red)',bg:'var(--red-l)'};
+  if(dias<=30)return{label:'Termina em '+dias+' dia'+(dias===1?'':'s'),color:'#B45309',bg:'#FCEEDC'};
+  return{label:'Ativo',color:'var(--teal)',bg:'var(--teal-l)'};
+}
+async function carregarClientes(){
+  setErr('listaMsg','');
+  try{
+    const{data,error}=await supaClient.rpc('listar_clientes_admin');
+    const body=document.getElementById('tabelaClientesBody');
+    if(error){ setErr('listaMsg','Não foi possível carregar a lista.'); return; }
+    if(!data||!data.length){ body.innerHTML='<tr><td colspan="7" style="color:var(--ink2)">Ainda não geraste nenhum código.</td></tr>'; return; }
+    body.innerHTML=data.map(row=>{
+      const est=estadoValidade(row.validade);
+      const codigoSeguro=row.codigo.replace(/"/g,'&quot;');
+      return `<tr data-codigo="${codigoSeguro}">
+        <td>${row.cliente||'—'}</td>
+        <td style="font-family:monospace;font-size:11px">${row.codigo}</td>
+        <td style="font-size:11px">${row.usado_por_email?row.usado_por_email:'<em>por usar</em>'}</td>
+        <td style="font-size:11px">${formatarDataHora(row.ultimo_acesso)}</td>
+        <td><input type="date" value="${row.validade||''}" class="inp-validade"></td>
+        <td><span class="badge" style="background:${est.bg};color:${est.color}">${est.label}</span></td>
+        <td style="white-space:nowrap">
+          <button onclick="ajustarValidade('${codigoSeguro}',1)">+1 ano</button>
+          <button onclick="ajustarValidade('${codigoSeguro}',2)">+2 anos</button>
+          <button onclick="guardarValidadeManual('${codigoSeguro}',this)">Guardar</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }catch(e){ setErr('listaMsg','Erro de ligação.'); }
+}
+async function ajustarValidade(codigo,anos){
+  const linha=document.querySelector('tr[data-codigo="'+CSS.escape(codigo)+'"]');
+  const inp=linha?linha.querySelector('.inp-validade'):null;
+  const hoje=new Date(); hoje.setHours(0,0,0,0);
+  let base=(inp&&inp.value)?new Date(inp.value+'T00:00:00'):hoje;
+  if(base<hoje)base=hoje;
+  base.setFullYear(base.getFullYear()+anos);
+  const nova=base.toISOString().slice(0,10);
+  await salvarValidade(codigo,nova);
+}
+async function guardarValidadeManual(codigo,btn){
+  const linha=btn.closest('tr');
+  const inp=linha.querySelector('.inp-validade');
+  await salvarValidade(codigo,inp.value||null);
+}
+async function salvarValidade(codigo,dataStr){
+  try{
+    const{data,error}=await supaClient.rpc('atualizar_validade_codigo',{p_codigo:codigo,p_validade:dataStr});
+    if(error||!data){ setErr('listaMsg','Não foi possível guardar a validade.'); return; }
+    carregarClientes();
+  }catch(e){ setErr('listaMsg','Erro de ligação.'); }
 }
 
 async function gerarCodigo(){
@@ -138,6 +233,7 @@ async function gerarCodigo(){
       document.getElementById('linkGerado').value='https://gerirmais.com/?codigo='+encodeURIComponent(data);
       show('linkWrap');
       document.getElementById('nomeCliente').value='';
+      carregarClientes();
     }
   }catch(e){ setErr('adminErr','Erro de ligação. Tenta novamente.'); }
   btn.disabled=false; btn.textContent='Gerar link';

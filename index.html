@@ -398,6 +398,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
     <button class="btn btn-icon" onclick="exportarExcel()" title="Exportar Excel" style="color:var(--teal);border-color:var(--teal-l);background:var(--teal-l)"><i class="ti ti-download"></i></button>
     <label class="btn btn-icon" title="Importar Excel" style="cursor:pointer;color:var(--blue);border-color:var(--blue-l);background:var(--blue-l)"><i class="ti ti-upload"></i><input type="file" accept=".xlsx,.xls" onchange="importarExcel(event)" style="display:none"></label>
     <button class="btn btn-icon" onclick="gdriveAuth(()=>showSyncStatus('Google Drive ligado! ✓',true))" title="Ligar Google Drive" style="color:var(--amber);border-color:var(--amber-l);background:var(--amber-l)"><i class="ti ti-brand-google-drive"></i></button>
+    <button class="btn btn-icon" onclick="doLogout()" title="Terminar sessão" style="color:var(--red);border-color:var(--red-l);background:var(--red-l)"><i class="ti ti-key"></i></button>
   </div>
 </div>
 
@@ -414,6 +415,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
     <button class="btn btn-icon" onclick="syncLocalToCloud()" title="Enviar dados locais para a cloud" style="color:var(--teal);border-color:var(--teal-l);background:var(--teal-l);padding:7px 9px"><i class="ti ti-cloud-up"></i></button>
     <button class="btn btn-icon" onclick="loadAllFromCloud()" title="Sincronizar agora" style="color:var(--blue);border-color:var(--blue-l);background:var(--blue-l);padding:7px 9px"><i class="ti ti-refresh"></i></button>
     <button class="btn btn-icon" onclick="gdriveConnectInteractive()" title="Ligar Google Drive" style="color:var(--amber);border-color:var(--amber-l);background:var(--amber-l);padding:7px 9px"><i class="ti ti-brand-google-drive"></i></button>
+    <button class="btn btn-icon" onclick="doLogout()" title="Terminar sessão" style="color:var(--red);border-color:var(--red-l);background:var(--red-l);padding:7px 9px"><i class="ti ti-key"></i></button>
   </div>
 </header>
 
@@ -658,6 +660,24 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
       </div>
       <button class="btn btn-del" onclick="doLogout()" style="height:29px"><i class="ti ti-logout"></i> Terminar sessão</button>
     </div>
+    <div id="minhaValidadeWrap" style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border2);display:none">
+      <span id="minhaValidadeBadge" style="padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700"></span>
+    </div>
+  </div>
+  <div class="card" id="cardAdminCodigos" style="margin-top:.75rem;display:none">
+    <div class="card-title"><i class="ti ti-key"></i> Criar acesso de cliente</div>
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end">
+      <div class="form-group" style="flex:1;min-width:200px;margin-bottom:0">
+        <label class="form-label">Nome do cliente</label>
+        <input type="text" id="admNomeCliente" placeholder="Ex: João Tombola">
+      </div>
+      <button class="btn btn-teal" id="admGerarBtn" onclick="gerarCodigoCliente()"><i class="ti ti-link"></i> Gerar link</button>
+    </div>
+    <div id="admGerarMsg" style="font-size:11px;color:var(--red);margin-top:6px"></div>
+    <div id="admLinkWrap" style="display:none;margin-top:10px;gap:.5rem;flex-wrap:wrap;align-items:center">
+      <input type="text" id="admLinkGerado" readonly onclick="this.select()" style="flex:1;min-width:220px;background:var(--teal-l);color:var(--teal);font-weight:600">
+      <button class="btn btn-sm" onclick="copiarLinkAdmin()"><i class="ti ti-copy"></i> Copiar</button>
+    </div>
   </div>
   <div class="card" style="margin-top:.75rem;position:relative;overflow:hidden">
     <div style="position:absolute;inset:0;background:linear-gradient(120deg,var(--blue-l),var(--purple-l) 50%,var(--coral-l));opacity:.6;pointer-events:none"></div>
@@ -850,7 +870,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
   </div>
   <div class="edit-banner" id="editBanner" style="display:none"><i class="ti ti-pencil"></i> Estás a editar um lançamento existente. Corrige o que precisas e guarda.</div>
   <div class="form-row">
-    <div class="form-group"><label class="form-label">Tipo</label><select id="f-tipo" onchange="refreshCatSelect()"><option value="Despesa">Despesa</option><option value="Receita">Receita</option></select></div>
+    <div class="form-group"><label class="form-label">Tipo</label><select id="f-tipo" onchange="refreshCatSelect()"><option value="Receita">Receita</option><option value="Despesa">Despesa</option></select></div>
     <div class="form-group"><label class="form-label">Data</label><input type="date" id="f-data" onchange="onDataChange()"></div>
   </div>
   <div class="form-row">
@@ -1489,7 +1509,7 @@ function openTxModal(){
   document.getElementById('f-ano').value=String(new Date().getFullYear());
   document.getElementById('f-valor').value='';
   document.getElementById('f-notas').value='';
-  document.getElementById('f-tipo').value='Despesa';
+  document.getElementById('f-tipo').value='Receita';
   document.getElementById('f-meio').value='Dinheiro';
   document.getElementById('f-empregado').innerHTML='<option value="">— Nenhum —</option>'+emps.map(e=>`<option value="${e.nome}">${e.nome}</option>`).join('');
   refreshCatSelect();refreshContaSelect();
@@ -3661,6 +3681,63 @@ async function saveBusinessName(){
   showSyncStatus('Nome do negócio guardado!',true);
 }
 
+/* ---- VALIDADE DO ACESSO (mostrada ao próprio cliente) ---- */
+function estadoValidadeCliente(validade){
+  if(!validade)return null;
+  const hoje=new Date(); hoje.setHours(0,0,0,0);
+  const v=new Date(validade+'T00:00:00');
+  const dias=Math.round((v-hoje)/86400000);
+  const dataFmt=v.toLocaleDateString('pt-PT');
+  if(dias<0)return{texto:'Acesso expirado em '+dataFmt+' — contacta para renovar',bg:'var(--red-l)',cor:'var(--red)'};
+  if(dias<=30)return{texto:'Acesso válido até '+dataFmt+' (renovação em breve)',bg:'var(--amber-l)',cor:'var(--amber)'};
+  return{texto:'Acesso válido até '+dataFmt,bg:'var(--teal-l)',cor:'var(--teal)'};
+}
+async function renderMinhaValidade(){
+  const wrap=document.getElementById('minhaValidadeWrap'),badge=document.getElementById('minhaValidadeBadge');
+  if(!wrap||!badge)return;
+  try{
+    const{data,error}=await supaClient.rpc('minha_validade');
+    const row=(!error&&data&&data.length)?data[0]:null;
+    const est=row?estadoValidadeCliente(row.validade):null;
+    if(!est){ wrap.style.display='none'; return; }
+    badge.textContent=est.texto;
+    badge.style.background=est.bg; badge.style.color=est.cor;
+    wrap.style.display='block';
+  }catch(e){ wrap.style.display='none'; }
+}
+/* ---- GERADOR DE CÓDIGOS (só visível/ativo para a conta admin) ---- */
+async function initAdminGerador(){
+  const card=document.getElementById('cardAdminCodigos'); if(!card)return;
+  try{
+    const{data,error}=await supaClient.rpc('sou_admin');
+    card.style.display=(!error&&data)?'':'none';
+  }catch(e){ card.style.display='none'; }
+}
+async function gerarCodigoCliente(){
+  const nome=document.getElementById('admNomeCliente').value.trim();
+  const msgEl=document.getElementById('admGerarMsg'),wrap=document.getElementById('admLinkWrap');
+  msgEl.textContent=''; wrap.style.display='none';
+  if(!nome){ msgEl.textContent='Escreve o nome do cliente.'; return; }
+  const btn=document.getElementById('admGerarBtn');
+  btn.disabled=true; const label=btn.innerHTML; btn.innerHTML='<i class="ti ti-loader-2"></i> A gerar...';
+  try{
+    const{data,error}=await supaClient.rpc('criar_codigo_ativacao',{p_cliente:nome});
+    if(error||!data){
+      msgEl.textContent='Não foi possível gerar. Tenta novamente.';
+    }else{
+      document.getElementById('admLinkGerado').value=location.origin+location.pathname+'?codigo='+encodeURIComponent(data);
+      wrap.style.display='flex';
+      document.getElementById('admNomeCliente').value='';
+    }
+  }catch(e){ msgEl.textContent='Erro de ligação. Tenta novamente.'; }
+  btn.disabled=false; btn.innerHTML=label;
+}
+function copiarLinkAdmin(){
+  const inp=document.getElementById('admLinkGerado'); if(!inp||!inp.value)return;
+  inp.select(); inp.setSelectionRange(0,99999);
+  try{ if(navigator.clipboard)navigator.clipboard.writeText(inp.value); }catch(e){}
+  showSyncStatus('Link copiado!',true);
+}
 /* ---- VERSÃO / NOVIDADES ---- */
 function formatarDataPT(iso){
   const p=iso.split('-'); const meses=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
@@ -3693,6 +3770,8 @@ function enterApp(session){
   const emailEl=document.getElementById('cfgAccountEmail'); if(emailEl)emailEl.value=currentUser.email||'';
   loadBusinessName();
   renderVersionCard();
+  initAdminGerador();
+  renderMinhaValidade();
   initApp();
 }
 async function checkAuthAndStart(){
