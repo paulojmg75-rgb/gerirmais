@@ -29,6 +29,10 @@ button.secondary{background:transparent;color:var(--ink2);border:1px solid var(-
 .msg-err{display:none;background:var(--red-l);color:var(--red);border-radius:var(--radius);padding:8px 10px;font-size:12px;margin-bottom:10px}
 .msg-ok{display:none;background:var(--teal-l);color:var(--teal);border-radius:var(--radius);padding:8px 10px;font-size:12px;margin-bottom:10px}
 .hidden{display:none !important}
+.campo-senha{position:relative}
+.campo-senha input{padding-right:52px}
+.campo-senha-olho{position:absolute;right:8px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:10px;font-weight:700;color:var(--ink2);background:none;border:none;padding:2px 4px;width:auto;margin:0}
+.campo-senha-olho:hover{color:var(--ink)}
 .link-out{display:flex;gap:.5rem;margin-top:.6rem}
 .link-out input{background:var(--teal-l);color:var(--teal);font-weight:600}
 .link-out button{width:auto;padding:9px 14px;margin-top:0}
@@ -55,7 +59,10 @@ td button{width:auto;padding:5px 8px;font-size:10px;margin:0 4px 0 0;background:
   </div>
   <div class="form-group">
     <label>Password</label>
-    <input type="password" id="loginPass">
+    <div class="campo-senha">
+      <input type="password" id="loginPass">
+      <button type="button" class="campo-senha-olho" onclick="toggleSenhaVisibilidade('loginPass',this)">MOSTRAR</button>
+    </div>
   </div>
   <button id="loginBtn" onclick="doLogin()">Entrar</button>
 </div>
@@ -106,6 +113,12 @@ const SUPA_URL='https://xkfshzlcwiuvztfdwvjm.supabase.co';
 const SUPA_KEY='sb_publishable_SGjww6C455tzA6wpIevT-w_t2X9lqMJ';
 const supaClient=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 
+function toggleSenhaVisibilidade(id,btn){
+  const inp=document.getElementById(id); if(!inp)return;
+  const aMostrar=inp.type==='password';
+  inp.type=aMostrar?'text':'password';
+  btn.textContent=aMostrar?'OCULTAR':'MOSTRAR';
+}
 function show(id){document.getElementById(id).classList.remove('hidden');}
 function hide(id){document.getElementById(id).classList.add('hidden');}
 function setErr(id,msg){const el=document.getElementById(id); if(msg){el.textContent=msg; el.style.display='block';} else {el.style.display='none';}}
@@ -183,6 +196,10 @@ async function carregarClientes(){
       const codigoSeguro=row.codigo.replace(/"/g,'&quot;');
       const usado=!!row.usado_por_email;
       const bloqueado=!!row.bloqueado;
+      const protegido=!!row.protegido;
+      const botaoEliminar=usado
+        ? `<button style="background:var(--ink2)" onclick="eliminarCliente('${codigoSeguro}')">Eliminar</button>`
+        : `<button style="background:var(--red)" onclick="eliminarCodigo('${codigoSeguro}')">Eliminar</button>`;
       return `<tr data-codigo="${codigoSeguro}">
         <td>${row.cliente||'—'}</td>
         <td style="font-family:monospace;font-size:11px">${row.codigo}</td>
@@ -192,6 +209,7 @@ async function carregarClientes(){
         <td>
           <span class="badge" style="background:${est.bg};color:${est.color}">${est.label}</span>
           ${bloqueado?'<span class="badge" style="background:var(--red-l);color:var(--red);margin-left:4px">Bloqueado</span>':''}
+          ${protegido?'<span class="badge" style="background:#EFEBE3;color:var(--ink2);margin-left:4px">🔒 Protegido</span>':''}
         </td>
         <td style="white-space:nowrap">
           <div>
@@ -201,9 +219,11 @@ async function carregarClientes(){
           </div>
           <div style="margin-top:4px">
             ${usado
-              ? `<button style="background:${bloqueado?'var(--teal)':'var(--red)'}" onclick="alternarBloqueio('${codigoSeguro}',${!bloqueado})">${bloqueado?'Desbloquear':'Bloquear acesso'}</button>
-                 <button style="background:var(--ink2)" onclick="eliminarCliente('${codigoSeguro}')">Eliminar</button>`
-              : `<button style="background:var(--red)" onclick="eliminarCodigo('${codigoSeguro}')">Eliminar</button>`}
+              ? `<button style="background:${bloqueado?'var(--teal)':'var(--red)'}" onclick="alternarBloqueio('${codigoSeguro}',${!bloqueado})">${bloqueado?'Desbloquear':'Bloquear acesso'}</button>`
+              : ''}
+            ${protegido
+              ? `<button style="background:var(--ink2)" onclick="alternarProtecao('${codigoSeguro}',false)">🔓 Desproteger</button>`
+              : `<button style="background:var(--ink2)" onclick="alternarProtecao('${codigoSeguro}',true)">🔒 Proteger</button> ${botaoEliminar}`}
           </div>
         </td>
       </tr>`;
@@ -241,11 +261,18 @@ async function alternarBloqueio(codigo,bloquear){
     carregarClientes();
   }catch(e){ setErr('listaMsg','Erro de ligação.'); }
 }
+async function alternarProtecao(codigo,protegido){
+  try{
+    const{data,error}=await supaClient.rpc('alternar_protecao_codigo',{p_codigo:codigo,p_protegido:protegido});
+    if(error||!data){ setErr('listaMsg','Não foi possível atualizar a proteção.'); return; }
+    carregarClientes();
+  }catch(e){ setErr('listaMsg','Erro de ligação.'); }
+}
 async function eliminarCliente(codigo){
   if(!confirm('Eliminar este cliente? Isto bloqueia o acesso dele já e esconde-o desta lista. Não dá para desfazer aqui — só voltando à tabela codigos_ativacao no Supabase.'))return;
   try{
     const{data,error}=await supaClient.rpc('eliminar_cliente',{p_codigo:codigo});
-    if(error||!data){ setErr('listaMsg','Não foi possível eliminar este cliente.'); return; }
+    if(error||!data){ setErr('listaMsg','Não foi possível eliminar (se estiver protegido, tens de desproteger primeiro).'); return; }
     carregarClientes();
   }catch(e){ setErr('listaMsg','Erro de ligação.'); }
 }
@@ -253,7 +280,7 @@ async function eliminarCodigo(codigo){
   if(!confirm('Eliminar este código de acesso? Só é possível se ainda não tiver sido usado. Esta ação não pode ser desfeita.'))return;
   try{
     const{data,error}=await supaClient.rpc('eliminar_codigo_ativacao',{p_codigo:codigo});
-    if(error||!data){ setErr('listaMsg','Não foi possível eliminar (só é possível eliminar códigos ainda não usados).'); return; }
+    if(error||!data){ setErr('listaMsg','Não foi possível eliminar (só funciona em códigos ainda não usados e não protegidos).'); return; }
     carregarClientes();
   }catch(e){ setErr('listaMsg','Erro de ligação.'); }
 }

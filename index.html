@@ -150,6 +150,11 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 @keyframes ajudaPulso{0%{transform:scale(.82);opacity:.55}100%{transform:scale(1.4);opacity:0}}
 .ajuda-float-btn.dragging{cursor:grabbing;opacity:.85}
 .ajuda-float-btn.dragging::after{animation:none;opacity:0}
+
+/* SELO DISCRETO "GESTÃO DE NEGÓCIO" — canto oposto ao botão de ajuda, para
+   nunca tapar o logo do negócio do cliente (esse aparece no topo da sidebar). */
+.gn-logo-badge{position:fixed;left:14px;bottom:14px;width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--blue),var(--purple) 55%,var(--coral));display:flex;align-items:center;justify-content:center;color:#fff;font-size:10.5px;font-weight:800;letter-spacing:.02em;box-shadow:var(--shadow-md);opacity:.5;z-index:90;text-decoration:none;transition:opacity .2s,transform .2s}
+.gn-logo-badge:hover{opacity:1;transform:scale(1.08)}
 .ajuda-faq-item{border-top:1px dashed var(--border2);padding:.6rem 0}
 .ajuda-faq-item:first-child{border-top:none;padding-top:0}
 .ajuda-faq-q{display:flex;align-items:center;justify-content:space-between;gap:.5rem;cursor:pointer;font-weight:700;font-size:12.5px;color:var(--text)}
@@ -165,6 +170,10 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 .auth-sub{font-size:11px;color:var(--text2);margin-bottom:1.1rem}
 .auth-form{display:none}
 .auth-form.active{display:block}
+.campo-senha{position:relative}
+.campo-senha input{padding-right:34px}
+.campo-senha-olho{position:absolute;right:9px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--text3);font-size:15px}
+.campo-senha-olho:hover{color:var(--text2)}
 .auth-error{display:none;background:var(--red-l);color:var(--red);border-radius:var(--radius);padding:7px 10px;font-size:11px;margin-bottom:10px}
 .auth-ok{display:none;background:var(--green-l);color:var(--green);border-radius:var(--radius);padding:7px 10px;font-size:11px;margin-bottom:10px}
 .auth-links{display:flex;justify-content:space-between;margin-top:10px;font-size:11px}
@@ -315,11 +324,16 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
   .grid2{gap:.5rem}
   .ycal-grid{grid-template-columns:1fr}
   .mobile-header-title .logo-title{font-size:12px}
+  .gn-logo-badge{bottom:70px;width:26px;height:26px;font-size:9px}
 }
 </style>
 </head>
 
 <body>
+
+<!-- SELO "GESTÃO DE NEGÓCIO" — visível em qualquer ecrã (login, app, bloqueio),
+     discreto e num canto que não tapa o logo/nome do negócio do cliente. -->
+<a href="https://gerirmais.com" target="_blank" rel="noopener" class="gn-logo-badge" title="Gestão de Negócio — gerirmais.com">GN</a>
 
 <!-- ECRÃ DE AUTENTICAÇÃO (bloqueante — nenhum dado carrega antes de haver sessão) -->
 <div id="authOverlay">
@@ -332,7 +346,9 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
     <!-- ENTRAR -->
     <form class="auth-form active" id="authFormLogin" onsubmit="event.preventDefault();doLogin();">
       <div class="form-group"><label class="form-label">Email</label><input type="email" id="authLoginEmail" autocomplete="username" required></div>
-      <div class="form-group"><label class="form-label">Password</label><input type="password" id="authLoginPass" autocomplete="current-password" required></div>
+      <div class="form-group"><label class="form-label">Password</label>
+        <div class="campo-senha"><input type="password" id="authLoginPass" autocomplete="current-password" required><i class="ti ti-eye campo-senha-olho" onclick="toggleSenhaVisibilidade('authLoginPass',this)"></i></div>
+      </div>
       <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px" id="authLoginBtn"><i class="ti ti-login"></i> Entrar</button>
       <div class="auth-links">
         <a onclick="showAuthForm('signup')">Criar a minha conta</a>
@@ -344,8 +360,12 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
     <form class="auth-form" id="authFormSignup" onsubmit="event.preventDefault();doSignup();">
       <div class="form-group"><label class="form-label">Código de ativação</label><input type="text" id="authSignupCode" placeholder="Código dado por quem te vendeu a app" required></div>
       <div class="form-group"><label class="form-label">Email</label><input type="email" id="authSignupEmail" autocomplete="username" required></div>
-      <div class="form-group"><label class="form-label">Password</label><input type="password" id="authSignupPass" autocomplete="new-password" minlength="6" required></div>
-      <div class="form-group"><label class="form-label">Confirmar password</label><input type="password" id="authSignupPass2" autocomplete="new-password" minlength="6" required></div>
+      <div class="form-group"><label class="form-label">Password</label>
+        <div class="campo-senha"><input type="password" id="authSignupPass" autocomplete="new-password" minlength="6" required><i class="ti ti-eye campo-senha-olho" onclick="toggleSenhaVisibilidade('authSignupPass',this)"></i></div>
+      </div>
+      <div class="form-group"><label class="form-label">Confirmar password</label>
+        <div class="campo-senha"><input type="password" id="authSignupPass2" autocomplete="new-password" minlength="6" required><i class="ti ti-eye campo-senha-olho" onclick="toggleSenhaVisibilidade('authSignupPass2',this)"></i></div>
+      </div>
       <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px" id="authSignupBtn"><i class="ti ti-user-plus"></i> Criar conta</button>
       <div class="auth-links">
         <a onclick="showAuthForm('login')">Já tenho conta — Entrar</a>
@@ -365,8 +385,12 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 
     <!-- DEFINIR NOVA PASSWORD (link vindo do email de recuperação) -->
     <form class="auth-form" id="authFormNewPass" onsubmit="event.preventDefault();doSetNewPassword();">
-      <div class="form-group"><label class="form-label">Nova password</label><input type="password" id="authNewPass1" autocomplete="new-password" minlength="6" required></div>
-      <div class="form-group"><label class="form-label">Confirmar nova password</label><input type="password" id="authNewPass2" autocomplete="new-password" minlength="6" required></div>
+      <div class="form-group"><label class="form-label">Nova password</label>
+        <div class="campo-senha"><input type="password" id="authNewPass1" autocomplete="new-password" minlength="6" required><i class="ti ti-eye campo-senha-olho" onclick="toggleSenhaVisibilidade('authNewPass1',this)"></i></div>
+      </div>
+      <div class="form-group"><label class="form-label">Confirmar nova password</label>
+        <div class="campo-senha"><input type="password" id="authNewPass2" autocomplete="new-password" minlength="6" required><i class="ti ti-eye campo-senha-olho" onclick="toggleSenhaVisibilidade('authNewPass2',this)"></i></div>
+      </div>
       <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px" id="authNewPassBtn"><i class="ti ti-check"></i> Guardar nova password</button>
     </form>
   </div>
@@ -2735,9 +2759,17 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='2.3';
+const APP_VERSION='2.5';
 const APP_UPDATE_DATE='2026-08-25'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'2.5',data:'2026-08-25',notas:[
+    'Ícone de olho nos campos de password, para mostrar ou ocultar o que escreveste.',
+    'Corrigido: um cliente eliminado/bloqueado deixou de poder "prender" uma conta nova criada mais tarde com o mesmo email.'
+  ]},
+  {v:'2.4',data:'2026-08-25',notas:[
+    'Novo selo discreto "GN" (Gestão de Negócio) num canto do ecrã — não interfere com o logo/nome do teu negócio.',
+    'Também é possível eliminar (arquivar) um cliente que já tem conta, além de bloquear, diretamente na área de administração.'
+  ]},
   {v:'2.3',data:'2026-08-25',notas:[
     'Em Configurações, as listas (categorias, feiras, empregados, viaturas) já têm setas ▲▼ para reordenar, além de continuar a dar para arrastar.',
     'Ícone do botão de Ajuda atualizado, mais alusivo a apoio/suporte.'
@@ -3849,6 +3881,14 @@ function initAjudaBtn(){
   btn.addEventListener('pointercancel',soltar);
   window.addEventListener('resize',()=>{ const r=btn.getBoundingClientRect(); posicionarAjudaBtn(r.left,r.top); });
   btn.style.display='flex';
+}
+
+/* ---- MOSTRAR/OCULTAR PASSWORD (ícone do "olho") ---- */
+function toggleSenhaVisibilidade(id,icone){
+  const inp=document.getElementById(id); if(!inp)return;
+  const aMostrar=inp.type==='password';
+  inp.type=aMostrar?'text':'password';
+  icone.className='ti '+(aMostrar?'ti-eye-off':'ti-eye')+' campo-senha-olho';
 }
 
 /* ---- BLOQUEIO DE ACESSO (comando do admin.html) ----
