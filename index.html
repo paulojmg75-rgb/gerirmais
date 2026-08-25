@@ -396,6 +396,12 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
   </div>
 </div>
 
+<div id="driveAvisoBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:120;background:var(--amber-l);color:var(--amber);padding:8px 44px 8px 14px;font-size:12px;font-weight:600;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1)">
+  <i class="ti ti-brand-google-drive"></i> A ligação à tua conta Google Drive expirou — os backups automáticos (Excel, faturas, logo) pararam de atualizar.
+  <button class="btn btn-sm" style="margin-left:8px" onclick="gdriveConnectInteractive();document.getElementById('driveAvisoBanner').style.display='none'"><i class="ti ti-brand-google-drive"></i> Ligar novamente</button>
+  <button class="close-btn" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);color:inherit" onclick="document.getElementById('driveAvisoBanner').style.display='none'" title="Fechar"><i class="ti ti-x"></i></button>
+</div>
+
 <div class="app" id="appRoot" style="display:none">
 
 <!-- SIDEBAR -->
@@ -1518,7 +1524,7 @@ async function deleteTx(id){
   // Apaga o lançamento primeiro (ação principal), sem ficar preso à autenticação do Drive
   txList=txList.filter(t=>t.id!==id);
   saveToLocal();
-  supaDelete('lancamentos',id).then(()=>showSyncStatus('Lançamento apagado!'));
+  supaDelete('lancamentos',id).then(()=>{showSyncStatus('Lançamento apagado!');backupExcelParaDrive();});
   renderTxTable();renderDashboard();populateFilters();
   // Limpeza do documento associado: localStorage + ficheiro no Google Drive
   deleteDocLocal(id);
@@ -1707,7 +1713,7 @@ function saveTx(){
     if(docData)saveDocLocal(editTxId,docData);
     if(docData){ archiveOnSave(editTxId); }
     saveToLocal();supaUpdate('lancamentos',editTxId,txList[i]).then(r=>{
-      if(r)showSyncStatus('Lançamento atualizado!');
+      if(r){showSyncStatus('Lançamento atualizado!');backupExcelParaDrive();}
       else showSyncStatus('Guardado só localmente — falha ao sincronizar com a cloud',false);
     });
   } else {
@@ -1728,6 +1734,7 @@ function saveTx(){
         renderTxTable();renderDashboard();populateFilters();
         // Arquivo no Drive: guarda logo (com mensagem) ou pergunta se o Drive não estiver ligado
         if(docData){ archiveOnSave(r[0].id); }
+        backupExcelParaDrive();
         showSyncStatus('Lançamento guardado!');
       }else{
         // A gravação na cloud falhou: o registo fica só local (por agora) e o utilizador é avisado.
@@ -2614,8 +2621,9 @@ function showSyncStatus(msg,ok=true){
 }
 
 /* ---- EXPORTAR EXCEL ---- */
-function exportarExcel(){
-  if(typeof XLSX==='undefined'){alert('Biblioteca Excel não carregou. Verifica a ligação à internet.');return;}
+/* Monta o workbook (mesmo conteúdo usado no botão "Exportar Excel" e no
+   backup automático para o Google Drive), para nunca ficarem dessincronizados. */
+function montarWorkbookExcel(){
   const wb={SheetNames:[],Sheets:{}};
   // Lançamentos
   const txRows=[['ID','Tipo','Categoria','Conta','Mês','Ano','Valor','Data','Notas','Meio','Empregado']];
@@ -2665,9 +2673,30 @@ function exportarExcel(){
   // Largura das colunas
   linkSheet['!cols']=[{wch:50},{wch:30}];
   wb.Sheets['Abrir Aplicação']=linkSheet;
+  return wb;
+}
+function exportarExcel(){
+  if(typeof XLSX==='undefined'){alert('Biblioteca Excel não carregou. Verifica a ligação à internet.');return;}
+  const wb=montarWorkbookExcel();
   const nome=`GestaoRV_${new Date().toISOString().split('T')[0]}.xlsx`;
   XLSX.writeFile(wb,nome);
   showSyncStatus('Ficheiro Excel exportado!',true);
+}
+/* Backup automático do Excel no Google Drive — corre sozinho sempre que um
+   lançamento é criado, editado ou apagado, SEM interromper com pedidos de
+   login: só acontece se o Drive já estiver ligado (silencioso, sem toast,
+   para não repetir a mesma mensagem a cada lançamento). Substitui sempre o
+   ficheiro anterior, para nunca acumular várias cópias na pasta. */
+async function backupExcelParaDrive(){
+  if(typeof XLSX==='undefined')return;
+  if(!gdriveValid())return;
+  try{
+    const wb=montarWorkbookExcel();
+    const base64=XLSX.write(wb,{type:'base64',bookType:'xlsx'});
+    const mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    const dataUrl='data:'+mime+';base64,'+base64;
+    await uploadToGDriveReplace(dataUrl,'GestaoNegocio_Lancamentos.xlsx',mime,'Backups');
+  }catch(e){ console.error('Erro no backup automático do Excel:',e); }
 }
 
 /* ---- IMPORTAR EXCEL ---- */
@@ -2759,9 +2788,18 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='2.6';
+const APP_VERSION='2.9';
 const APP_UPDATE_DATE='2026-08-25'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'2.9',data:'2026-08-25',notas:[
+    'Novo aviso no topo da app quando a ligação ao Google Drive expira, com um botão para ligar de novo — antes os backups paravam em silêncio, sem se notar.'
+  ]},
+  {v:'2.8',data:'2026-08-25',notas:[
+    'Com o Google Drive ligado, um Excel com todos os lançamentos é guardado automaticamente na tua Drive sempre que crias, editas ou apagas um lançamento — já não precisas de exportar à mão.'
+  ]},
+  {v:'2.7',data:'2026-08-25',notas:[
+    'O cartão "Novidades" agora só mostra as duas versões mais recentes, para não ficar uma lista infinita.'
+  ]},
   {v:'2.6',data:'2026-08-25',notas:[
     'Corrigido: ao abrir um link de recuperação de password, a app entrava logo no dashboard em vez de pedir a password nova primeiro.'
   ]},
@@ -3322,16 +3360,32 @@ function gdriveConnectInteractive(){
 
 /* Restaura o token guardado (se ainda válido) e, se possível, renova em silêncio.
    Chamado no arranque, para o Drive ficar "predefinido" sem pedir nada. */
+/* Mostra um aviso visível (não é só um toast que desaparece sozinho) quando a
+   ligação à Drive expirou — para o cliente perceber que os backups pararam,
+   em vez de ficar tudo em silêncio à espera que ele repare sozinho. */
+function avisarDriveDesligado(){
+  const banner=document.getElementById('driveAvisoBanner');
+  if(banner)banner.style.display='block';
+}
 function gdriveAutoConnect(){
+  let tinhaLigadoAntes=false;
   try{
     const raw=localStorage.getItem(lsKey('rv_gdrive_tok'));
-    if(raw){ const o=JSON.parse(raw); if(o&&o.t&&o.e&&Date.now()<o.e){ gdriveToken=o.t; gdriveTokenExpiry=o.e; } }
+    if(raw){
+      tinhaLigadoAntes=true;
+      const o=JSON.parse(raw); if(o&&o.t&&o.e&&Date.now()<o.e){ gdriveToken=o.t; gdriveTokenExpiry=o.e; }
+    }
   }catch(e){}
   if(gdriveValid()){ flushPendingDriveUploads(); return; } // já temos token válido em memória
-  // Tenta renovar silenciosamente (só funciona se já autorizaste antes nesta conta Google)
+  // Tenta renovar silenciosamente (só funciona se já autorizaste antes nesta conta Google).
+  // Se já tinha ligado antes e a renovação silenciosa falha (ex.: autorização
+  // caducada), avisa — em vez de falhar calado.
   let tries=0;
   const tryConnect=()=>{
-    if(gdriveInit()){ gdriveAuth(()=>{}, ()=>{}, true); return; }
+    if(gdriveInit()){
+      gdriveAuth(()=>{}, ()=>{ if(tinhaLigadoAntes) avisarDriveDesligado(); }, true);
+      return;
+    }
     if(tries++<10) setTimeout(tryConnect,500); // espera o script do Google carregar
   };
   tryConnect();
@@ -3798,7 +3852,7 @@ function toggleChangelog(){
   if(!box)return;
   const aberto=box.style.display==='block';
   if(!aberto){
-    box.innerHTML=APP_CHANGELOG.map(c=>`<div style="margin-bottom:10px"><div style="font-weight:700;font-size:12px;color:var(--purple)">v${c.v} <span style="font-weight:400;color:var(--text2);font-size:11px">— ${formatarDataPT(c.data)}</span></div><ul style="margin:4px 0 0 16px;font-size:11px;color:var(--text2);line-height:1.6">${c.notas.map(n=>`<li>${n}</li>`).join('')}</ul></div>`).join('');
+    box.innerHTML=APP_CHANGELOG.slice(0,2).map(c=>`<div style="margin-bottom:10px"><div style="font-weight:700;font-size:12px;color:var(--purple)">v${c.v} <span style="font-weight:400;color:var(--text2);font-size:11px">— ${formatarDataPT(c.data)}</span></div><ul style="margin:4px 0 0 16px;font-size:11px;color:var(--text2);line-height:1.6">${c.notas.map(n=>`<li>${n}</li>`).join('')}</ul></div>`).join('');
     box.style.display='block';
   }else{
     box.style.display='none';
@@ -3816,7 +3870,7 @@ const AJUDA_FAQ=[
   {p:'Como controlo o combustível e a quilometragem das viaturas?',r:'Em "Viaturas & Combustível" registas cada viatura e os respetivos abastecimentos. Ao lançares uma despesa de combustível, podes indicar logo a viatura abastecida.'},
   {p:'Como vejo relatórios e comparo anos ou feiras?',r:'Usa "Filtros" para procurar lançamentos por qualquer critério, "Relatório" para ver totais por mês, local, categoria, feira ou ano, e "Comparar" para pôr lado a lado dois anos, feiras ou edições diferentes.'},
   {p:'Como exporto ou importo os meus dados?',r:'No topo da app tens os botões de Exportar (seta para baixo) e Importar (seta para cima) Excel. Exportas para guardar ou editar no computador, e importas de novo para atualizar a app com essas alterações.'},
-  {p:'Para que serve o botão do Google Drive?',r:'Liga a tua conta Google para guardar o logo do negócio na tua Drive, e conseguires recuperá-lo em qualquer dispositivo onde entres com essa mesma conta.'},
+  {p:'Para que serve o botão do Google Drive?',r:'Liga a tua conta Google para guardar automaticamente na tua Drive (pasta "GestaoNegocio"): o logo do negócio, as faturas/recibos que anexares aos lançamentos, e um ficheiro Excel sempre atualizado com todos os lançamentos — atualizado sozinho sempre que crias, editas ou apagas um lançamento, sem precisares de exportar nada à mão.'},
   {p:'Onde crio ou edito categorias e locais/contas?',r:'Em "Configurações" tens as listas de categorias (para Receitas e Despesas) e de locais/contas, para as ajustares ao teu negócio.'},
   {p:'Como termino a sessão?',r:'Clica no ícone da chave no topo da app (também disponível no telemóvel), ou em "Terminar sessão" dentro de Configurações.'},
   {p:'Até quando é válido o meu acesso?',r:'Em Configurações, por baixo de "Terminar sessão", aparece um aviso com a data até à qual a tua conta está ativa. Contacta-nos com antecedência para renovares antes de expirar.'}
