@@ -2759,9 +2759,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='2.5';
+const APP_VERSION='2.6';
 const APP_UPDATE_DATE='2026-08-25'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'2.6',data:'2026-08-25',notas:[
+    'Corrigido: ao abrir um link de recuperação de password, a app entrava logo no dashboard em vez de pedir a password nova primeiro.'
+  ]},
   {v:'2.5',data:'2026-08-25',notas:[
     'Ícone de olho nos campos de password, para mostrar ou ocultar o que escreveste.',
     'Corrigido: um cliente eliminado/bloqueado deixou de poder "prender" uma conta nova criada mais tarde com o mesmo email.'
@@ -3712,6 +3715,7 @@ async function doSetNewPassword(){
       authMsg(traduzErroAuth(error),'');
     }else{
       authMsg('','Password atualizada! A entrar...');
+      emFluxoRecuperacao=false;
       const{data:sessData}=await supaClient.auth.getSession();
       if(sessData&&sessData.session)enterApp(sessData.session);
     }
@@ -3928,7 +3932,13 @@ async function enterApp(session){
   initAjudaBtn();
   initApp();
 }
+/* Quando se abre um link de "recuperar password", o Supabase já cria uma
+   sessão válida nos bastidores — sem este cuidado, a verificação normal via
+   getSession() via-a como "sessão válida" e entrava logo no dashboard, sem
+   deixar definir a password nova primeiro. Esta bandeira impede isso. */
+let emFluxoRecuperacao=/type=recovery/.test(location.hash)||/type=recovery/.test(location.search);
 async function checkAuthAndStart(){
+  if(emFluxoRecuperacao)return;
   try{
     const{data}=await supaClient.auth.getSession();
     if(data&&data.session)enterApp(data.session);
@@ -3936,12 +3946,16 @@ async function checkAuthAndStart(){
 }
 supaClient.auth.onAuthStateChange((event,session)=>{
   if(event==='PASSWORD_RECOVERY'){
+    emFluxoRecuperacao=true;
     const overlay=document.getElementById('authOverlay'); if(overlay)overlay.style.display='flex';
     const root=document.getElementById('appRoot'); if(root)root.style.display='none';
     showAuthForm('newpass');
     return;
   }
-  if(event==='SIGNED_IN'&&session)enterApp(session);
+  if(event==='SIGNED_IN'&&session){
+    if(emFluxoRecuperacao)return;
+    enterApp(session);
+  }
 });
 // Executa mesmo que o evento de load já tenha passado
 function arrancar(){ prefillCodigoFromLink(); checkAuthAndStart(); }
