@@ -202,7 +202,7 @@ async function carregarClientes(){
         : `<button style="background:var(--red)" onclick="eliminarCodigo('${codigoSeguro}')">Eliminar</button>`;
       return `<tr data-codigo="${codigoSeguro}">
         <td>${row.cliente||'—'}</td>
-        <td style="font-family:monospace;font-size:11px">${row.codigo}</td>
+        <td style="font-family:monospace;font-size:11px">${row.codigo}<br><button style="margin-top:4px" onclick="copiarLinkCliente('${codigoSeguro}',this)">Copiar link</button></td>
         <td style="font-size:11px">${row.usado_por_email?row.usado_por_email:'<em>por usar</em>'}</td>
         <td style="font-size:11px">${formatarDataHora(row.ultimo_acesso)}</td>
         <td><input type="date" value="${row.validade||''}" class="inp-validade"></td>
@@ -305,6 +305,24 @@ async function gerarCodigo(){
   btn.disabled=false; btn.textContent='Gerar link';
 }
 
+function copiarLinkCliente(codigo,btn){
+  const link='https://gerirmais.com/?codigo='+encodeURIComponent(codigo);
+  try{
+    if(navigator.clipboard)navigator.clipboard.writeText(link);
+    else{
+      const tmp=document.createElement('input');
+      tmp.value=link; document.body.appendChild(tmp);
+      tmp.select(); tmp.setSelectionRange(0,99999);
+      document.execCommand('copy');
+      document.body.removeChild(tmp);
+    }
+  }catch(e){}
+  if(btn){
+    const original=btn.textContent;
+    btn.textContent='Copiado!';
+    setTimeout(()=>{btn.textContent=original;},1500);
+  }
+}
 function copiarLink(){
   const inp=document.getElementById('linkGerado'); if(!inp.value)return;
   inp.select(); inp.setSelectionRange(0,99999);
