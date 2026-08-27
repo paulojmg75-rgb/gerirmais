@@ -2700,12 +2700,66 @@ async function backupExcelParaDrive(){
 }
 
 /* ---- IMPORTAR EXCEL ---- */
+/* Substitui (nunca junta) os dados de uma tabela na cloud pelo conteúdo local mais
+   recente: apaga tudo o que esta conta tinha nessa tabela e volta a inserir do zero.
+   É a forma segura de sincronizar uma importação de Excel — os IDs de um ficheiro
+   Excel (1, 2, 3...) nunca correspondem aos IDs que o Supabase atribui (são globais,
+   partilhados entre todas as contas), por isso tentar "só enviar o que falta"
+   comparando IDs cria duplicados a cada vez que se reimporta o mesmo ficheiro. */
+async function substituirNaCloud(flags){
+  const resultado={nTx:0,nF:0,nE:0,nV:0};
+  try{
+    if(flags.tx){
+      await supaFetch('lancamentos','DELETE',null,'id=gt.0');
+      for(const t of txList){
+        const oldId=t.id;
+        try{
+          const r=await supaInsert('lancamentos',t);
+          if(r&&r[0]){
+            t.id=r[0].id; delete t._local;
+            const doc=loadDocLocal(oldId); if(doc){saveDocLocal(r[0].id,doc);deleteDocLocal(oldId);}
+            resultado.nTx++;
+          }
+        }catch(e){console.error('Envio lançamento (import) falhou',oldId,e);}
+      }
+    }
+    if(flags.f){
+      await supaFetch('feiras','DELETE',null,'id=gt.0');
+      for(const f of fairs){
+        try{ const r=await supaInsert('feiras',f); if(r&&r[0]){f.id=r[0].id;delete f._local;resultado.nF++;} }
+        catch(e){console.error('Envio feira (import) falhou',f.id,e);}
+      }
+    }
+    if(flags.e){
+      await supaFetch('empregados','DELETE',null,'id=gt.0');
+      for(const em of emps){
+        try{ const r=await supaInsert('empregados',em); if(r&&r[0]){em.id=r[0].id;delete em._local;resultado.nE++;} }
+        catch(e){console.error('Envio empregado (import) falhou',em.id,e);}
+      }
+    }
+    if(flags.v){
+      await supaFetch('viaturas','DELETE',null,'id=gt.0');
+      for(const v of viats){
+        try{ const r=await supaInsert('viaturas',v); if(r&&r[0]){v.id=r[0].id;delete v._local;resultado.nV++;} }
+        catch(e){console.error('Envio viatura (import) falhou',v.id,e);}
+      }
+    }
+    saveToLocal();
+    renderTxTable();renderDashboard();populateFilters();renderCalendar();renderFairList();renderConfiguracoes();
+  }catch(e){ console.error('substituirNaCloud',e); }
+  return resultado;
+}
 function importarExcel(e){
   const file=e.target.files[0];if(!file)return;
+  if(!confirm('Importar vai SUBSTITUIR (não juntar) os lançamentos, feiras, empregados e viaturas guardados nesta conta — neste dispositivo e na cloud — pelos dados deste ficheiro Excel.\n\nTens a certeza que queres continuar?')){
+    e.target.value='';
+    return;
+  }
   const reader=new FileReader();
   reader.onload=ev=>{
     try{
       const wb=XLSX.read(ev.target.result,{type:'binary'});
+      const flags={tx:false,f:false,e:false,v:false};
       // Lançamentos
       if(wb.Sheets['Lancamentos']){
         const rows=XLSX.utils.sheet_to_json(wb.Sheets['Lancamentos']);
@@ -2717,6 +2771,7 @@ function importarExcel(e){
             meio:r.Meio||'Dinheiro',empregado:r.Empregado||'',_local:true
           }));
           if(txList.length)nextId=Math.max(...txList.map(t=>t.id))+1;
+          flags.tx=true;
         }
       }
       // Feiras
@@ -2725,6 +2780,7 @@ function importarExcel(e){
         if(rows.length){
           fairs=rows.map(r=>({id:parseInt(r.ID)||nextFairId++,nome:r.Nome||'',inicio:r['Início']||r.Inicio||'',fim:r.Fim||'',ano:String(r.Ano||''),cor:r.Cor||'#BA7517',tipo:r.Tipo||'feira',_local:true}));
           if(fairs.length)nextFairId=Math.max(...fairs.map(f=>f.id))+1;
+          flags.f=true;
         }
       }
       // Empregados
@@ -2733,6 +2789,7 @@ function importarExcel(e){
         if(rows.length){
           emps=rows.map(r=>({id:parseInt(r.ID)||nextEmpId++,nome:r.Nome||'',local:r.Local||'',sal:parseFloat(r['Salário/Dia'])||0,cor:r.Cor||'#185FA5',obs:r.Observações||'',feira:r.Feira||''}));
           if(emps.length)nextEmpId=Math.max(...emps.map(e=>e.id))+1;
+          flags.e=true;
         }
       }
       // Viaturas
@@ -2741,6 +2798,7 @@ function importarExcel(e){
         if(rows.length){
           viats=rows.map(r=>({id:parseInt(r.ID)||nextViatId++,nome:r.Nome||'',matricula:r.Matrícula||r.Matricula||'',tipo:r.Tipo||'Carrinha',km:r.Km||'—'}));
           if(viats.length)nextViatId=Math.max(...viats.map(v=>v.id))+1;
+          flags.v=true;
         }
       }
       // Config
@@ -2755,11 +2813,9 @@ function importarExcel(e){
       }
       saveToLocal();
       renderDashboard();populateFilters();renderConfiguracoes();
-      showSyncStatus('Dados importados! A enviar para a cloud (para aparecerem também noutros dispositivos)...',true);
-      // Sem isto, os dados importados ficavam só neste aparelho — o telemóvel, por
-      // exemplo, nunca os via, porque a importação só escrevia no localStorage.
-      enviarLocaisParaCloud(false).then(({nTx,nF,nE,nV})=>{
-        showSyncStatus('✓ Importado e sincronizado: '+nTx+' lançamentos, '+nF+' feiras/eventos, '+nE+' empregados, '+nV+' viaturas',true);
+      showSyncStatus('Dados importados! A substituir na cloud (para não duplicar em nenhum dispositivo)...',true);
+      substituirNaCloud(flags).then(({nTx,nF,nE,nV})=>{
+        showSyncStatus('✓ Importado: '+nTx+' lançamentos, '+nF+' feiras/eventos, '+nE+' empregados, '+nV+' viaturas (substituído na cloud, sem duplicados)',true);
       });
     }catch(err){
       console.error(err);
@@ -2793,9 +2849,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.0';
+const APP_VERSION='3.1';
 const APP_UPDATE_DATE='2026-08-27'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.1',data:'2026-08-27',notas:[
+    'Corrigido bug grave: importar Excel mais do que uma vez podia duplicar/triplicar os lançamentos na cloud. Agora cada importação substitui sempre o que já lá estava, em vez de tentar adicionar só o que "falta".'
+  ]},
   {v:'3.0',data:'2026-08-27',notas:[
     'Corrigido: importar um ficheiro Excel só guardava os dados neste aparelho — agora envia logo tudo para a cloud, para aparecer também no telemóvel/noutros dispositivos com a mesma conta.'
   ]},
