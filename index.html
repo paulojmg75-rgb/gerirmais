@@ -59,7 +59,7 @@ body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;backgrou
 .sidebar{width:100%;display:flex;flex-direction:row;align-items:center;flex-wrap:wrap;background:var(--side);flex-shrink:0;box-shadow:0 1px 8px rgba(0,0,0,.05);border-bottom:1px solid var(--side-line);padding:6px .75rem;gap:4px 6px;overflow:visible;min-height:56px}
 .logo-area{padding:2px .5rem;border-bottom:none;border-right:none;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;flex-shrink:0}
 .logo-text{text-align:center}
-.logo-img-wrap{width:120px;height:48px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:transparent;border-radius:7px;border:none;flex-shrink:0}
+.logo-img-wrap{width:160px;height:64px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:transparent;border-radius:7px;border:none;flex-shrink:0}
 .logo-img-wrap img{width:100%;height:100%;object-fit:contain;object-position:center center}
 .logo-placeholder{width:88px;height:42px;border-radius:7px;background:#FFFFFF;display:flex;align-items:center;justify-content:center;border:1px dashed var(--accent);flex-shrink:0}
 .logo-text{text-align:left;min-width:0;display:flex;flex-direction:column;justify-content:center}
@@ -92,8 +92,9 @@ body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;backgrou
 .nav-item-settings.active{background:linear-gradient(135deg,#C68A42,#9C5F1F);border:1.5px solid #7A4A18;box-shadow:0 2px 8px rgba(124,74,24,.4);color:var(--side-text)}
 .nav-item-settings.active i{background:transparent!important;box-shadow:none!important}
 .nav-divider{width:1px;height:26px;background:var(--side-line);flex-shrink:0;margin:0 2px}
-.topbar-actions{display:flex;align-items:center;gap:6px;margin-left:auto;flex-shrink:0;padding-left:.625rem;border-left:1px solid var(--side-line);height:100%}
-.topbar-actions .btn{padding:5px 8px;font-size:10px}
+.topbar-actions-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;margin-left:auto;flex-shrink:0;padding-left:.625rem;border-left:1px solid var(--side-line);height:100%}
+.topbar-actions{display:flex;align-items:center;gap:6px}
+.topbar-actions .btn{padding:5px 8px;font-size:10px;box-shadow:0 1px 3px rgba(28,25,23,.12)}
 .topbar-actions .btn span{display:none}
 
 /* MAIN */
@@ -270,7 +271,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 
 /* MOBILE HEADER — escondido por defeito, só aparece em ecrãs pequenos */
 .mobile-header{display:none;align-items:center;gap:10px;padding:10px 14px;background:var(--side);border-bottom:1px solid var(--side-line);position:sticky;top:0;z-index:90}
-.mobile-header-logo{width:62px;height:62px;border-radius:8px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
+.mobile-header-logo{width:76px;height:76px;border-radius:8px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
 .mobile-header-logo img{width:100%;height:100%;object-fit:contain}
 .mobile-header-title{min-width:0}
 
@@ -446,32 +447,28 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
   <div class="nav-rows">
     <div class="nav-row">
       <div class="nav-item active" data-page="dashboard" style="--ac:var(--n1);--ac-l:var(--n1-l)"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
-      <div class="nav-divider"></div>
       <div class="nav-item" data-page="lancamentos" style="--ac:var(--n7);--ac-l:var(--n7-l)"><i class="ti ti-receipt"></i> Lançamentos</div>
-      <div class="nav-divider"></div>
       <div class="nav-item" data-page="feiras" style="--ac:var(--n2);--ac-l:var(--n2-l)"><i class="ti ti-calendar-event"></i> Feiras/Eventos</div>
-      <div class="nav-divider"></div>
       <div class="nav-item" data-page="empregados" style="--ac:var(--n6);--ac-l:var(--n6-l)"><i class="ti ti-users"></i> Empregados</div>
     </div>
     <div class="nav-row">
       <div class="nav-item" data-page="viaturas" style="--ac:var(--n9);--ac-l:var(--n9-l)"><i class="ti ti-car"></i> Viaturas</div>
-      <div class="nav-divider"></div>
       <div class="nav-item" data-page="filtros" style="--ac:var(--n8);--ac-l:var(--n8-l)"><i class="ti ti-filter"></i> Filtros</div>
-      <div class="nav-divider"></div>
       <div class="nav-item" data-page="relatorio" style="--ac:var(--n10);--ac-l:var(--n10-l)"><i class="ti ti-chart-bar"></i> Relatório</div>
-      <div class="nav-divider"></div>
       <div class="nav-item" data-page="comparar" style="--ac:var(--n3);--ac-l:var(--n3-l)"><i class="ti ti-arrows-left-right"></i> Comparar</div>
     </div>
-    <div class="nav-sync-label" id="lastSyncLabel">A sincronizar...</div>
   </div>
-  <div class="topbar-actions">
-    <div class="nav-item nav-item-settings" data-page="configuracoes" title="Configurações" style="--ac:var(--accent);--ac-l:var(--accent-l)"><i class="ti ti-settings"></i></div>
-    <button class="btn btn-icon" onclick="syncLocalToCloud()" title="Enviar dados locais para a cloud (igualar PC e telemóvel)" style="color:var(--n7);border-color:var(--n7-l);background:linear-gradient(135deg,var(--n7-l),#fff)"><i class="ti ti-cloud-up"></i></button>
-    <button class="btn btn-icon" onclick="loadAllFromCloud()" title="Sincronizar agora" style="color:var(--n2);border-color:var(--n2-l);background:linear-gradient(135deg,var(--n2-l),#fff)"><i class="ti ti-refresh"></i></button>
-    <button class="btn btn-icon" onclick="exportarExcel()" title="Exportar Excel" style="color:var(--n1);border-color:var(--n1-l);background:linear-gradient(135deg,var(--n1-l),#fff)"><i class="ti ti-download"></i></button>
-    <label class="btn btn-icon" title="Importar Excel" style="cursor:pointer;color:var(--n9);border-color:var(--n9-l);background:linear-gradient(135deg,var(--n9-l),#fff)"><i class="ti ti-upload"></i><input type="file" accept=".xlsx,.xls" onchange="importarExcel(event)" style="display:none"></label>
-    <button class="btn btn-icon" onclick="gdriveAuth(()=>showSyncStatus('Google Drive ligado! ✓',true))" title="Ligar Google Drive" style="color:var(--n5);border-color:var(--n5-l);background:linear-gradient(135deg,var(--n5-l),#fff)"><i class="ti ti-brand-google-drive"></i></button>
-    <button class="btn btn-icon" onclick="doLogout()" title="Terminar sessão" style="color:var(--n6);border-color:var(--n6-l);background:linear-gradient(135deg,var(--n6-l),#fff)"><i class="ti ti-key"></i></button>
+  <div class="topbar-actions-wrap">
+    <div class="topbar-actions">
+      <div class="nav-item nav-item-settings" data-page="configuracoes" title="Configurações" style="--ac:var(--accent);--ac-l:var(--accent-l)"><i class="ti ti-settings"></i></div>
+      <button class="btn btn-icon" onclick="syncLocalToCloud()" title="Enviar dados locais para a cloud (igualar PC e telemóvel)" style="color:var(--n7);border-color:var(--n7-l);background:linear-gradient(135deg,var(--n7-l),#fff)"><i class="ti ti-cloud-up"></i></button>
+      <button class="btn btn-icon" onclick="loadAllFromCloud()" title="Sincronizar agora" style="color:var(--n2);border-color:var(--n2-l);background:linear-gradient(135deg,var(--n2-l),#fff)"><i class="ti ti-refresh"></i></button>
+      <button class="btn btn-icon" onclick="exportarExcel()" title="Exportar Excel" style="color:var(--n1);border-color:var(--n1-l);background:linear-gradient(135deg,var(--n1-l),#fff)"><i class="ti ti-download"></i></button>
+      <label class="btn btn-icon" title="Importar Excel" style="cursor:pointer;color:var(--n9);border-color:var(--n9-l);background:linear-gradient(135deg,var(--n9-l),#fff)"><i class="ti ti-upload"></i><input type="file" accept=".xlsx,.xls" onchange="importarExcel(event)" style="display:none"></label>
+      <button class="btn btn-icon" onclick="gdriveAuth(()=>showSyncStatus('Google Drive ligado! ✓',true))" title="Ligar Google Drive" style="color:var(--n5);border-color:var(--n5-l);background:linear-gradient(135deg,var(--n5-l),#fff)"><i class="ti ti-brand-google-drive"></i></button>
+      <button class="btn btn-icon" onclick="doLogout()" title="Terminar sessão" style="color:var(--n6);border-color:var(--n6-l);background:linear-gradient(135deg,var(--n6-l),#fff)"><i class="ti ti-key"></i></button>
+    </div>
+    <div class="nav-sync-label" id="lastSyncLabel">A sincronizar...</div>
   </div>
 </div>
 
@@ -3007,9 +3004,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.20';
+const APP_VERSION='3.21';
 const APP_UPDATE_DATE='2026-08-27'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.21',data:'2026-08-27',notas:[
+    'Mais afinações visuais: o logotipo ficou bastante maior (topo e cabeçalho do telemóvel); a hora de sincronização passou para debaixo dos botões de Drive/Exportar/Importar/Sincronizar; os pequenos traços entre os botões do menu foram removidos; e os botões de Drive/Exportar/Importar/Sincronizar/Configurações/Terminar sessão ganharam também um contorno leve, tal como os do menu principal.',
+  ]},
   {v:'3.20',data:'2026-08-27',notas:[
     'Ajustes visuais: os botões do menu principal ganharam um contorno e sombra mais visíveis para se destacarem melhor da barra; a hora de sincronização passou a aparecer por baixo dos botões, em vez de espremida junto aos ícones de ações; e o logotipo da empresa perdeu o contorno tracejado e ficou um pouco maior (topo e cabeçalho do telemóvel).',
   ]},
