@@ -69,8 +69,9 @@ body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;backgrou
 .logo-area:hover~.logo-tools,.logo-tools:hover{display:flex;align-items:center;padding:0 .625rem;height:100%}
 #logoInput{display:none}
 .nav-section{display:none}
-.nav-rows{display:flex;flex-direction:column;gap:4px;flex-shrink:0}
-.nav-row{display:flex;align-items:center;gap:4px 6px;flex-wrap:wrap}
+.nav-rows{display:flex;flex-direction:column;gap:4px;flex:1;min-width:280px}
+.nav-row{display:flex;align-items:center;gap:4px 6px}
+.nav-row .nav-item{flex:1 1 0;min-width:0;justify-content:center}
 /* NAV — estilo "pill" moderno, em linha */
 .nav-item{display:flex;align-items:center;gap:5px;padding:6px 9px;margin:0;cursor:pointer;font-size:11.5px;color:var(--side-text);border-radius:9px;border:1px solid transparent;transition:all .18s cubic-bezier(.4,0,.2,1);position:relative;white-space:nowrap;flex-shrink:0;height:34px;background:linear-gradient(135deg,var(--ac-l,transparent) 0%,rgba(255,255,255,0) 90%)}
 .nav-dropdown{position:relative;flex-shrink:0}
@@ -444,16 +445,20 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
   <div class="nav-rows">
     <div class="nav-row">
       <div class="nav-item active" data-page="dashboard" style="--ac:var(--n1);--ac-l:var(--n1-l)"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
+      <div class="nav-divider"></div>
       <div class="nav-item" data-page="lancamentos" style="--ac:var(--n7);--ac-l:var(--n7-l)"><i class="ti ti-receipt"></i> Lançamentos</div>
       <div class="nav-divider"></div>
       <div class="nav-item" data-page="feiras" style="--ac:var(--n2);--ac-l:var(--n2-l)"><i class="ti ti-calendar-event"></i> Feiras/Eventos</div>
+      <div class="nav-divider"></div>
       <div class="nav-item" data-page="empregados" style="--ac:var(--n6);--ac-l:var(--n6-l)"><i class="ti ti-users"></i> Empregados</div>
     </div>
     <div class="nav-row">
       <div class="nav-item" data-page="viaturas" style="--ac:var(--n9);--ac-l:var(--n9-l)"><i class="ti ti-car"></i> Viaturas</div>
       <div class="nav-divider"></div>
       <div class="nav-item" data-page="filtros" style="--ac:var(--n8);--ac-l:var(--n8-l)"><i class="ti ti-filter"></i> Filtros</div>
+      <div class="nav-divider"></div>
       <div class="nav-item" data-page="relatorio" style="--ac:var(--n10);--ac-l:var(--n10-l)"><i class="ti ti-chart-bar"></i> Relatório</div>
+      <div class="nav-divider"></div>
       <div class="nav-item" data-page="comparar" style="--ac:var(--n3);--ac-l:var(--n3-l)"><i class="ti ti-arrows-left-right"></i> Comparar</div>
     </div>
   </div>
@@ -2942,9 +2947,15 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.10';
+const APP_VERSION='3.12';
 const APP_UPDATE_DATE='2026-08-27'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.12',data:'2026-08-27',notas:[
+    'Separadores entre os botões do menu uniformizados — passaram a aparecer entre todos, em vez de só entre alguns.',
+  ]},
+  {v:'3.11',data:'2026-08-27',notas:[
+    'Os 4 botões de cada linha do menu passaram a esticar e ocupar todo o espaço disponível ao comprimento, uniformizados entre si — a altura mantém-se igual.',
+  ]},
   {v:'3.10',data:'2026-08-27',notas:[
     'Experiência de layout: os 8 botões principais do menu passaram a ficar em 2 linhas de 4 (em vez de 1 linha só), com o ícone de Configurações a passar para junto dos botões de Drive/Exportar/Importar.',
   ]},
