@@ -2711,38 +2711,33 @@ async function substituirNaCloud(flags){
   try{
     if(flags.tx){
       await supaFetch('lancamentos','DELETE',null,'id=gt.0');
-      for(const t of txList){
-        const oldId=t.id;
-        try{
-          const r=await supaInsert('lancamentos',t);
-          if(r&&r[0]){
-            t.id=r[0].id; delete t._local;
-            const doc=loadDocLocal(oldId); if(doc){saveDocLocal(r[0].id,doc);deleteDocLocal(oldId);}
-            resultado.nTx++;
-          }
-        }catch(e){console.error('Envio lançamento (import) falhou',oldId,e);}
-      }
+      const idsAntigos=txList.map(t=>t.id);
+      const inseridos=await supaInsertMany('lancamentos',txList);
+      inseridos.forEach((novo,i)=>{
+        const oldId=idsAntigos[i];
+        txList[i].id=novo.id; delete txList[i]._local;
+        const doc=loadDocLocal(oldId); if(doc){saveDocLocal(novo.id,doc);deleteDocLocal(oldId);}
+      });
+      resultado.nTx=inseridos.length;
+      if(inseridos.length<txList.length)console.error('Só',inseridos.length,'de',txList.length,'lançamentos foram guardados na cloud.');
     }
     if(flags.f){
       await supaFetch('feiras','DELETE',null,'id=gt.0');
-      for(const f of fairs){
-        try{ const r=await supaInsert('feiras',f); if(r&&r[0]){f.id=r[0].id;delete f._local;resultado.nF++;} }
-        catch(e){console.error('Envio feira (import) falhou',f.id,e);}
-      }
+      const inseridas=await supaInsertMany('feiras',fairs);
+      inseridas.forEach((nova,i)=>{ fairs[i].id=nova.id; delete fairs[i]._local; });
+      resultado.nF=inseridas.length;
     }
     if(flags.e){
       await supaFetch('empregados','DELETE',null,'id=gt.0');
-      for(const em of emps){
-        try{ const r=await supaInsert('empregados',em); if(r&&r[0]){em.id=r[0].id;delete em._local;resultado.nE++;} }
-        catch(e){console.error('Envio empregado (import) falhou',em.id,e);}
-      }
+      const inseridos=await supaInsertMany('empregados',emps);
+      inseridos.forEach((novo,i)=>{ emps[i].id=novo.id; delete emps[i]._local; });
+      resultado.nE=inseridos.length;
     }
     if(flags.v){
       await supaFetch('viaturas','DELETE',null,'id=gt.0');
-      for(const v of viats){
-        try{ const r=await supaInsert('viaturas',v); if(r&&r[0]){v.id=r[0].id;delete v._local;resultado.nV++;} }
-        catch(e){console.error('Envio viatura (import) falhou',v.id,e);}
-      }
+      const inseridas=await supaInsertMany('viaturas',viats);
+      inseridas.forEach((nova,i)=>{ viats[i].id=nova.id; delete viats[i]._local; });
+      resultado.nV=inseridas.length;
     }
     saveToLocal();
     renderTxTable();renderDashboard();populateFilters();renderCalendar();renderFairList();renderConfiguracoes();
@@ -2849,9 +2844,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.1';
+const APP_VERSION='3.2';
 const APP_UPDATE_DATE='2026-08-27'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.2',data:'2026-08-27',notas:[
+    'Corrigido bug grave: ao importar um Excel com muitos lançamentos (largas centenas), só uma parte chegava à cloud (o resto ficava só neste aparelho, sem aviso). Agora o envio é feito de uma vez só, em bloco, em vez de um lançamento de cada vez.'
+  ]},
   {v:'3.1',data:'2026-08-27',notas:[
     'Corrigido bug grave: importar Excel mais do que uma vez podia duplicar/triplicar os lançamentos na cloud. Agora cada importação substitui sempre o que já lá estava, em vez de tentar adicionar só o que "falta".'
   ]},
@@ -2937,6 +2935,28 @@ async function supaFetch(table,method='GET',body=null,filter=null){
 }
 async function supaGet(table){return supaFetch(table,'GET',null,'order=id.asc');}
 async function supaInsert(table,data){const d={...data};delete d.id;delete d._local;return supaFetch(table,'POST',d);}
+/* Insere várias linhas de uma vez (um só pedido ao Supabase, em vez de um pedido
+   por linha). Uma importação com centenas de lançamentos, feita um a um, batia no
+   limite de pedidos por segundo do Supabase a meio — os primeiros entravam, o resto
+   falhava em silêncio. Em lote, o Supabase recebe tudo numa única vez. Em lotes
+   grandes, divide em pedaços de 200 para não ultrapassar o tamanho máximo aceite
+   por pedido. */
+async function supaInsertMany(table,items){
+  if(!items||!items.length)return[];
+  const limpos=items.map(it=>{const d={...it};delete d.id;delete d._local;return d;});
+  const TAMANHO_LOTE=200;
+  let inseridos=[];
+  for(let i=0;i<limpos.length;i+=TAMANHO_LOTE){
+    const pedaco=limpos.slice(i,i+TAMANHO_LOTE);
+    const r=await supaFetch(table,'POST',pedaco);
+    if(!Array.isArray(r)){
+      console.error('Envio em lote falhou a partir do item',i,'de',table);
+      return inseridos; // devolve o que já conseguiu, para não perder tudo
+    }
+    inseridos=inseridos.concat(r);
+  }
+  return inseridos;
+}
 async function supaUpdate(table,id,data){const d={...data};delete d.id;delete d._local;return supaFetch(table,'PATCH',d,'id=eq.'+id);}
 async function supaDelete(table,id){return supaFetch(table,'DELETE',null,'id=eq.'+id);}
 
