@@ -59,9 +59,9 @@ body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;backgrou
 .sidebar{width:100%;display:flex;flex-direction:row;align-items:center;flex-wrap:wrap;background:var(--side);flex-shrink:0;box-shadow:0 1px 8px rgba(0,0,0,.05);border-bottom:1px solid var(--side-line);padding:6px .75rem;gap:4px 6px;overflow:visible;min-height:56px}
 .logo-area{padding:2px .5rem;border-bottom:none;border-right:none;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;flex-shrink:0}
 .logo-text{text-align:center}
-.logo-img-wrap{width:104px;height:42px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:transparent;border-radius:7px;border:1px dashed var(--border2);flex-shrink:0}
+.logo-img-wrap{width:120px;height:48px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:transparent;border-radius:7px;border:none;flex-shrink:0}
 .logo-img-wrap img{width:100%;height:100%;object-fit:contain;object-position:center center}
-.logo-placeholder{width:76px;height:38px;border-radius:7px;background:#FFFFFF;display:flex;align-items:center;justify-content:center;border:1px dashed var(--accent);flex-shrink:0}
+.logo-placeholder{width:88px;height:42px;border-radius:7px;background:#FFFFFF;display:flex;align-items:center;justify-content:center;border:1px dashed var(--accent);flex-shrink:0}
 .logo-text{text-align:left;min-width:0;display:flex;flex-direction:column;justify-content:center}
 .logo-title{font-size:12.5px;font-weight:700;color:var(--side-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.02em}
 .logo-sub{font-size:8px;color:var(--side-text-dim);margin-top:1px;letter-spacing:.03em;text-transform:uppercase}
@@ -72,8 +72,9 @@ body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;backgrou
 .nav-rows{display:flex;flex-direction:column;gap:4px;flex:1;min-width:280px}
 .nav-row{display:flex;align-items:center;gap:4px 6px}
 .nav-row .nav-item{flex:1 1 0;min-width:0;justify-content:center}
+.nav-sync-label{font-size:9px;color:var(--side-text-dim);white-space:nowrap;text-align:center;margin-top:1px}
 /* NAV — estilo "pill" moderno, em linha */
-.nav-item{display:flex;align-items:center;gap:5px;padding:6px 9px;margin:0;cursor:pointer;font-size:11.5px;color:var(--side-text);border-radius:9px;border:1px solid transparent;transition:all .18s cubic-bezier(.4,0,.2,1);position:relative;white-space:nowrap;flex-shrink:0;height:34px;background:linear-gradient(135deg,var(--ac-l,transparent) 0%,rgba(255,255,255,0) 90%)}
+.nav-item{display:flex;align-items:center;gap:5px;padding:6px 9px;margin:0;cursor:pointer;font-size:11.5px;color:var(--side-text);border-radius:9px;border:1px solid var(--ac-l,var(--border2));transition:all .18s cubic-bezier(.4,0,.2,1);position:relative;white-space:nowrap;flex-shrink:0;height:34px;background:linear-gradient(135deg,var(--ac-l,transparent) 0%,rgba(255,255,255,0) 90%);box-shadow:0 1px 3px rgba(28,25,23,.08)}
 .nav-dropdown{position:relative;flex-shrink:0}
 .nav-drop-toggle{display:flex;align-items:center;gap:5px;padding:6px 9px;cursor:pointer;font-size:11.5px;color:var(--side-text);border-radius:9px;border:1px solid transparent;white-space:nowrap;height:34px;transition:all .18s}
 .nav-drop-toggle:hover{background:var(--bg2)}
@@ -82,8 +83,8 @@ body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;backgrou
 .nav-dropdown.open .nav-drop-menu{display:flex}
 .nav-drop-menu .nav-item{width:auto;height:36px}
 .nav-item i,.nav-drop-toggle i{font-size:14px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:all .18s;flex-shrink:0;color:var(--nav-ic)!important}
-.nav-item:hover{background:linear-gradient(135deg,var(--ac-l,rgba(28,25,23,.05)),#fff);color:var(--ink)}
-.nav-item.active{background:linear-gradient(135deg,var(--ac-l,var(--bg2)),#fff);color:var(--ink);font-weight:700;border:1.5px solid var(--ac,var(--accent));box-shadow:0 1px 3px rgba(28,25,23,.06)}
+.nav-item:hover{background:linear-gradient(135deg,var(--ac-l,rgba(28,25,23,.05)),#fff);color:var(--ink);box-shadow:0 2px 6px rgba(28,25,23,.14)}
+.nav-item.active{background:linear-gradient(135deg,var(--ac-l,var(--bg2)),#fff);color:var(--ink);font-weight:700;border:1.5px solid var(--ac,var(--accent));box-shadow:0 2px 5px rgba(28,25,23,.12)}
 .nav-item.active i{background:#fff;box-shadow:0 0 0 1px var(--ac,var(--accent)) inset}
 .nav-item-settings{background:linear-gradient(135deg,#C68A42,#9C5F1F);border:1px solid #9C5F1F;box-shadow:0 2px 6px rgba(156,95,31,.3);padding-left:9px;padding-right:9px}
 .nav-item-settings i{color:#fff!important;background:transparent!important;box-shadow:none!important}
@@ -269,7 +270,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 
 /* MOBILE HEADER — escondido por defeito, só aparece em ecrãs pequenos */
 .mobile-header{display:none;align-items:center;gap:10px;padding:10px 14px;background:var(--side);border-bottom:1px solid var(--side-line);position:sticky;top:0;z-index:90}
-.mobile-header-logo{width:56px;height:56px;border-radius:8px;border:1px dashed var(--border2);background:transparent;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
+.mobile-header-logo{width:62px;height:62px;border-radius:8px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
 .mobile-header-logo img{width:100%;height:100%;object-fit:contain}
 .mobile-header-title{min-width:0}
 
@@ -461,12 +462,12 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
       <div class="nav-divider"></div>
       <div class="nav-item" data-page="comparar" style="--ac:var(--n3);--ac-l:var(--n3-l)"><i class="ti ti-arrows-left-right"></i> Comparar</div>
     </div>
+    <div class="nav-sync-label" id="lastSyncLabel">A sincronizar...</div>
   </div>
   <div class="topbar-actions">
     <div class="nav-item nav-item-settings" data-page="configuracoes" title="Configurações" style="--ac:var(--accent);--ac-l:var(--accent-l)"><i class="ti ti-settings"></i></div>
     <button class="btn btn-icon" onclick="syncLocalToCloud()" title="Enviar dados locais para a cloud (igualar PC e telemóvel)" style="color:var(--n7);border-color:var(--n7-l);background:linear-gradient(135deg,var(--n7-l),#fff)"><i class="ti ti-cloud-up"></i></button>
     <button class="btn btn-icon" onclick="loadAllFromCloud()" title="Sincronizar agora" style="color:var(--n2);border-color:var(--n2-l);background:linear-gradient(135deg,var(--n2-l),#fff)"><i class="ti ti-refresh"></i></button>
-    <span id="lastSyncLabel" style="font-size:9px;color:var(--side-text-dim);white-space:nowrap">A sincronizar...</span>
     <button class="btn btn-icon" onclick="exportarExcel()" title="Exportar Excel" style="color:var(--n1);border-color:var(--n1-l);background:linear-gradient(135deg,var(--n1-l),#fff)"><i class="ti ti-download"></i></button>
     <label class="btn btn-icon" title="Importar Excel" style="cursor:pointer;color:var(--n9);border-color:var(--n9-l);background:linear-gradient(135deg,var(--n9-l),#fff)"><i class="ti ti-upload"></i><input type="file" accept=".xlsx,.xls" onchange="importarExcel(event)" style="display:none"></label>
     <button class="btn btn-icon" onclick="gdriveAuth(()=>showSyncStatus('Google Drive ligado! ✓',true))" title="Ligar Google Drive" style="color:var(--n5);border-color:var(--n5-l);background:linear-gradient(135deg,var(--n5-l),#fff)"><i class="ti ti-brand-google-drive"></i></button>
@@ -1144,6 +1145,10 @@ let gdriveTokenExpiry=0;
 let gdriveClient=null;
 let gdrivePending=[];
 let lastCloudSync=0;
+/* Assinatura simples do estado atual dos dados — usada só para saber se algo mudou desde
+   o último backup automático do Excel na Drive (ver backupExcelParaDrive/loadAllFromCloud). */
+let ultimaAssinaturaBackup=null;
+function assinaturaDados(){ return txList.length+'|'+fairs.length+'|'+emps.length+'|'+viats.length; }
 const MESES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 const MN={janeiro:0,fevereiro:1,'março':2,abril:3,maio:4,junho:5,julho:6,agosto:7,setembro:8,outubro:9,novembro:10,dezembro:11};
 
@@ -2852,6 +2857,7 @@ async function backupExcelParaDrive(){
     const mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
     const dataUrl='data:'+mime+';base64,'+base64;
     await uploadToGDriveReplace(dataUrl,'GestaoNegocio_Lancamentos.xlsx',mime,'Backups');
+    ultimaAssinaturaBackup=assinaturaDados();
   }catch(e){ console.error('Erro no backup automático do Excel:',e); }
 }
 
@@ -3001,9 +3007,15 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.18';
+const APP_VERSION='3.20';
 const APP_UPDATE_DATE='2026-08-27'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.20',data:'2026-08-27',notas:[
+    'Ajustes visuais: os botões do menu principal ganharam um contorno e sombra mais visíveis para se destacarem melhor da barra; a hora de sincronização passou a aparecer por baixo dos botões, em vez de espremida junto aos ícones de ações; e o logotipo da empresa perdeu o contorno tracejado e ficou um pouco maior (topo e cabeçalho do telemóvel).',
+  ]},
+  {v:'3.19',data:'2026-08-27',notas:[
+    'Corrigido: o backup automático do Excel na Google Drive só se atualizava quando havia uma alteração feita NESTE aparelho — um lançamento feito noutro dispositivo (telemóvel/PC) chegava à app por sincronização, mas nunca fazia o ficheiro da Drive atualizar-se, por isso podia ficar sistematicamente um pouco atrasado (ex.: "315 na app, só 314 na Drive"). Agora o backup também se atualiza sempre que a sincronização traz dados novos, venham de onde vierem.',
+  ]},
   {v:'3.18',data:'2026-08-27',notas:[
     'Corrigido um caso em que a app podia mostrar "sincronizado" sem erro nenhum mas com todos os dados a zero: se a sessão tivesse caducado nos bastidores, a app continuava a pedir dados à nuvem sem sessão válida, e a segurança da base de dados devolvia sempre "sucesso" com zero linhas, sem avisar. Agora, quando isto acontece, a app pede para iniciares sessão outra vez em vez de mostrar tudo vazio como se fosse normal.',
   ]},
@@ -3359,6 +3371,14 @@ async function loadAllFromCloud(){
       viats=[...vi, ...viLocais];
       nextViatId=Math.min(0,...viats.map(v=>v.id))-1;
     }
+
+    // O backup do Excel na Drive só se refazia quando havia uma ação local (criar/editar/
+    // apagar) NESTE aparelho — um lançamento feito noutro dispositivo chegava por aqui via
+    // sincronização, mas nunca disparava um novo backup, por isso o ficheiro na Drive podia
+    // ficar sistematicamente atrasado em relação aos dados já visíveis na app (ex.: "315
+    // lançamentos na app, só 314 na Drive"). Agora, sempre que a sincronização traz uma
+    // contagem diferente da do último backup, atualiza-o também.
+    if(assinaturaDados()!==ultimaAssinaturaBackup)backupExcelParaDrive();
 
     lastCloudSync=Date.now();
     atualizarLabelSync();
