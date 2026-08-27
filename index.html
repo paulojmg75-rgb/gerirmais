@@ -1081,7 +1081,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
     <div class="form-group"><label class="form-label">Nome</label><input type="text" id="vi-nome" placeholder="Ex: Vito"></div>
     <div class="form-group"><label class="form-label">Matrícula</label><input type="text" id="vi-matricula" placeholder="Ex: AA-00-BB"></div>
   </div>
-  <div class="form-group"><label class="form-label">Tipo</label><select id="vi-tipo"><option>Carrinha</option><option>Auto-Caravana</option><option>Ligeiro</option><option>Reboque</option><option>Outro</option></select></div>
+  <div class="form-group"><label class="form-label">Tipo</label><select id="vi-tipo"><option>Carrinha</option><option>Auto-Caravana</option><option>Caravana</option><option>Ligeiro</option><option>Reboque</option><option>Outro</option></select></div>
   <div class="modal-footer"><button class="btn" onclick="closeViatModal()">Cancelar</button><button class="btn btn-primary" onclick="saveViat()"><i class="ti ti-check"></i> Guardar</button></div>
 </div></div>
 
@@ -2190,7 +2190,7 @@ function renderViats(){
     return`<div class="viat-card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
         <div style="font-size:14px;font-weight:600;display:flex;align-items:center;gap:7px">
-          <i class="ti ${v.tipo==='Carrinha'?'ti-van':v.tipo==='Auto-Caravana'?'ti-home-2':'ti-car'}" style="color:var(--blue);font-size:18px"></i>
+          <i class="ti ${v.tipo==='Carrinha'?'ti-truck':v.tipo==='Auto-Caravana'?'ti-camper':v.tipo==='Caravana'?'ti-caravan':'ti-car'}" style="color:var(--blue);font-size:18px"></i>
           ${v.nome}${v.matricula?`<span style="font-size:11px;color:var(--text2);font-weight:400;background:var(--bg);padding:1px 7px;border-radius:4px;border:.5px solid var(--border)">${v.matricula}</span>`:''}
           <span style="font-size:10px;color:var(--text2);font-weight:400">${v.tipo}</span>
         </div>
@@ -2931,9 +2931,13 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.6';
+const APP_VERSION='3.7';
 const APP_UPDATE_DATE='2026-08-27'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.7',data:'2026-08-27',notas:[
+    'Corrigido: viaturas do tipo "Carrinha" apareciam sem ícone na lista.',
+    'Adicionado o tipo "Caravana" (reboque) às viaturas, distinto de "Auto-Caravana" (motorizada), cada um com o seu próprio ícone.',
+  ]},
   {v:'3.6',data:'2026-08-27',notas:[
     'Nova paleta de cores suaves nos botões do menu principal e da lista "Mais" — cada secção tem agora a sua própria cor discreta.',
     'Corrigido: ao selecionar uma secção do menu, o ícone ficava com uma cor mal aplicada e quase invisível — agora todos os ícones têm a mesma cor e a secção selecionada mostra-se com um contorno colorido, claro em qualquer ecrã.',
@@ -3341,7 +3345,7 @@ function renderConfiguracoes(){
       style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg);border-radius:var(--radius);margin-bottom:6px;border:.5px solid var(--border);cursor:grab">
       <div style="display:flex;align-items:center;gap:8px">
         <i class="ti ti-grip-vertical" style="color:var(--text3);font-size:14px"></i>
-        <i class="ti ${v.tipo==='Carrinha'?'ti-van':v.tipo==='Auto-Caravana'?'ti-home-2':'ti-car'}" style="color:var(--blue);font-size:16px"></i>
+        <i class="ti ${v.tipo==='Carrinha'?'ti-truck':v.tipo==='Auto-Caravana'?'ti-camper':v.tipo==='Caravana'?'ti-caravan':'ti-car'}" style="color:var(--blue);font-size:16px"></i>
         <div><div style="font-size:12px;font-weight:500;color:var(--text)">${v.nome}${v.matricula?` <span style="color:var(--text2);font-weight:400">· ${v.matricula}</span>`:''}</div><div style="font-size:10px;color:var(--text2)">${v.tipo}</div></div>
       </div>
       <div style="display:flex;gap:4px">
