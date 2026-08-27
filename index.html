@@ -466,6 +466,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
     <div class="nav-item nav-item-settings" data-page="configuracoes" title="Configurações" style="--ac:var(--accent);--ac-l:var(--accent-l)"><i class="ti ti-settings"></i></div>
     <button class="btn btn-icon" onclick="syncLocalToCloud()" title="Enviar dados locais para a cloud (igualar PC e telemóvel)" style="color:var(--n7);border-color:var(--n7-l);background:linear-gradient(135deg,var(--n7-l),#fff)"><i class="ti ti-cloud-up"></i></button>
     <button class="btn btn-icon" onclick="loadAllFromCloud()" title="Sincronizar agora" style="color:var(--n2);border-color:var(--n2-l);background:linear-gradient(135deg,var(--n2-l),#fff)"><i class="ti ti-refresh"></i></button>
+    <span id="lastSyncLabel" style="font-size:9px;color:var(--side-text-dim);white-space:nowrap">A sincronizar...</span>
     <button class="btn btn-icon" onclick="exportarExcel()" title="Exportar Excel" style="color:var(--n1);border-color:var(--n1-l);background:linear-gradient(135deg,var(--n1-l),#fff)"><i class="ti ti-download"></i></button>
     <label class="btn btn-icon" title="Importar Excel" style="cursor:pointer;color:var(--n9);border-color:var(--n9-l);background:linear-gradient(135deg,var(--n9-l),#fff)"><i class="ti ti-upload"></i><input type="file" accept=".xlsx,.xls" onchange="importarExcel(event)" style="display:none"></label>
     <button class="btn btn-icon" onclick="gdriveAuth(()=>showSyncStatus('Google Drive ligado! ✓',true))" title="Ligar Google Drive" style="color:var(--n5);border-color:var(--n5-l);background:linear-gradient(135deg,var(--n5-l),#fff)"><i class="ti ti-brand-google-drive"></i></button>
@@ -481,6 +482,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
   <div class="mobile-header-title">
     <div class="logo-title" id="sidebarTitleMobile" style="font-size:13px">Gestão de Negócio</div>
     <div class="logo-sub" id="logoSubMobile" style="font-size:9px">Gestão financeira</div>
+    <div id="lastSyncLabelMobile" style="font-size:8px;color:var(--side-text-dim);margin-top:1px">A sincronizar...</div>
   </div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
     <button class="btn btn-icon" onclick="syncLocalToCloud()" title="Enviar dados locais para a cloud" style="color:var(--teal);border-color:var(--teal-l);background:var(--teal-l);padding:7px 9px"><i class="ti ti-cloud-up"></i></button>
@@ -2947,9 +2949,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.12';
+const APP_VERSION='3.13';
 const APP_UPDATE_DATE='2026-08-27'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.13',data:'2026-08-27',notas:[
+    'Adicionada uma pequena indicação "Sincronizado às HH:MM:SS" junto ao botão de Sincronizar (topo, no PC; cabeçalho, no telemóvel) — para se ver a olho se a sincronização automática está mesmo a acontecer, sem ser preciso adivinhar.',
+  ]},
   {v:'3.12',data:'2026-08-27',notas:[
     'Separadores entre os botões do menu uniformizados — passaram a aparecer entre todos, em vez de só entre alguns.',
   ]},
@@ -3184,6 +3189,16 @@ function initAutoPing(){
   },1000*60*60);
 }
 
+/* Mostra a que horas foi a última sincronização bem-sucedida com a cloud — visível
+   junto ao botão "Sincronizar" (topo, no PC; cabeçalho, no telemóvel). Serve para
+   confirmar a olho se a sincronização automática (a cada ~45s) está mesmo a acontecer,
+   sem ter de adivinhar. */
+function atualizarLabelSync(){
+  const hora=new Date(lastCloudSync).toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const txt='Sincronizado às '+hora;
+  const d=document.getElementById('lastSyncLabel'); if(d)d.textContent=txt;
+  const m=document.getElementById('lastSyncLabelMobile'); if(m)m.textContent=txt;
+}
 async function loadAllFromCloud(){
   showSyncStatus('A carregar dados...',true);
   try{
@@ -3241,6 +3256,7 @@ async function loadAllFromCloud(){
     }
 
     lastCloudSync=Date.now();
+    atualizarLabelSync();
     showSyncStatus('✓ '+tx.length+' lançamentos carregados!',true);
     initAutoPing();
   }catch(e){
