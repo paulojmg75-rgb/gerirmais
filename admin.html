@@ -45,6 +45,13 @@ td input[type=date]{width:auto;padding:5px}
 td button{width:auto;padding:5px 8px;font-size:10px;margin:0 4px 0 0;background:var(--ink2)}
 .badge{padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;white-space:nowrap}
 .tabela-wrap{overflow-x:auto}
+.google-lembrete{margin-top:1rem;padding:12px;border-radius:var(--radius);background:#FCEEDC;border:1px solid #F0D9B5}
+.google-lembrete-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.google-lembrete-titulo{font-size:12px;font-weight:700;color:#B45309}
+.google-lembrete button{width:auto;padding:4px 10px;font-size:10px;background:#B45309;margin-top:0}
+.google-lembrete-corpo{margin-top:10px;font-size:11px;color:#7C4A0A;line-height:1.7}
+.google-lembrete-corpo ol{margin:8px 0 0 18px}
+.google-lembrete-corpo a{color:#B45309}
 </style>
 </head>
 <body>
@@ -81,6 +88,24 @@ td button{width:auto;padding:5px 8px;font-size:10px;margin:0 4px 0 0;background:
     <div class="link-out hidden" id="linkWrap">
       <input type="text" id="linkGerado" readonly onclick="this.select()">
       <button onclick="copiarLink()">Copiar</button>
+    </div>
+    <div class="google-lembrete" id="googleLembrete">
+      <div class="google-lembrete-head">
+        <div class="google-lembrete-titulo">🔔 Lembrete: Google Drive para clientes novos</div>
+        <button type="button" id="googleStepsToggle" onclick="toggleGoogleSteps()">Ver passo a passo</button>
+      </div>
+      <div class="google-lembrete-corpo hidden" id="googleStepsBody">
+        Enquanto a app não estiver verificada pela Google, cada cliente novo só consegue ligar o Google Drive depois de adicionares o email dele à lista de testadores:
+        <ol>
+          <li>Espera que o cliente ative a conta — o email dele aparece na tabela em baixo.</li>
+          <li>Vai a <a href="https://console.cloud.google.com" target="_blank" rel="noopener">console.cloud.google.com</a> e entra no projeto do gerirmais.com.</li>
+          <li>Menu esquerdo → <strong>APIs & Services → OAuth consent screen</strong> (pode aparecer como "Audience").</li>
+          <li>Na secção <strong>Test users</strong>, clica em <strong>+ ADD USERS</strong>.</li>
+          <li>Cola o email do cliente e guarda.</li>
+          <li>Espera 1 a 2 minutos e avisa o cliente para tentar ligar a Drive na app.</li>
+        </ol>
+        <div style="margin-top:8px">Limite: até 100 emails na lista. Isto deixa de ser preciso assim que a app for verificada pela Google.</div>
+      </div>
     </div>
   </div>
 
@@ -121,6 +146,13 @@ function toggleSenhaVisibilidade(id,btn){
 }
 function show(id){document.getElementById(id).classList.remove('hidden');}
 function hide(id){document.getElementById(id).classList.add('hidden');}
+function toggleGoogleSteps(){
+  const corpo=document.getElementById('googleStepsBody');
+  const btn=document.getElementById('googleStepsToggle');
+  const aberto=!corpo.classList.contains('hidden');
+  if(aberto){ corpo.classList.add('hidden'); btn.textContent='Ver passo a passo'; }
+  else{ corpo.classList.remove('hidden'); btn.textContent='Ocultar passo a passo'; }
+}
 function setErr(id,msg){const el=document.getElementById(id); if(msg){el.textContent=msg; el.style.display='block';} else {el.style.display='none';}}
 
 function traduzErro(error){
@@ -299,6 +331,8 @@ async function gerarCodigo(){
       document.getElementById('linkGerado').value='https://gerirmais.com/?codigo='+encodeURIComponent(data);
       show('linkWrap');
       document.getElementById('nomeCliente').value='';
+      document.getElementById('googleStepsBody').classList.remove('hidden');
+      document.getElementById('googleStepsToggle').textContent='Ocultar passo a passo';
       carregarClientes();
     }
   }catch(e){ setErr('adminErr','Erro de ligação. Tenta novamente.'); }
