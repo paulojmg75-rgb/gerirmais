@@ -3001,9 +3001,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.15';
+const APP_VERSION='3.16';
 const APP_UPDATE_DATE='2026-08-27'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.16',data:'2026-08-27',notas:[
+    'Corrigido: "Apagar todos os dados" (em Configurações) podia dizer "Todos os dados eliminados!" mesmo quando a eliminação na nuvem falhava — o telemóvel/PC que fez o pedido ficava vazio, mas os outros dispositivos continuavam com os dados antigos, porque a nuvem nunca tinha sido realmente limpa. Agora a app confirma primeiro que a nuvem foi mesmo limpa; só depois apaga os dados desse aparelho. Se a nuvem não puder ser limpa, aparece um aviso claro e nada é apagado.',
+  ]},
   {v:'3.15',data:'2026-08-27',notas:[
     'Correção definitiva: cada lançamento passou a ligar-se à feira/evento de forma permanente (por dentro, não pelo nome) — a partir de agora, renomear uma feira nunca mais desliga lançamentos dela, seja antes ou depois da mudança de nome. Os lançamentos já feitos foram atualizados automaticamente para esta nova forma de ligação.',
   ]},
@@ -3480,13 +3483,29 @@ function renderConfiguracoes(){
 function confirmarApagarTudo(){
   if(!confirm('⚠️ ATENÇÃO!\n\nVais apagar TODOS os dados:\n• Lançamentos\n• Feiras\n• Empregados\n• Viaturas\n\nEsta acção é irreversível!\n\nTens a certeza?'))return;
   if(!confirm('🔴 CONFIRMAÇÃO FINAL\n\nEscreve mentalmente "APAGAR TUDO" e confirma.\n\nDepois desta confirmação todos os dados são eliminados permanentemente da nuvem.\n\nConfirmas?'))return;
-  // apaga tudo
-  txList=[];fairs=[];emps=[];viats=[];
-  nextId=-1;nextFairId=-1;nextEmpId=-1;nextViatId=-1;
-  localStorage.removeItem(lsKey('rv_gestao_v1'));
-  localStorage.removeItem(lsKey('rv_logo'));
-  Promise.all([supaFetch('lancamentos','DELETE',null,'id=gt.0'),supaFetch('feiras','DELETE',null,'id=gt.0'),supaFetch('empregados','DELETE',null,'id=gt.0'),supaFetch('viaturas','DELETE',null,'id=gt.0')]).then(()=>{showSyncStatus('Todos os dados eliminados!',false);backupExcelParaDrive();});
-  renderDashboard();renderConfiguracoes();
+  // Apaga primeiro na cloud e só limpa este aparelho DEPOIS de confirmar que resultou —
+  // antes, limpava-se logo aqui e mostrava-se sempre "eliminados!", mesmo quando a cloud
+  // recusava o pedido (ex.: falha de rede/permissões) — os dados continuavam intactos lá,
+  // e outros aparelhos (ou uma sincronização mais tarde neste) traziam-nos de volta.
+  showSyncStatus('A apagar tudo na cloud...',true);
+  Promise.all([
+    supaFetch('lancamentos','DELETE',null,'id=gt.0'),
+    supaFetch('feiras','DELETE',null,'id=gt.0'),
+    supaFetch('empregados','DELETE',null,'id=gt.0'),
+    supaFetch('viaturas','DELETE',null,'id=gt.0')
+  ]).then(resultados=>{
+    if(resultados.some(r=>!r)){
+      showSyncStatus('Não foi possível apagar tudo na cloud — nada foi alterado. Tenta novamente ou verifica a ligação.',false);
+      return;
+    }
+    txList=[];fairs=[];emps=[];viats=[];
+    nextId=-1;nextFairId=-1;nextEmpId=-1;nextViatId=-1;
+    localStorage.removeItem(lsKey('rv_gestao_v1'));
+    localStorage.removeItem(lsKey('rv_logo'));
+    showSyncStatus('Todos os dados eliminados!',false);
+    backupExcelParaDrive();
+    renderDashboard();renderConfiguracoes();
+  });
 }
 function deleteFairCfg(id){if(!confirm('Remover esta feira?'))return;fairs=fairs.filter(f=>f.id!==id);saveToLocal();supaDelete('feiras',id).then(r=>{
   if(r){showSyncStatus('Feira removida!');backupExcelParaDrive();}
