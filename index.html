@@ -2931,9 +2931,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.7';
+const APP_VERSION='3.8';
 const APP_UPDATE_DATE='2026-08-27'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.8',data:'2026-08-27',notas:[
+    'Corrigido: com o PC e o telemóvel abertos ao mesmo tempo, um lançamento feito num não aparecia no outro sem sair e voltar a entrar na app — agora a app verifica sozinha se há novidades na cloud a cada 45 segundos, e atualiza logo a página que estiveres a ver.',
+  ]},
   {v:'3.7',data:'2026-08-27',notas:[
     'Corrigido: viaturas do tipo "Carrinha" apareciam sem ícone na lista.',
     'Adicionado o tipo "Caravana" (reboque) às viaturas, distinto de "Auto-Caravana" (motorizada), cada um com o seu próprio ícone.',
@@ -3217,6 +3220,18 @@ async function loadAllFromCloud(){
   loadLogoFromCloud();
   renderDashboard();
   populateFilters();
+  // Atualiza também a página que estiver aberta neste preciso momento (ex.: a lista de
+  // Lançamentos) — sem isto, os dados chegavam de facto atualizados, mas quem estivesse
+  // parado numa dessas páginas só via a novidade ao sair e voltar a entrar.
+  const paginaAtiva=document.querySelector('.page.active');
+  if(paginaAtiva){
+    const p=paginaAtiva.id.replace('page-','');
+    if(p==='lancamentos')renderTxTable();
+    else if(p==='feiras'){renderCalendar();renderFairList();}
+    else if(p==='empregados'){renderEmpMetrics();renderEmpList();renderEmpPay();}
+    else if(p==='viaturas'){renderViats();renderCombust();}
+    else if(p==='configuracoes')renderConfiguracoes();
+  }
 }
 
 /* ---- CONFIGURAÇÕES ---- */
@@ -3910,6 +3925,16 @@ function initApp(){
       loadAllFromCloud();
     }
   });
+  // 4) Sincronização periódica em 2º plano: com o PC e o telemóvel abertos ao mesmo
+  //    tempo (ex.: numa feira), nenhum dos dois muda de separador — por isso um
+  //    lançamento feito num não aparecia sozinho no outro. Enquanto o separador
+  //    estiver visível, verifica a cloud a cada 45s, sem precisar de trocar de
+  //    separador nem tocar em "Sincronizar".
+  setInterval(()=>{
+    if(document.visibilityState==='visible' && Date.now()-lastCloudSync>40000){
+      loadAllFromCloud();
+    }
+  },45000);
 }
 
 /* ---- AUTENTICAÇÃO ---- */
