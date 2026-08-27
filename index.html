@@ -29,6 +29,19 @@
   --side:#EDE6D8;--side-soft:#E3DAC6;--side-line:rgba(28,25,23,.1);
   --side-text:#4A4237;--side-text-dim:#8A8073;
   --accent:#B4762E;--accent-l:#F3E7D2;
+  /* Paleta nova, suave, só para os botões de navegação/ação (não mexe nas cores do
+     dinheiro — receita/despesa continuam teal/red em toda a app, como sempre). */
+  --n1:#5F8B6C;--n1-l:#E6EFE7;
+  --n2:#4E7A96;--n2-l:#E5EEF3;
+  --n3:#BC6B4E;--n3-l:#F7E9E1;
+  --n4:#8A5A82;--n4-l:#F1E7EF;
+  --n5:#B98A2E;--n5-l:#F7EEDB;
+  --n6:#A85361;--n6-l:#F5E5E8;
+  --n7:#3F7D77;--n7-l:#E2EFEE;
+  --n8:#8B7355;--n8-l:#EFEAE1;
+  --n9:#556B9C;--n9-l:#E7EAF3;
+  --n10:#6E7F4F;--n10-l:#EEF1E3;
+  --nav-ic:#4A4237;
   --bg:var(--paper);--bg2:var(--paper2);--bg3:var(--paper3);
   --border:var(--line);--border2:var(--line2);
   --text:var(--ink);--text2:var(--ink2);--text3:var(--ink3);
@@ -59,13 +72,13 @@ body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;backgrou
 .nav-drop-toggle{display:flex;align-items:center;gap:5px;padding:6px 9px;cursor:pointer;font-size:11.5px;color:var(--side-text);border-radius:9px;border:1px solid transparent;white-space:nowrap;height:34px;transition:all .18s}
 .nav-drop-toggle:hover{background:var(--bg2)}
 .nav-dropdown.open .nav-drop-toggle{background:var(--bg2);border-color:var(--border2)}
-.nav-drop-menu{display:none;position:absolute;top:calc(100% + 4px);right:0;min-width:190px;background:var(--side);border:1px solid var(--side-line);border-radius:12px;box-shadow:0 10px 28px rgba(0,0,0,.18);padding:6px;z-index:200;flex-direction:column;gap:2px}
+.nav-drop-menu{display:none;position:absolute;top:calc(100% + 4px);right:0;min-width:190px;max-width:min(92vw,420px);background:var(--side);border:1px solid var(--side-line);border-radius:12px;box-shadow:0 10px 28px rgba(0,0,0,.18);padding:6px;z-index:200;flex-direction:row;flex-wrap:wrap;gap:4px}
 .nav-dropdown.open .nav-drop-menu{display:flex}
-.nav-drop-menu .nav-item{width:100%;height:36px}
-.nav-item i{font-size:14px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:all .18s;flex-shrink:0}
-.nav-item:hover{background:rgba(28,25,23,.05);color:var(--ink)}
-.nav-item.active{background:transparent;color:var(--ink);font-weight:700;border:1px solid var(--bg2);box-shadow:0 1px 3px rgba(28,25,23,.06)}
-.nav-item.active i{background:var(--accent);color:#fff}
+.nav-drop-menu .nav-item{width:auto;height:36px}
+.nav-item i,.nav-drop-toggle i{font-size:14px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:all .18s;flex-shrink:0;color:var(--nav-ic)!important}
+.nav-item:hover{background:var(--ac-l,rgba(28,25,23,.05));color:var(--ink)}
+.nav-item.active{background:var(--ac-l,var(--bg2));color:var(--ink);font-weight:700;border:1.5px solid var(--ac,var(--accent));box-shadow:0 1px 3px rgba(28,25,23,.06)}
+.nav-item.active i{background:#fff;box-shadow:0 0 0 1px var(--ac,var(--accent)) inset}
 .nav-divider{width:1px;height:26px;background:var(--side-line);flex-shrink:0;margin:0 2px}
 .topbar-actions{display:flex;align-items:center;gap:6px;margin-left:auto;flex-shrink:0;padding-left:.625rem;border-left:1px solid var(--side-line);height:100%}
 .topbar-actions .btn{padding:5px 8px;font-size:10px}
@@ -418,29 +431,29 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
   <input type="file" id="logoInput" accept="image/*" onchange="uploadLogo(event)">
 
   <span class="nav-section">Principal</span>
-  <div class="nav-item active" data-page="dashboard"><i class="ti ti-layout-dashboard" style="color:var(--amber)"></i> Dashboard</div>
-  <div class="nav-item" data-page="lancamentos"><i class="ti ti-receipt" style="color:var(--teal)"></i> Lançamentos</div>
+  <div class="nav-item active" data-page="dashboard" style="--ac:var(--n1);--ac-l:var(--n1-l)"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
+  <div class="nav-item" data-page="lancamentos" style="--ac:var(--n7);--ac-l:var(--n7-l)"><i class="ti ti-receipt"></i> Lançamentos</div>
   <div class="nav-divider"></div>
-  <div class="nav-item" data-page="feiras"><i class="ti ti-calendar-event" style="color:var(--blue)"></i> Feiras/Eventos</div>
-  <div class="nav-item" data-page="empregados"><i class="ti ti-users" style="color:var(--red)"></i> Empregados</div>
-  <div class="nav-item" data-page="viaturas"><i class="ti ti-car" style="color:var(--blue)"></i> Viaturas</div>
+  <div class="nav-item" data-page="feiras" style="--ac:var(--n2);--ac-l:var(--n2-l)"><i class="ti ti-calendar-event"></i> Feiras/Eventos</div>
+  <div class="nav-item" data-page="empregados" style="--ac:var(--n6);--ac-l:var(--n6-l)"><i class="ti ti-users"></i> Empregados</div>
+  <div class="nav-item" data-page="viaturas" style="--ac:var(--n9);--ac-l:var(--n9-l)"><i class="ti ti-car"></i> Viaturas</div>
   <div class="nav-divider"></div>
   <div class="nav-dropdown">
-    <div class="nav-drop-toggle" onclick="toggleNavDrop(event)"><i class="ti ti-adjustments" style="color:var(--amber)"></i> Mais <i class="ti ti-chevron-down" style="font-size:10px"></i></div>
+    <div class="nav-drop-toggle" onclick="toggleNavDrop(event)" style="--ac:var(--n5);--ac-l:var(--n5-l)"><i class="ti ti-adjustments"></i> Mais <i class="ti ti-chevron-down" style="font-size:10px"></i></div>
     <div class="nav-drop-menu" id="navDropAnalise">
-      <div class="nav-item" data-page="filtros"><i class="ti ti-filter" style="color:var(--blue)"></i> Filtros</div>
-      <div class="nav-item" data-page="relatorio"><i class="ti ti-chart-bar" style="color:var(--teal)"></i> Relatório</div>
-      <div class="nav-item" data-page="comparar"><i class="ti ti-arrows-left-right" style="color:var(--amber)"></i> Comparar</div>
-      <div class="nav-item" data-page="configuracoes"><i class="ti ti-settings" style="color:var(--red)"></i> Configurações</div>
+      <div class="nav-item" data-page="filtros" style="--ac:var(--n8);--ac-l:var(--n8-l)"><i class="ti ti-filter"></i> Filtros</div>
+      <div class="nav-item" data-page="relatorio" style="--ac:var(--n10);--ac-l:var(--n10-l)"><i class="ti ti-chart-bar"></i> Relatório</div>
+      <div class="nav-item" data-page="comparar" style="--ac:var(--n3);--ac-l:var(--n3-l)"><i class="ti ti-arrows-left-right"></i> Comparar</div>
+      <div class="nav-item" data-page="configuracoes" style="--ac:var(--n4);--ac-l:var(--n4-l)"><i class="ti ti-settings"></i> Configurações</div>
     </div>
   </div>
   <div class="topbar-actions">
-    <button class="btn btn-icon" onclick="syncLocalToCloud()" title="Enviar dados locais para a cloud (igualar PC e telemóvel)" style="color:var(--teal);border-color:var(--teal-l);background:var(--teal-l)"><i class="ti ti-cloud-up"></i></button>
-    <button class="btn btn-icon" onclick="loadAllFromCloud()" title="Sincronizar agora" style="color:var(--blue);border-color:var(--blue-l);background:var(--blue-l)"><i class="ti ti-refresh"></i></button>
-    <button class="btn btn-icon" onclick="exportarExcel()" title="Exportar Excel" style="color:var(--teal);border-color:var(--teal-l);background:var(--teal-l)"><i class="ti ti-download"></i></button>
-    <label class="btn btn-icon" title="Importar Excel" style="cursor:pointer;color:var(--blue);border-color:var(--blue-l);background:var(--blue-l)"><i class="ti ti-upload"></i><input type="file" accept=".xlsx,.xls" onchange="importarExcel(event)" style="display:none"></label>
-    <button class="btn btn-icon" onclick="gdriveAuth(()=>showSyncStatus('Google Drive ligado! ✓',true))" title="Ligar Google Drive" style="color:var(--amber);border-color:var(--amber-l);background:var(--amber-l)"><i class="ti ti-brand-google-drive"></i></button>
-    <button class="btn btn-icon" onclick="doLogout()" title="Terminar sessão" style="color:var(--red);border-color:var(--red-l);background:var(--red-l)"><i class="ti ti-key"></i></button>
+    <button class="btn btn-icon" onclick="syncLocalToCloud()" title="Enviar dados locais para a cloud (igualar PC e telemóvel)" style="color:var(--n7);border-color:var(--n7-l);background:var(--n7-l)"><i class="ti ti-cloud-up"></i></button>
+    <button class="btn btn-icon" onclick="loadAllFromCloud()" title="Sincronizar agora" style="color:var(--n2);border-color:var(--n2-l);background:var(--n2-l)"><i class="ti ti-refresh"></i></button>
+    <button class="btn btn-icon" onclick="exportarExcel()" title="Exportar Excel" style="color:var(--n1);border-color:var(--n1-l);background:var(--n1-l)"><i class="ti ti-download"></i></button>
+    <label class="btn btn-icon" title="Importar Excel" style="cursor:pointer;color:var(--n9);border-color:var(--n9-l);background:var(--n9-l)"><i class="ti ti-upload"></i><input type="file" accept=".xlsx,.xls" onchange="importarExcel(event)" style="display:none"></label>
+    <button class="btn btn-icon" onclick="gdriveAuth(()=>showSyncStatus('Google Drive ligado! ✓',true))" title="Ligar Google Drive" style="color:var(--n5);border-color:var(--n5-l);background:var(--n5-l)"><i class="ti ti-brand-google-drive"></i></button>
+    <button class="btn btn-icon" onclick="doLogout()" title="Terminar sessão" style="color:var(--n6);border-color:var(--n6-l);background:var(--n6-l)"><i class="ti ti-key"></i></button>
   </div>
 </div>
 
@@ -1042,7 +1055,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
     <div class="form-group"><label class="form-label">Data de fim</label><input type="date" id="ff-fim"></div>
   </div>
   <div class="form-row">
-    <div class="form-group"><label class="form-label">Ano</label><select id="ff-ano"><option>2024</option><option>2025</option><option>2026</option><option>2027</option><option>2028</option></select></div>
+    <div class="form-group"><label class="form-label">Ano</label><select id="ff-ano"><option>2023</option><option>2024</option><option>2025</option><option>2026</option><option>2027</option><option>2028</option><option>2029</option><option>2030</option><option>2031</option><option>2032</option><option>2033</option><option>2034</option><option>2035</option></select></div>
     <div class="form-group"><label class="form-label">Cor (atribuída automaticamente — podes alterar)</label><input type="color" id="ff-cor" value="#BA7517" style="height:38px;padding:2px 4px;cursor:pointer"></div>
   </div>
   <div class="modal-footer"><button class="btn" onclick="closeFairModal()">Cancelar</button><button class="btn btn-primary" onclick="saveFair()"><i class="ti ti-check"></i> Guardar</button></div>
@@ -1311,20 +1324,26 @@ let catsRec=['Vendas','Serviços','Aluguer de Equipamento','Entradas/Bilhetes','
 let contas=[];
 
 let txList=[];
-let nextId=1;
+/* Os contadores nextId/nextFairId/nextEmpId/nextViatId geram SEMPRE ids negativos
+   (-1,-2,-3...) para registos criados localmente e ainda não confirmados na cloud
+   (_local:true). O Supabase atribui sempre ids positivos (sequência própria da BD).
+   Usar espaços separados (negativo=temporário / positivo=cloud) evita que dois
+   dispositivos diferentes, ambos offline, gerem por coincidência o mesmo id
+   temporário e um apague o registo do outro ao sincronizar (ver loadAllFromCloud). */
+let nextId=-1;
 let activeFilter='todos';
 let editTxId=null;
 let fluxoChart=null,despChart=null;
 
 let fairs=[];
-let nextFairId=1; let editFairId=null;
+let nextFairId=-1; let editFairId=null;
 let calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
 let emps=[];
-let nextEmpId=1; let editEmpId=null;
+let nextEmpId=-1; let editEmpId=null;
 
 let viats=[];
-let nextViatId=1; let editViatId=null;
+let nextViatId=-1; let editViatId=null;
 
 /* ---- NAV ---- */
 function toggleNavDrop(e){e.stopPropagation();const d=e.currentTarget.closest('.nav-dropdown');if(d)d.classList.toggle('open');}
@@ -1386,7 +1405,7 @@ function editarFundoCaixa(){
   txList=txList.filter(t=>t.tipo!=='Fundo de Caixa');
   const hoje=new Date().toISOString().slice(0,10);
   const novo={tipo:'Fundo de Caixa',cat:'Fundo de Caixa',conta:'',mes:'',ano:new Date().getFullYear(),valor,data:hoje,notas:'',meio:'Dinheiro',empregado:'',viatura:'',hasDoc:false};
-  const newId=nextId++;
+  const newId=nextId--;
   txList.push({...novo,id:newId,_local:true});
   saveToLocal();
   supaInsert('lancamentos',novo).then(r=>{ if(r&&r[0]){ const e=txList.find(x=>x.id===newId); if(e){e.id=r[0].id;delete e._local;} saveToLocal(); } });
@@ -1414,7 +1433,7 @@ function renderDashboard(){
     <div class="metric" style="border-top:2.5px solid var(--teal)"><div class="metric-label">Receita total</div><div class="metric-value">${fmt(rec)}</div><div class="metric-sub" style="color:var(--teal)">↑ ${filtered.filter(t=>t.tipo==='Receita').length} registos</div></div>
     <div class="metric" style="border-top:2.5px solid var(--red)"><div class="metric-label">Despesas totais</div><div class="metric-value">${fmt(desp)}</div><div class="metric-sub" style="color:var(--red)">↓ ${filtered.filter(t=>t.tipo==='Despesa').length} registos</div></div>`
     +cartaoFundo+`
-    <div class="metric" style="border-top:2.5px solid var(--amber)"><div class="metric-label">Feiras / Eventos</div><div class="metric-value">${fairs.filter(f=>(anoSel==='Todos'||f.ano===String(anoSel))&&f.tipo!=='evento').length} / ${fairs.filter(f=>(anoSel==='Todos'||f.ano===String(anoSel))&&f.tipo==='evento').length}</div><div class="metric-sub" style="color:var(--text2)">feiras / eventos · ${[...new Set(filtered.map(t=>t.mes))].length} meses ativos</div></div>`;
+    <div class="metric" style="border-top:2.5px solid var(--amber)"><div class="metric-label">Feiras / Eventos</div><div class="metric-value">${fairs.filter(f=>(anoSel==='Todos'||String(f.ano)===String(anoSel))&&f.tipo!=='evento').length} / ${fairs.filter(f=>(anoSel==='Todos'||String(f.ano)===String(anoSel))&&f.tipo==='evento').length}</div><div class="metric-sub" style="color:var(--text2)">feiras / eventos · ${[...new Set(filtered.map(t=>t.mes))].length} meses ativos</div></div>`;
   const rmEl=document.getElementById('dash-result-mobile');
   if(rmEl)rmEl.innerHTML=cartaoResultado+cartaoFundo;
   // Receita por local — TODAS as feiras/locais (sem limite)
@@ -1524,17 +1543,27 @@ async function deleteTx(id){
   // Apaga o lançamento primeiro (ação principal), sem ficar preso à autenticação do Drive
   txList=txList.filter(t=>t.id!==id);
   saveToLocal();
-  supaDelete('lancamentos',id).then(()=>{showSyncStatus('Lançamento apagado!');backupExcelParaDrive();});
+  supaDelete('lancamentos',id).then(r=>{
+    if(r){showSyncStatus('Lançamento apagado!');backupExcelParaDrive();}
+    else showSyncStatus('Apagado localmente, mas falhou na cloud — pode reaparecer ao sincronizar',false);
+  });
   renderTxTable();renderDashboard();populateFilters();
   // Limpeza do documento associado: localStorage + ficheiro no Google Drive
   deleteDocLocal(id);
   deleteDocDriveId(id);
   if(driveId){
+    // Só tenta apagar no Drive se já houver ligação válida — sem isto, com o token
+    // expirado, ia abrir o ecrã de autorização da Google a meio de um "apagar", e se o
+    // utilizador o fechasse, esta função ficava presa à espera para sempre.
+    if(!gdriveValid()){
+      console.error('Drive não ligado — ficheiro',driveId,'ficou órfão na Drive.');
+    }else{
     try{
       await gdriveDeleteFile(driveId);
     }catch(e){
       console.error('Falha ao apagar ficheiro do Drive:',e);
       showSyncStatus('Lançamento apagado, mas o ficheiro no Drive pode não ter sido removido',false);
+    }
     }
   }
 }
@@ -1718,7 +1747,7 @@ function saveTx(){
     });
   } else {
     const novo={tipo,cat,conta,mes,ano,valor:valorFinal,data,notas:notasFinal,meio,empregado,viatura,hasDoc:!!docData};
-    const newId=nextId++;
+    const newId=nextId--;
     const novoTx={...novo,id:newId,_local:true};
     txList.push(novoTx);
     if(docData)saveDocLocal(newId,docData);
@@ -1726,8 +1755,10 @@ function saveTx(){
     supaInsert('lancamentos',novo).then(r=>{
       if(r&&r[0]){
         const oldId=newId;
-        txList[txList.length-1].id=r[0].id;
-        delete txList[txList.length-1]._local;
+        // Atualiza pela referência guardada em novoTx (não pelo último índice do array) —
+        // se entretanto outro lançamento foi criado/reordenado, o último índice já não é este.
+        novoTx.id=r[0].id;
+        delete novoTx._local;
         // move doc to new id
         if(docData){saveDocLocal(r[0].id,docData);deleteDocLocal(oldId);}
         saveToLocal();
@@ -1990,14 +2021,14 @@ function renderFairList(){
   // default to current year
   if(!sel.dataset.init){sel.value=String(new Date().getFullYear());sel.dataset.init='1';}
   const yr=sel.value;
-  const fl=fairs.filter(f=>!yr||f.ano===yr).sort((a,b)=>a.inicio.localeCompare(b.inicio));
+  const fl=fairs.filter(f=>!yr||String(f.ano)===String(yr)).sort((a,b)=>a.inicio.localeCompare(b.inicio));
   document.getElementById('fairList').innerHTML=fl.length?fl.map(f=>{
     const dias=Math.round((new Date(f.fim)-new Date(f.inicio))/864e5)+1;
     return`<div class="fair-item">
       <div class="fair-dot" style="background:${f.cor}"></div>
       <div class="fair-info"><div class="fair-name">${f.nome} <span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;background:${f.tipo==='evento'?'var(--blue-l)':'var(--amber-l)'};color:${f.tipo==='evento'?'var(--blue)':'var(--amber)'}">${f.tipo==='evento'?'EVENTO':'FEIRA'}</span></div><div class="fair-dates">${f.inicio} → ${f.fim}</div></div>
       <span class="fair-days">${dias}d</span>
-      <button class="btn btn-sm btn-icon" onclick="duplicateFair(${f.id})" title="Repetir no ano seguinte" style="color:var(--teal);background:var(--teal-l);border-color:var(--teal-l)"><i class="ti ti-copy" style="font-size:12px"></i></button>
+      <button class="btn btn-sm btn-icon" onclick="duplicateFair(${f.id})" title="Repetir esta feira/evento noutro ano (o ano vem sugerido, mas podes escolher qualquer um)" style="color:var(--teal);background:var(--teal-l);border-color:var(--teal-l)"><i class="ti ti-copy" style="font-size:12px"></i></button>
       <button class="btn btn-sm btn-icon btn-edit" onclick="editFair(${f.id})" title="Editar feira"><i class="ti ti-pencil" style="font-size:12px"></i></button>
       <button class="btn btn-sm btn-icon btn-del" onclick="deleteFair(${f.id})" title="Remover feira"><i class="ti ti-trash" style="font-size:12px"></i></button>
     </div>`;}).join(''):`<div class="empty"><i class="ti ti-calendar-off"></i>Sem feiras nem eventos${yr?' para '+yr:''}</div>`;
@@ -2023,18 +2054,33 @@ function duplicateFair(id){
   document.getElementById('ff-fim').value=bumpYear(f.fim,anoSeg);
   document.getElementById('fairModal').style.display='flex';
 }
-function deleteFair(id){if(!confirm('Remover esta feira do calendário?'))return;fairs=fairs.filter(f=>f.id!==id);saveToLocal();supaDelete('feiras',id).then(()=>{showSyncStatus('Feira removida!');backupExcelParaDrive();});renderCalendar();renderFairList();renderDashboard();}
+function deleteFair(id){if(!confirm('Remover esta feira do calendário?'))return;fairs=fairs.filter(f=>f.id!==id);saveToLocal();supaDelete('feiras',id).then(r=>{
+  if(r){showSyncStatus('Feira removida!');backupExcelParaDrive();}
+  else showSyncStatus('Removida localmente, mas falhou na cloud — pode reaparecer ao sincronizar',false);
+});renderCalendar();renderFairList();renderDashboard();}
 function saveFair(){
   const nome=document.getElementById('ff-nome').value.trim(),inicio=document.getElementById('ff-inicio').value,fim=document.getElementById('ff-fim').value,ano=document.getElementById('ff-ano').value,cor=document.getElementById('ff-cor').value;
   const tipo=document.getElementById('ff-tipo').value||'feira';
   if(!nome||!inicio||!fim){alert('Preenche o nome e as datas.');return;}
   if(editFairId){
     const i=fairs.findIndex(x=>x.id===editFairId);fairs[i]={...fairs[i],nome,inicio,fim,ano,cor,tipo};
-    saveToLocal();supaUpdate('feiras',editFairId,fairs[fairs.findIndex(x=>x.id===editFairId)]).then(()=>{showSyncStatus('Guardado!');backupExcelParaDrive();});
+    saveToLocal();supaUpdate('feiras',editFairId,fairs[fairs.findIndex(x=>x.id===editFairId)]).then(r=>{
+      if(r){showSyncStatus('Guardado!');backupExcelParaDrive();}
+      else showSyncStatus('Guardado só localmente — falha ao sincronizar com a cloud',false);
+    });
   } else {
     const nova={nome,inicio,fim,ano,cor,tipo};
-    const novaF={...nova,id:nextFairId++};fairs.push(novaF);
-    saveToLocal();supaInsert('feiras',nova).then(r=>{if(r&&r[0])fairs[fairs.length-1].id=r[0].id;showSyncStatus('Guardado!');backupExcelParaDrive();});closeFairModal();renderCalendar();renderFairList();renderDashboard();return;
+    const novaF={...nova,id:nextFairId--,_local:true};fairs.push(novaF);
+    saveToLocal();supaInsert('feiras',nova).then(r=>{
+      if(r&&r[0]){
+        // Atualiza pela referência guardada em novaF, não pelo último índice do array.
+        novaF.id=r[0].id;delete novaF._local;
+        saveToLocal();showSyncStatus('Guardado!');backupExcelParaDrive();
+      }else{
+        showSyncStatus('Guardado só localmente — falha ao sincronizar com a cloud',false);
+      }
+    });
+    closeFairModal();renderCalendar();renderFairList();renderDashboard();return;
   }
   closeFairModal();renderCalendar();renderFairList();renderDashboard();afterSaveFair();
 }
@@ -2077,9 +2123,15 @@ function deleteTxFromEmp(id){
   const driveId=loadDocDriveId(id);
   txList=txList.filter(t=>t.id!==id);
   saveToLocal();
-  supaDelete('lancamentos',id).then(()=>{showSyncStatus('Pagamento apagado!');backupExcelParaDrive();});
+  supaDelete('lancamentos',id).then(r=>{
+    if(r){showSyncStatus('Pagamento apagado!');backupExcelParaDrive();}
+    else showSyncStatus('Apagado localmente, mas falhou na cloud — pode reaparecer ao sincronizar',false);
+  });
   deleteDocLocal(id);deleteDocDriveId(id);
-  if(driveId){gdriveDeleteFile(driveId).catch(e=>console.error('Falha ao apagar ficheiro do Drive:',e));}
+  // Só tenta apagar no Drive se já houver ligação válida — evita abrir o ecrã de
+  // autorização da Google a meio de um "apagar" (ver mesma proteção em deleteTx).
+  if(driveId&&gdriveValid()){gdriveDeleteFile(driveId).catch(e=>console.error('Falha ao apagar ficheiro do Drive:',e));}
+  else if(driveId){console.error('Drive não ligado — ficheiro',driveId,'ficou órfão na Drive.');}
   renderEmpPay();renderEmpMetrics();renderDashboard();
 }
 function openEmpModal(){
@@ -2100,7 +2152,10 @@ function editEmp(id){
   document.getElementById('em-cor').value=e.cor;
   document.getElementById('empModal').style.display='flex';
 }
-function deleteEmp(id){if(!confirm('Remover este empregado?'))return;emps=emps.filter(e=>e.id!==id);saveToLocal();supaDelete('empregados',id).then(()=>{showSyncStatus('Empregado removido!');backupExcelParaDrive();});renderEmpMetrics();renderEmpList();}
+function deleteEmp(id){if(!confirm('Remover este empregado?'))return;emps=emps.filter(e=>e.id!==id);saveToLocal();supaDelete('empregados',id).then(r=>{
+  if(r){showSyncStatus('Empregado removido!');backupExcelParaDrive();}
+  else showSyncStatus('Removido localmente, mas falhou na cloud — pode reaparecer ao sincronizar',false);
+});renderEmpMetrics();renderEmpList();}
 function saveEmp(){
   const nome=document.getElementById('em-nome').value.trim();
   const local=document.getElementById('em-local').value.trim();
@@ -2109,11 +2164,22 @@ function saveEmp(){
   if(editEmpId){
     const i=emps.findIndex(x=>x.id===editEmpId);
     emps[i]={...emps[i],nome,local,cor};
-    saveToLocal();supaUpdate('empregados',editEmpId,emps[emps.findIndex(x=>x.id===editEmpId)]).then(()=>{showSyncStatus('Empregado atualizado!');backupExcelParaDrive();});
+    saveToLocal();supaUpdate('empregados',editEmpId,emps[emps.findIndex(x=>x.id===editEmpId)]).then(r=>{
+      if(r){showSyncStatus('Empregado atualizado!');backupExcelParaDrive();}
+      else showSyncStatus('Guardado só localmente — falha ao sincronizar com a cloud',false);
+    });
   } else {
     const novo={nome,local,cor,sal:0};
-    const novoE={...novo,id:nextEmpId++};emps.push(novoE);
-    saveToLocal();supaInsert('empregados',novo).then(r=>{if(r&&r[0])emps[emps.length-1].id=r[0].id;showSyncStatus('Empregado guardado!');backupExcelParaDrive();});closeEmpModal();renderEmpMetrics();renderEmpList();return;
+    const novoE={...novo,id:nextEmpId--,_local:true};emps.push(novoE);
+    saveToLocal();supaInsert('empregados',novo).then(r=>{
+      if(r&&r[0]){
+        novoE.id=r[0].id;delete novoE._local;
+        saveToLocal();showSyncStatus('Empregado guardado!');backupExcelParaDrive();
+      }else{
+        showSyncStatus('Guardado só localmente — falha ao sincronizar com a cloud',false);
+      }
+    });
+    closeEmpModal();renderEmpMetrics();renderEmpList();return;
   }
   closeEmpModal();renderEmpMetrics();renderEmpList();afterSaveEmp();
 }
@@ -2143,7 +2209,10 @@ function renderCombust(){
 function openViatModal(){editViatId=null;document.getElementById('viatModalTitle').textContent='Nova viatura';document.getElementById('vi-nome').value='';document.getElementById('vi-matricula').value='';document.getElementById('viatModal').style.display='flex';}
 function closeViatModal(){document.getElementById('viatModal').style.display='none';}
 function editViat(id){const v=viats.find(x=>x.id===id);if(!v)return;editViatId=id;document.getElementById('viatModalTitle').textContent='Editar viatura';document.getElementById('vi-nome').value=v.nome;document.getElementById('vi-matricula').value=v.matricula||'';document.getElementById('vi-tipo').value=v.tipo;document.getElementById('viatModal').style.display='flex';}
-function deleteViat(id){if(!confirm('Remover esta viatura?'))return;viats=viats.filter(v=>v.id!==id);saveToLocal();supaDelete('viaturas',id).then(()=>{showSyncStatus('Viatura removida!');backupExcelParaDrive();});renderViats();renderCombust();}
+function deleteViat(id){if(!confirm('Remover esta viatura?'))return;viats=viats.filter(v=>v.id!==id);saveToLocal();supaDelete('viaturas',id).then(r=>{
+  if(r){showSyncStatus('Viatura removida!');backupExcelParaDrive();}
+  else showSyncStatus('Removida localmente, mas falhou na cloud — pode reaparecer ao sincronizar',false);
+});renderViats();renderCombust();}
 function saveViat(){
   const nome=document.getElementById('vi-nome').value.trim();
   const matricula=document.getElementById('vi-matricula').value.trim();
@@ -2152,12 +2221,22 @@ function saveViat(){
   if(editViatId){
     const i=viats.findIndex(x=>x.id===editViatId);
     viats[i]={...viats[i],nome,matricula,tipo};
-    saveToLocal();supaUpdate('viaturas',editViatId,viats[viats.findIndex(x=>x.id===editViatId)]).then(()=>{showSyncStatus('Viatura atualizada!');backupExcelParaDrive();});
+    saveToLocal();supaUpdate('viaturas',editViatId,viats[viats.findIndex(x=>x.id===editViatId)]).then(r=>{
+      if(r){showSyncStatus('Viatura atualizada!');backupExcelParaDrive();}
+      else showSyncStatus('Guardado só localmente — falha ao sincronizar com a cloud',false);
+    });
     closeViatModal();renderViats();renderCombust();afterSaveViat();
   } else {
     const nova={nome,matricula,tipo,km:'—'};
-    const novaV={...nova,id:nextViatId++};viats.push(novaV);
-    saveToLocal();supaInsert('viaturas',nova).then(r=>{if(r&&r[0])viats[viats.length-1].id=r[0].id;showSyncStatus('Viatura guardada!');backupExcelParaDrive();});
+    const novaV={...nova,id:nextViatId--,_local:true};viats.push(novaV);
+    saveToLocal();supaInsert('viaturas',nova).then(r=>{
+      if(r&&r[0]){
+        novaV.id=r[0].id;delete novaV._local;
+        saveToLocal();showSyncStatus('Viatura guardada!');backupExcelParaDrive();
+      }else{
+        showSyncStatus('Guardado só localmente — falha ao sincronizar com a cloud',false);
+      }
+    });
     closeViatModal();renderViats();renderCombust();afterSaveViat();
   }
 }
@@ -2274,7 +2353,10 @@ function showReport(type,el){
 }
 
 /* ---- COMPARAR (por ano / por feira) ---- */
-function compYr(t){ return (t.data||'').slice(0,4) || String(t.ano||''); }
+/* Usa sempre o campo "ano" do lançamento como critério principal (só cai para o ano da
+   data se, por algum motivo, "ano" estiver vazio) — assim fica consistente com o Dashboard,
+   o Relatório e o "Lado a lado", que também decidem o ano de um lançamento por este campo. */
+function compYr(t){ return String(t.ano||'') || (t.data||'').slice(0,4); }
 function comparAnosDisponiveis(){
   const set=new Set();
   txList.forEach(t=>{const y=compYr(t);if(y)set.add(y);});
@@ -2351,7 +2433,11 @@ function refreshDuoFeiras(lado){
 function duoDados(lado){
   const ano=document.getElementById('duo'+'Ano'+lado)?.value;
   const fid=document.getElementById('duoFeira'+lado)?.value;
-  let rotulo='Ano '+ano, pred=t=>String(t.ano)===String(ano)||(t.data||'').slice(0,4)===String(ano);
+  // Usa sempre o campo "ano" do lançamento (não a data) — é o mesmo critério do Dashboard e do
+  // Relatório. Um lançamento pode ter data noutro ano (ex.: despesa de dezembro atribuída à
+  // edição do ano seguinte) — comparar também pela data fazia esse lançamento contar em dobro
+  // ao comparar dois anos lado a lado.
+  let rotulo='Ano '+ano, pred=t=>String(t.ano)===String(ano);
   if(fid){
     const f=fairs.find(x=>String(x.id)===String(fid));
     if(f){ rotulo=f.nome+' · '+ano; pred=t=>t.conta===f.nome && String(t.ano)===String(ano); }
@@ -2760,12 +2846,12 @@ function importarExcel(e){
         const rows=XLSX.utils.sheet_to_json(wb.Sheets['Lancamentos']);
         if(rows.length){
           txList=rows.map(r=>({
-            id:parseInt(r.ID)||nextId++,tipo:r.Tipo||'Despesa',cat:r.Categoria||'',
+            id:parseInt(r.ID)||nextId--,tipo:r.Tipo||'Despesa',cat:r.Categoria||'',
             conta:r.Conta||'',mes:r['Mês']||'',ano:parseInt(r.Ano)||new Date().getFullYear(),
             valor:parseFloat(r.Valor)||0,data:r.Data||'',notas:r.Notas||'',
             meio:r.Meio||'Dinheiro',empregado:r.Empregado||'',_local:true
           }));
-          if(txList.length)nextId=Math.max(...txList.map(t=>t.id))+1;
+          if(txList.length)nextId=Math.min(0,...txList.map(t=>t.id))-1;
           flags.tx=true;
         }
       }
@@ -2773,8 +2859,8 @@ function importarExcel(e){
       if(wb.Sheets['Feiras']){
         const rows=XLSX.utils.sheet_to_json(wb.Sheets['Feiras']);
         if(rows.length){
-          fairs=rows.map(r=>({id:parseInt(r.ID)||nextFairId++,nome:r.Nome||'',inicio:r['Início']||r.Inicio||'',fim:r.Fim||'',ano:String(r.Ano||''),cor:r.Cor||'#BA7517',tipo:r.Tipo||'feira',_local:true}));
-          if(fairs.length)nextFairId=Math.max(...fairs.map(f=>f.id))+1;
+          fairs=rows.map(r=>({id:parseInt(r.ID)||nextFairId--,nome:r.Nome||'',inicio:r['Início']||r.Inicio||'',fim:r.Fim||'',ano:String(r.Ano||''),cor:r.Cor||'#BA7517',tipo:r.Tipo||'feira',_local:true}));
+          if(fairs.length)nextFairId=Math.min(0,...fairs.map(f=>f.id))-1;
           flags.f=true;
         }
       }
@@ -2782,8 +2868,8 @@ function importarExcel(e){
       if(wb.Sheets['Empregados']){
         const rows=XLSX.utils.sheet_to_json(wb.Sheets['Empregados']);
         if(rows.length){
-          emps=rows.map(r=>({id:parseInt(r.ID)||nextEmpId++,nome:r.Nome||'',local:r.Local||'',sal:parseFloat(r['Salário/Dia'])||0,cor:r.Cor||'#185FA5',obs:r.Observações||'',feira:r.Feira||''}));
-          if(emps.length)nextEmpId=Math.max(...emps.map(e=>e.id))+1;
+          emps=rows.map(r=>({id:parseInt(r.ID)||nextEmpId--,nome:r.Nome||'',local:r.Local||'',sal:parseFloat(r['Salário/Dia'])||0,cor:r.Cor||'#185FA5',obs:r.Observações||'',feira:r.Feira||''}));
+          if(emps.length)nextEmpId=Math.min(0,...emps.map(e=>e.id))-1;
           flags.e=true;
         }
       }
@@ -2791,8 +2877,8 @@ function importarExcel(e){
       if(wb.Sheets['Viaturas']){
         const rows=XLSX.utils.sheet_to_json(wb.Sheets['Viaturas']);
         if(rows.length){
-          viats=rows.map(r=>({id:parseInt(r.ID)||nextViatId++,nome:r.Nome||'',matricula:r.Matrícula||r.Matricula||'',tipo:r.Tipo||'Carrinha',km:r.Km||'—'}));
-          if(viats.length)nextViatId=Math.max(...viats.map(v=>v.id))+1;
+          viats=rows.map(r=>({id:parseInt(r.ID)||nextViatId--,nome:r.Nome||'',matricula:r.Matrícula||r.Matricula||'',tipo:r.Tipo||'Carrinha',km:r.Km||'—'}));
+          if(viats.length)nextViatId=Math.min(0,...viats.map(v=>v.id))-1;
           flags.v=true;
         }
       }
@@ -2845,9 +2931,28 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.3';
+const APP_VERSION='3.6';
 const APP_UPDATE_DATE='2026-08-27'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.6',data:'2026-08-27',notas:[
+    'Nova paleta de cores suaves nos botões do menu principal e da lista "Mais" — cada secção tem agora a sua própria cor discreta.',
+    'Corrigido: ao selecionar uma secção do menu, o ícone ficava com uma cor mal aplicada e quase invisível — agora todos os ícones têm a mesma cor e a secção selecionada mostra-se com um contorno colorido, claro em qualquer ecrã.',
+    'A lista "Mais" (Filtros, Relatório, Comparar, Configurações) passou a mostrar os botões lado a lado em vez de um por baixo do outro.',
+    'Corrigido: apagar uma feira/evento, empregado, viatura ou lançamento avisava sempre "removido!" mesmo quando a ligação à cloud falhava — agora avisa quando ficou só apagado neste aparelho, para saberes que precisas de sincronizar mais tarde.',
+    'Corrigido (caso raro): dois telemóveis/computadores a criar registos novos ao mesmo tempo, ainda sem sincronizar entre si, podiam por coincidência usar o mesmo número interno e um apagar sem querer os dados do outro ao sincronizar. Já não pode acontecer.',
+  ]},
+  {v:'3.5',data:'2026-08-27',notas:[
+    'Revisão geral a pedido: repetir uma feira/evento agora deixa escolher livremente o ano (já não fica preso a "ano seguinte"), com anos disponíveis até 2035, e o botão de repetir passou a estar também em Configurações.',
+    'Corrigido: reordenar categorias, contas, feiras, empregados ou viaturas (setas ou arrastar) por vezes perdia-se ao atualizar a página.',
+    'Corrigido: guardar uma feira/evento, empregado ou viatura por vezes avisava "Guardado!" mesmo quando a ligação à cloud falhava — agora avisa sempre corretamente quando algo ficou só neste aparelho.',
+    'Corrigido: no separador "Comparar", um lançamento atribuído a um ano diferente da sua data podia ser contado a dobro (ou no ano errado) ao comparar dois anos lado a lado.',
+    'Corrigido: "Recuperar password" podia falhar se a página fosse atualizada a meio do processo (ex.: o telemóvel a recarregar o separador sozinho).',
+    'Corrigido: "Enviar dados locais para a cloud" podia, em casos raros, duplicar ou saltar registos por comparar números de identificação em vez de veres se já foram enviados.',
+    'Corrigido: apagar um lançamento com fatura anexada podia, com a ligação à Drive expirada, abrir sem aviso o ecrã de autorização da Google a meio da ação.',
+  ]},
+  {v:'3.4',data:'2026-08-27',notas:[
+    'Corrigido bug grave: depois de atualizar a página, as feiras/eventos podiam "desaparecer" do dashboard e das listas (mostrando 0), mesmo continuando guardadas na cloud — era um problema a comparar o ano de cada feira/evento. Já não volta a acontecer.'
+  ]},
   {v:'3.3',data:'2026-08-27',notas:[
     'Corrigido: o backup automático do Excel na Google Drive só se atualizava quando mexias em lançamentos — criar, editar ou remover feiras/eventos, empregados ou viaturas ficava de fora e o ficheiro na Drive ficava desatualizado. Agora atualiza sempre que algo muda.'
   ]},
@@ -2976,15 +3081,13 @@ async function enviarLocaisParaCloud(mostrarMsg){
   if(mostrarMsg)showSyncStatus('A enviar dados locais para a cloud...',true);
   let nTx=0,nF=0,nE=0,nV=0;
   try{
-    const txC=await supaFetch('lancamentos','GET',null,'select=id');
-    const fC=await supaFetch('feiras','GET',null,'select=id');
-    const eC=await supaFetch('empregados','GET',null,'select=id');
-    const vC=await supaFetch('viaturas','GET',null,'select=id');
-    const txCloudIds=new Set((Array.isArray(txC)?txC:[]).map(r=>r.id));
-    const fCloudIds=new Set((Array.isArray(fC)?fC:[]).map(r=>r.id));
-    const eCloudIds=new Set((Array.isArray(eC)?eC:[]).map(r=>r.id));
-    const vCloudIds=new Set((Array.isArray(vC)?vC:[]).map(r=>r.id));
-    for(const t of txList.filter(t=>!txCloudIds.has(t.id))){
+    // Envia só o que está marcado como _local (criado neste aparelho e ainda não
+    // confirmado na cloud). NUNCA decidir isto comparando conjuntos de IDs: o ID local
+    // é apenas um contador sequencial deste aparelho e não tem nenhuma relação com o ID
+    // da cloud (auto-incremento, partilhado pela tabela toda) — comparar os dois já
+    // causou tanto duplicados (falsos "ainda não existe") como registos nunca enviados
+    // (falsos "já existe", por coincidência de números).
+    for(const t of txList.filter(t=>t._local)){
       const oldId=t.id;
       try{
         const r=await supaInsert('lancamentos',t);
@@ -2996,15 +3099,15 @@ async function enviarLocaisParaCloud(mostrarMsg){
         }
       }catch(e){console.error('Envio lançamento falhou',oldId,e);}
     }
-    for(const f of fairs.filter(f=>!fCloudIds.has(f.id))){
+    for(const f of fairs.filter(f=>f._local)){
       try{ const r=await supaInsert('feiras',f); if(r&&r[0]){f.id=r[0].id;delete f._local;nF++;} }
       catch(e){console.error('Envio feira falhou',f.id,e);}
     }
-    for(const em of emps.filter(em=>!eCloudIds.has(em.id))){
+    for(const em of emps.filter(em=>em._local)){
       try{ const r=await supaInsert('empregados',em); if(r&&r[0]){em.id=r[0].id;delete em._local;nE++;} }
       catch(e){console.error('Envio empregado falhou',em.id,e);}
     }
-    for(const v of viats.filter(v=>!vCloudIds.has(v.id))){
+    for(const v of viats.filter(v=>v._local)){
       try{ const r=await supaInsert('viaturas',v); if(r&&r[0]){v.id=r[0].id;delete v._local;nV++;} }
       catch(e){console.error('Envio viatura falhou',v.id,e);}
     }
@@ -3069,17 +3172,35 @@ async function loadAllFromCloud(){
       const cloudIds=new Set(cloud.map(t=>t.id));
       const locaisNaoSync=txList.filter(t=>!cloudIds.has(t.id) && t._local);
       txList=[...cloud, ...locaisNaoSync];
-      nextId=txList.length?Math.max(...txList.map(t=>t.id))+1:1;
+      nextId=Math.min(0,...txList.map(t=>t.id))-1;
       saveToLocal();
     }
     if(Array.isArray(fs)){
-      const fCloudIds=new Set(fs.map(f=>f.id));
+      // O Supabase pode devolver "ano" como número (conforme o tipo da coluna), mas o
+      // resto da app compara sempre por String — sem isto, feiras/eventos "desapareciam"
+      // dos filtros por ano logo a seguir a um refresh, mesmo continuando na cloud.
+      const fsCorrigidas=fs.map(f=>({...f,ano:String(f.ano)}));
+      const fCloudIds=new Set(fsCorrigidas.map(f=>f.id));
       const fLocais=fairs.filter(f=>!fCloudIds.has(f.id) && f._local);
-      fairs=[...fs, ...fLocais];
-      if(fairs.length)nextFairId=Math.max(...fairs.map(f=>f.id))+1;
+      fairs=[...fsCorrigidas, ...fLocais];
+      nextFairId=Math.min(0,...fairs.map(f=>f.id))-1;
     }
-    if(Array.isArray(em)&&em.length>0){emps=em.map(e=>({...e,sal:parseFloat(e.sal)||0}));nextEmpId=Math.max(...emps.map(e=>e.id))+1;}
-    if(Array.isArray(vi)&&vi.length>0){viats=vi;nextViatId=Math.max(...viats.map(v=>v.id))+1;}
+    if(Array.isArray(em)){
+      // Mesma lógica de preservação usada em lançamentos/feiras: só ficam de fora da cloud
+      // os que ainda não foram sincronizados (_local) — nunca apaga silenciosamente um
+      // empregado só por a cloud, nesse instante, não o ter devolvido.
+      const emCorrigidos=em.map(e=>({...e,sal:parseFloat(e.sal)||0}));
+      const emCloudIds=new Set(emCorrigidos.map(e=>e.id));
+      const emLocais=emps.filter(e=>!emCloudIds.has(e.id) && e._local);
+      emps=[...emCorrigidos, ...emLocais];
+      nextEmpId=Math.min(0,...emps.map(e=>e.id))-1;
+    }
+    if(Array.isArray(vi)){
+      const viCloudIds=new Set(vi.map(v=>v.id));
+      const viLocais=viats.filter(v=>!viCloudIds.has(v.id) && v._local);
+      viats=[...vi, ...viLocais];
+      nextViatId=Math.min(0,...viats.map(v=>v.id))-1;
+    }
 
     lastCloudSync=Date.now();
     showSyncStatus('✓ '+tx.length+' lançamentos carregados!',true);
@@ -3114,6 +3235,7 @@ function cfgMove(grupo,idx,dir){
   if(alvo<0||alvo>=list.length)return;
   const item=list.splice(idx,1)[0];
   list.splice(alvo,0,item);
+  saveToLocal();
   renderConfiguracoes();
 }
 function cfgSetas(grupo,idx,total){
@@ -3153,6 +3275,7 @@ function cfgDrop(e,el){
   const item=list.splice(cfgDragIdx,1)[0];
   list.splice(toIdx,0,item);
   cfgDragIdx=null;
+  saveToLocal();
   renderConfiguracoes();
 }
 
@@ -3170,6 +3293,7 @@ function renderConfiguracoes(){
       </div>
       <div style="display:flex;gap:4px">
         ${cfgSetas('feiras',i,fairs.length)}
+        <button class="btn btn-sm btn-icon" onclick="duplicateFair(${f.id})" title="Repetir esta feira/evento noutro ano" style="color:var(--teal);background:var(--teal-l);border-color:var(--teal-l)"><i class="ti ti-copy" style="font-size:11px"></i></button>
         <button class="btn btn-sm btn-icon btn-edit" onclick="editFair(${f.id})"><i class="ti ti-pencil" style="font-size:11px"></i></button>
         <button class="btn btn-sm btn-icon btn-del" onclick="deleteFairCfg(${f.id})"><i class="ti ti-trash" style="font-size:11px"></i></button>
       </div>
@@ -3234,15 +3358,24 @@ function confirmarApagarTudo(){
   if(!confirm('🔴 CONFIRMAÇÃO FINAL\n\nEscreve mentalmente "APAGAR TUDO" e confirma.\n\nDepois desta confirmação todos os dados são eliminados permanentemente da nuvem.\n\nConfirmas?'))return;
   // apaga tudo
   txList=[];fairs=[];emps=[];viats=[];
-  nextId=1;nextFairId=1;nextEmpId=1;nextViatId=1;
+  nextId=-1;nextFairId=-1;nextEmpId=-1;nextViatId=-1;
   localStorage.removeItem(lsKey('rv_gestao_v1'));
   localStorage.removeItem(lsKey('rv_logo'));
   Promise.all([supaFetch('lancamentos','DELETE',null,'id=gt.0'),supaFetch('feiras','DELETE',null,'id=gt.0'),supaFetch('empregados','DELETE',null,'id=gt.0'),supaFetch('viaturas','DELETE',null,'id=gt.0')]).then(()=>{showSyncStatus('Todos os dados eliminados!',false);backupExcelParaDrive();});
   renderDashboard();renderConfiguracoes();
 }
-function deleteFairCfg(id){if(!confirm('Remover esta feira?'))return;fairs=fairs.filter(f=>f.id!==id);saveToLocal();supaDelete('feiras',id).then(()=>{showSyncStatus('Feira removida!');backupExcelParaDrive();});renderConfiguracoes();renderDashboard();}
-function deleteEmpCfg(id){if(!confirm('Remover este empregado?'))return;emps=emps.filter(e=>e.id!==id);saveToLocal();supaDelete('empregados',id).then(()=>{showSyncStatus('Empregado removido!');backupExcelParaDrive();});renderConfiguracoes();}
-function deleteViatCfg(id){if(!confirm('Remover esta viatura?'))return;viats=viats.filter(v=>v.id!==id);saveToLocal();supaDelete('viaturas',id).then(()=>{showSyncStatus('Viatura removida!');backupExcelParaDrive();});renderConfiguracoes();}
+function deleteFairCfg(id){if(!confirm('Remover esta feira?'))return;fairs=fairs.filter(f=>f.id!==id);saveToLocal();supaDelete('feiras',id).then(r=>{
+  if(r){showSyncStatus('Feira removida!');backupExcelParaDrive();}
+  else showSyncStatus('Removida localmente, mas falhou na cloud — pode reaparecer ao sincronizar',false);
+});renderConfiguracoes();renderDashboard();}
+function deleteEmpCfg(id){if(!confirm('Remover este empregado?'))return;emps=emps.filter(e=>e.id!==id);saveToLocal();supaDelete('empregados',id).then(r=>{
+  if(r){showSyncStatus('Empregado removido!');backupExcelParaDrive();}
+  else showSyncStatus('Removido localmente, mas falhou na cloud — pode reaparecer ao sincronizar',false);
+});renderConfiguracoes();}
+function deleteViatCfg(id){if(!confirm('Remover esta viatura?'))return;viats=viats.filter(v=>v.id!==id);saveToLocal();supaDelete('viaturas',id).then(r=>{
+  if(r){showSyncStatus('Viatura removida!');backupExcelParaDrive();}
+  else showSyncStatus('Removida localmente, mas falhou na cloud — pode reaparecer ao sincronizar',false);
+});renderConfiguracoes();}
 
 // CATS CFG
 let cfgCatEditIdx=null;
@@ -3268,6 +3401,7 @@ function deleteCfgCat(grupo,idx){
   if(!confirm(`Eliminar "${list[idx]}"?`))return;
   if(grupo==='receita')catsRec.splice(idx,1);
   else catsDesp.splice(idx,1);
+  saveToLocal();
   renderConfiguracoes();
 }
 function saveCfgCat(){
@@ -3306,15 +3440,19 @@ function clearCfgList(tipo){
   const label={feiras:'as feiras',contas:'os locais',emps:'os empregados',viats:'as viaturas',catsRec:'as categorias de receita',catsDesp:'as categorias de despesa'}[tipo];
   if(!label)return;
   if(!confirm('Apagar TODAS '+label+'?\nEsta ação não pode ser desfeita — mas NÃO afeta as outras listas.'))return;
-  if(tipo==='feiras'){ fairs.forEach(f=>supaDelete('feiras',f.id)); fairs=[]; }
-  else if(tipo==='emps'){ emps.forEach(e=>supaDelete('empregados',e.id)); emps=[]; }
-  else if(tipo==='viats'){ viats.forEach(v=>supaDelete('viaturas',v.id)); viats=[]; }
+  let promessa=Promise.resolve([]);
+  if(tipo==='feiras'){ promessa=Promise.all(fairs.map(f=>supaDelete('feiras',f.id))); fairs=[]; }
+  else if(tipo==='emps'){ promessa=Promise.all(emps.map(e=>supaDelete('empregados',e.id))); emps=[]; }
+  else if(tipo==='viats'){ promessa=Promise.all(viats.map(v=>supaDelete('viaturas',v.id))); viats=[]; }
   else if(tipo==='catsRec'){ catsRec=[]; }
   else if(tipo==='catsDesp'){ catsDesp=[]; }
   else if(tipo==='contas'){ contas=[]; }
   saveToLocal();
   renderConfiguracoes(); renderDashboard(); populateFilters();
-  showSyncStatus('Lista apagada!');
+  promessa.then(resultados=>{
+    if(resultados.some(r=>!r)) showSyncStatus('Apagado localmente, mas alguns itens falharam na cloud — podem reaparecer ao sincronizar',false);
+    else showSyncStatus('Lista apagada!');
+  });
 }
 function saveCfgConta(){
   const nome=document.getElementById('cfg-conta-nome').value.trim();
@@ -3861,8 +3999,9 @@ async function doForgotPassword(){
   authMsg('','');
   authBtnBusy('authForgotBtn',true);
   try{
-    await supaClient.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
-    authMsg('','Se existir uma conta com este email, foi enviado um link de recuperação.');
+    const{error}=await supaClient.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+    if(error) authMsg(traduzErroAuth(error),'');
+    else authMsg('','Se existir uma conta com este email, foi enviado um link de recuperação.');
   }catch(e){ authMsg('Erro de ligação. Tenta novamente.',''); }
   authBtnBusy('authForgotBtn',false);
 }
@@ -3880,6 +4019,7 @@ async function doSetNewPassword(){
     }else{
       authMsg('','Password atualizada! A entrar...');
       emFluxoRecuperacao=false;
+      try{sessionStorage.removeItem('gn_recovery_flow');}catch(e){}
       const{data:sessData}=await supaClient.auth.getSession();
       if(sessData&&sessData.session)enterApp(sessData.session);
     }
@@ -3976,6 +4116,7 @@ const AJUDA_FAQ=[
   {p:'Como lanço uma receita ou despesa?',r:'Vai a "Lançamentos" e clica em "+ Novo lançamento". Escolhe o Tipo (Receita já vem selecionada por defeito), a data, o valor, a categoria e o local/conta. Depois de guardares, aparece logo na lista e nos totais do Dashboard.'},
   {p:'Como corrijo ou apago um lançamento?',r:'Na lista de "Lançamentos", cada linha tem um lápis azul (editar) e um caixote vermelho (apagar) do lado direito. Basta clicar no que precisas.'},
   {p:'Como crio uma feira ou evento novo?',r:'Vai a "Feiras/Eventos" e adiciona uma feira (religiosa/recorrente) ou um evento (organizado). Depois, ao lançares receitas/despesas, associa-as a essa feira para veres os resultados dela em separado, no Relatório e no Comparar.'},
+  {p:'Já tenho a mesma feira de anos anteriores — tenho de escrever o nome outra vez?',r:'Não precisas de escrever nada outra vez. Em "Feiras/Eventos", clica no ícone de cópia ao lado da feira já existente — ele repete o mesmo nome, cor e tipo, sugere logo o ano seguinte com as datas ajustadas, mas podes mudar o "Ano" e as datas para o que precisares (não tem de ser o ano seguinte). Assim nunca corres o risco de escrever o nome de forma diferente e a app tratar como sendo feiras/eventos diferentes no Comparar.'},
   {p:'Como acompanho os pagamentos aos empregados?',r:'Em "Empregados" adicionas cada membro da equipa e registas os pagamentos por mês e local. Também podes associar um empregado a um lançamento, no formulário de Novo Lançamento.'},
   {p:'Como controlo o combustível e a quilometragem das viaturas?',r:'Em "Viaturas & Combustível" registas cada viatura e os respetivos abastecimentos. Ao lançares uma despesa de combustível, podes indicar logo a viatura abastecida.'},
   {p:'Como vejo relatórios e comparo anos ou feiras?',r:'Usa "Filtros" para procurar lançamentos por qualquer critério, "Relatório" para ver totais por mês, local, categoria, feira ou ano, e "Comparar" para pôr lado a lado dois anos, feiras ou edições diferentes.'},
@@ -4099,8 +4240,13 @@ async function enterApp(session){
 /* Quando se abre um link de "recuperar password", o Supabase já cria uma
    sessão válida nos bastidores — sem este cuidado, a verificação normal via
    getSession() via-a como "sessão válida" e entrava logo no dashboard, sem
-   deixar definir a password nova primeiro. Esta bandeira impede isso. */
-let emFluxoRecuperacao=/type=recovery/.test(location.hash)||/type=recovery/.test(location.search);
+   deixar definir a password nova primeiro. Esta bandeira impede isso.
+   Guardamos também em sessionStorage porque o Supabase costuma limpar o
+   "type=recovery" da própria barra de endereço pouco depois de abrir o link —
+   sem isto, um simples refresh a meio (ex.: o telemóvel a recarregar o
+   separador) perdia a bandeira e entrava logo no dashboard sem pedir a
+   password nova. */
+let emFluxoRecuperacao=/type=recovery/.test(location.hash)||/type=recovery/.test(location.search)||(function(){try{return sessionStorage.getItem('gn_recovery_flow')==='1';}catch(e){return false;}})();
 async function checkAuthAndStart(){
   if(emFluxoRecuperacao)return;
   try{
@@ -4111,6 +4257,7 @@ async function checkAuthAndStart(){
 supaClient.auth.onAuthStateChange((event,session)=>{
   if(event==='PASSWORD_RECOVERY'){
     emFluxoRecuperacao=true;
+    try{sessionStorage.setItem('gn_recovery_flow','1');}catch(e){}
     const overlay=document.getElementById('authOverlay'); if(overlay)overlay.style.display='flex';
     const root=document.getElementById('appRoot'); if(root)root.style.display='none';
     showAuthForm('newpass');
