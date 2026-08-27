@@ -3001,9 +3001,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.16';
+const APP_VERSION='3.17';
 const APP_UPDATE_DATE='2026-08-27'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.17',data:'2026-08-27',notas:[
+    'Corrigido: em ligações fracas (ex.: wifi/dados numa feira), a sincronização com a nuvem podia ficar "pendurada" para sempre — sem erro nenhum, mas também sem dados, e a etiqueta "A sincronizar..." nunca mais mudava. Agora, se não houver resposta em 15 segundos, a app desiste desse pedido e mostra um aviso claro, em vez de ficar presa sem explicação.',
+  ]},
   {v:'3.16',data:'2026-08-27',notas:[
     'Corrigido: "Apagar todos os dados" (em Configurações) podia dizer "Todos os dados eliminados!" mesmo quando a eliminação na nuvem falhava — o telemóvel/PC que fez o pedido ficava vazio, mas os outros dispositivos continuavam com os dados antigos, porque a nuvem nunca tinha sido realmente limpa. Agora a app confirma primeiro que a nuvem foi mesmo limpa; só depois apaga os dados desse aparelho. Se a nuvem não puder ser limpa, aparece um aviso claro e nada é apagado.',
   ]},
@@ -3131,6 +3134,14 @@ async function supaFetch(table,method='GET',body=null,filter=null){
     opts.headers['Accept']='application/json';
   }
   if(body)opts.body=JSON.stringify(body);
+  // Limite de segurança: em ligações fracas (ex.: wifi/dados móveis numa feira), um pedido
+  // podia ficar "pendurado" sem nunca responder nem falhar — a app ficava para sempre a
+  // dizer "A sincronizar..." sem erro nenhum e sem dados, sem se perceber porquê nem haver
+  // forma de recuperar sozinha. Passados 15s sem resposta, o pedido é cancelado e tratado
+  // como qualquer outro erro de rede — falha de forma visível, em vez de ficar pendurado.
+  const controller=new AbortController();
+  const timeoutId=setTimeout(()=>controller.abort(),15000);
+  opts.signal=controller.signal;
   try{
     const res=await fetch(url,opts);
     const text=await res.text();
@@ -3142,8 +3153,10 @@ async function supaFetch(table,method='GET',body=null,filter=null){
     return text?JSON.parse(text):true;
   }catch(e){
     console.error('Fetch error:',e.message);
-    showSyncStatus('Sem ligação ao Supabase',false);
+    showSyncStatus(e.name==='AbortError'?'Tempo esgotado a contactar o Supabase (ligação fraca?)':'Sem ligação ao Supabase',false);
     return null;
+  }finally{
+    clearTimeout(timeoutId);
   }
 }
 async function supaGet(table){return supaFetch(table,'GET',null,'order=id.asc');}
