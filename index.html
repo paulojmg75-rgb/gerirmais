@@ -2755,7 +2755,12 @@ function importarExcel(e){
       }
       saveToLocal();
       renderDashboard();populateFilters();renderConfiguracoes();
-      showSyncStatus('Dados importados com sucesso!',true);
+      showSyncStatus('Dados importados! A enviar para a cloud (para aparecerem também noutros dispositivos)...',true);
+      // Sem isto, os dados importados ficavam só neste aparelho — o telemóvel, por
+      // exemplo, nunca os via, porque a importação só escrevia no localStorage.
+      enviarLocaisParaCloud(false).then(({nTx,nF,nE,nV})=>{
+        showSyncStatus('✓ Importado e sincronizado: '+nTx+' lançamentos, '+nF+' feiras/eventos, '+nE+' empregados, '+nV+' viaturas',true);
+      });
     }catch(err){
       console.error(err);
       showSyncStatus('Erro ao importar ficheiro',false);
@@ -2788,9 +2793,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='2.9';
-const APP_UPDATE_DATE='2026-08-25'; // formato AAAA-MM-DD
+const APP_VERSION='3.0';
+const APP_UPDATE_DATE='2026-08-27'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.0',data:'2026-08-27',notas:[
+    'Corrigido: importar um ficheiro Excel só guardava os dados neste aparelho — agora envia logo tudo para a cloud, para aparecer também no telemóvel/noutros dispositivos com a mesma conta.'
+  ]},
   {v:'2.9',data:'2026-08-25',notas:[
     'Novo aviso no topo da app quando a ligação ao Google Drive expira, com um botão para ligar de novo — antes os backups paravam em silêncio, sem se notar.'
   ]},
@@ -2873,20 +2881,26 @@ async function supaInsert(table,data){const d={...data};delete d.id;delete d._lo
 async function supaUpdate(table,id,data){const d={...data};delete d.id;delete d._local;return supaFetch(table,'PATCH',d,'id=eq.'+id);}
 async function supaDelete(table,id){return supaFetch(table,'DELETE',null,'id=eq.'+id);}
 
-/* Envia para a cloud os lançamentos e feiras/eventos que só existem neste dispositivo
-   (ex.: importados de Excel). Assim o PC e o telemóvel passam a ver o mesmo. */
+/* Envia para a cloud os lançamentos, feiras, empregados e viaturas que só existem
+   neste dispositivo (ex.: importados de Excel). Assim o PC e o telemóvel passam a
+   ver o mesmo. Função partilhada: usada pelo botão manual (com confirmação e
+   mensagens) e automaticamente logo a seguir a uma importação de Excel (silenciosa,
+   já que importar já foi uma ação explícita — não faz sentido perguntar duas vezes). */
 let enviandoLocais=false;
-async function syncLocalToCloud(){
-  if(enviandoLocais)return;
-  if(!confirm('Enviar para a cloud os lançamentos, feiras e eventos que ainda só existem neste dispositivo?\nAssim o telemóvel e o PC ficam iguais.'))return;
+async function enviarLocaisParaCloud(mostrarMsg){
+  if(enviandoLocais)return{nTx:0,nF:0,nE:0,nV:0};
   enviandoLocais=true;
-  showSyncStatus('A enviar dados locais para a cloud...',true);
+  if(mostrarMsg)showSyncStatus('A enviar dados locais para a cloud...',true);
+  let nTx=0,nF=0,nE=0,nV=0;
   try{
     const txC=await supaFetch('lancamentos','GET',null,'select=id');
     const fC=await supaFetch('feiras','GET',null,'select=id');
+    const eC=await supaFetch('empregados','GET',null,'select=id');
+    const vC=await supaFetch('viaturas','GET',null,'select=id');
     const txCloudIds=new Set((Array.isArray(txC)?txC:[]).map(r=>r.id));
     const fCloudIds=new Set((Array.isArray(fC)?fC:[]).map(r=>r.id));
-    let nTx=0,nF=0;
+    const eCloudIds=new Set((Array.isArray(eC)?eC:[]).map(r=>r.id));
+    const vCloudIds=new Set((Array.isArray(vC)?vC:[]).map(r=>r.id));
     for(const t of txList.filter(t=>!txCloudIds.has(t.id))){
       const oldId=t.id;
       try{
@@ -2903,13 +2917,26 @@ async function syncLocalToCloud(){
       try{ const r=await supaInsert('feiras',f); if(r&&r[0]){f.id=r[0].id;delete f._local;nF++;} }
       catch(e){console.error('Envio feira falhou',f.id,e);}
     }
+    for(const em of emps.filter(em=>!eCloudIds.has(em.id))){
+      try{ const r=await supaInsert('empregados',em); if(r&&r[0]){em.id=r[0].id;delete em._local;nE++;} }
+      catch(e){console.error('Envio empregado falhou',em.id,e);}
+    }
+    for(const v of viats.filter(v=>!vCloudIds.has(v.id))){
+      try{ const r=await supaInsert('viaturas',v); if(r&&r[0]){v.id=r[0].id;delete v._local;nV++;} }
+      catch(e){console.error('Envio viatura falhou',v.id,e);}
+    }
     saveToLocal();
-    renderTxTable();renderDashboard();populateFilters();renderCalendar();renderFairList();
-    showSyncStatus('✓ Enviados '+nTx+' lançamentos e '+nF+' feiras/eventos para a cloud',true);
+    renderTxTable();renderDashboard();populateFilters();renderCalendar();renderFairList();renderConfiguracoes();
+    if(mostrarMsg)showSyncStatus('✓ Enviados '+nTx+' lançamentos, '+nF+' feiras/eventos, '+nE+' empregados e '+nV+' viaturas para a cloud',true);
   }catch(e){
-    console.error('syncLocalToCloud',e);
-    showSyncStatus('Erro ao enviar dados locais',false);
+    console.error('enviarLocaisParaCloud',e);
+    if(mostrarMsg)showSyncStatus('Erro ao enviar dados locais',false);
   }finally{ enviandoLocais=false; }
+  return{nTx,nF,nE,nV};
+}
+async function syncLocalToCloud(){
+  if(!confirm('Enviar para a cloud os lançamentos, feiras, empregados e viaturas que ainda só existem neste dispositivo?\nAssim o telemóvel e o PC ficam iguais.'))return;
+  await enviarLocaisParaCloud(true);
 }
 
 /* ---- PING ANTI-PAUSA ---- */
