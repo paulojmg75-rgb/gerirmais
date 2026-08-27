@@ -2023,18 +2023,18 @@ function duplicateFair(id){
   document.getElementById('ff-fim').value=bumpYear(f.fim,anoSeg);
   document.getElementById('fairModal').style.display='flex';
 }
-function deleteFair(id){if(!confirm('Remover esta feira do calendário?'))return;fairs=fairs.filter(f=>f.id!==id);saveToLocal();supaDelete('feiras',id).then(()=>showSyncStatus('Feira removida!'));renderCalendar();renderFairList();renderDashboard();}
+function deleteFair(id){if(!confirm('Remover esta feira do calendário?'))return;fairs=fairs.filter(f=>f.id!==id);saveToLocal();supaDelete('feiras',id).then(()=>{showSyncStatus('Feira removida!');backupExcelParaDrive();});renderCalendar();renderFairList();renderDashboard();}
 function saveFair(){
   const nome=document.getElementById('ff-nome').value.trim(),inicio=document.getElementById('ff-inicio').value,fim=document.getElementById('ff-fim').value,ano=document.getElementById('ff-ano').value,cor=document.getElementById('ff-cor').value;
   const tipo=document.getElementById('ff-tipo').value||'feira';
   if(!nome||!inicio||!fim){alert('Preenche o nome e as datas.');return;}
   if(editFairId){
     const i=fairs.findIndex(x=>x.id===editFairId);fairs[i]={...fairs[i],nome,inicio,fim,ano,cor,tipo};
-    saveToLocal();supaUpdate('feiras',editFairId,fairs[fairs.findIndex(x=>x.id===editFairId)]).then(()=>showSyncStatus('Guardado!'));
+    saveToLocal();supaUpdate('feiras',editFairId,fairs[fairs.findIndex(x=>x.id===editFairId)]).then(()=>{showSyncStatus('Guardado!');backupExcelParaDrive();});
   } else {
     const nova={nome,inicio,fim,ano,cor,tipo};
     const novaF={...nova,id:nextFairId++};fairs.push(novaF);
-    saveToLocal();supaInsert('feiras',nova).then(r=>{if(r&&r[0])fairs[fairs.length-1].id=r[0].id;showSyncStatus('Guardado!');});closeFairModal();renderCalendar();renderFairList();renderDashboard();return;
+    saveToLocal();supaInsert('feiras',nova).then(r=>{if(r&&r[0])fairs[fairs.length-1].id=r[0].id;showSyncStatus('Guardado!');backupExcelParaDrive();});closeFairModal();renderCalendar();renderFairList();renderDashboard();return;
   }
   closeFairModal();renderCalendar();renderFairList();renderDashboard();afterSaveFair();
 }
@@ -2077,7 +2077,7 @@ function deleteTxFromEmp(id){
   const driveId=loadDocDriveId(id);
   txList=txList.filter(t=>t.id!==id);
   saveToLocal();
-  supaDelete('lancamentos',id).then(()=>showSyncStatus('Pagamento apagado!'));
+  supaDelete('lancamentos',id).then(()=>{showSyncStatus('Pagamento apagado!');backupExcelParaDrive();});
   deleteDocLocal(id);deleteDocDriveId(id);
   if(driveId){gdriveDeleteFile(driveId).catch(e=>console.error('Falha ao apagar ficheiro do Drive:',e));}
   renderEmpPay();renderEmpMetrics();renderDashboard();
@@ -2100,7 +2100,7 @@ function editEmp(id){
   document.getElementById('em-cor').value=e.cor;
   document.getElementById('empModal').style.display='flex';
 }
-function deleteEmp(id){if(!confirm('Remover este empregado?'))return;emps=emps.filter(e=>e.id!==id);saveToLocal();supaDelete('empregados',id).then(()=>showSyncStatus('Empregado removido!'));renderEmpMetrics();renderEmpList();}
+function deleteEmp(id){if(!confirm('Remover este empregado?'))return;emps=emps.filter(e=>e.id!==id);saveToLocal();supaDelete('empregados',id).then(()=>{showSyncStatus('Empregado removido!');backupExcelParaDrive();});renderEmpMetrics();renderEmpList();}
 function saveEmp(){
   const nome=document.getElementById('em-nome').value.trim();
   const local=document.getElementById('em-local').value.trim();
@@ -2109,11 +2109,11 @@ function saveEmp(){
   if(editEmpId){
     const i=emps.findIndex(x=>x.id===editEmpId);
     emps[i]={...emps[i],nome,local,cor};
-    saveToLocal();supaUpdate('empregados',editEmpId,emps[emps.findIndex(x=>x.id===editEmpId)]).then(()=>showSyncStatus('Empregado atualizado!'));
+    saveToLocal();supaUpdate('empregados',editEmpId,emps[emps.findIndex(x=>x.id===editEmpId)]).then(()=>{showSyncStatus('Empregado atualizado!');backupExcelParaDrive();});
   } else {
     const novo={nome,local,cor,sal:0};
     const novoE={...novo,id:nextEmpId++};emps.push(novoE);
-    saveToLocal();supaInsert('empregados',novo).then(r=>{if(r&&r[0])emps[emps.length-1].id=r[0].id;showSyncStatus('Empregado guardado!');});closeEmpModal();renderEmpMetrics();renderEmpList();return;
+    saveToLocal();supaInsert('empregados',novo).then(r=>{if(r&&r[0])emps[emps.length-1].id=r[0].id;showSyncStatus('Empregado guardado!');backupExcelParaDrive();});closeEmpModal();renderEmpMetrics();renderEmpList();return;
   }
   closeEmpModal();renderEmpMetrics();renderEmpList();afterSaveEmp();
 }
@@ -2143,7 +2143,7 @@ function renderCombust(){
 function openViatModal(){editViatId=null;document.getElementById('viatModalTitle').textContent='Nova viatura';document.getElementById('vi-nome').value='';document.getElementById('vi-matricula').value='';document.getElementById('viatModal').style.display='flex';}
 function closeViatModal(){document.getElementById('viatModal').style.display='none';}
 function editViat(id){const v=viats.find(x=>x.id===id);if(!v)return;editViatId=id;document.getElementById('viatModalTitle').textContent='Editar viatura';document.getElementById('vi-nome').value=v.nome;document.getElementById('vi-matricula').value=v.matricula||'';document.getElementById('vi-tipo').value=v.tipo;document.getElementById('viatModal').style.display='flex';}
-function deleteViat(id){if(!confirm('Remover esta viatura?'))return;viats=viats.filter(v=>v.id!==id);saveToLocal();supaDelete('viaturas',id).then(()=>showSyncStatus('Viatura removida!'));renderViats();renderCombust();}
+function deleteViat(id){if(!confirm('Remover esta viatura?'))return;viats=viats.filter(v=>v.id!==id);saveToLocal();supaDelete('viaturas',id).then(()=>{showSyncStatus('Viatura removida!');backupExcelParaDrive();});renderViats();renderCombust();}
 function saveViat(){
   const nome=document.getElementById('vi-nome').value.trim();
   const matricula=document.getElementById('vi-matricula').value.trim();
@@ -2152,12 +2152,12 @@ function saveViat(){
   if(editViatId){
     const i=viats.findIndex(x=>x.id===editViatId);
     viats[i]={...viats[i],nome,matricula,tipo};
-    saveToLocal();supaUpdate('viaturas',editViatId,viats[viats.findIndex(x=>x.id===editViatId)]).then(()=>showSyncStatus('Viatura atualizada!'));
+    saveToLocal();supaUpdate('viaturas',editViatId,viats[viats.findIndex(x=>x.id===editViatId)]).then(()=>{showSyncStatus('Viatura atualizada!');backupExcelParaDrive();});
     closeViatModal();renderViats();renderCombust();afterSaveViat();
   } else {
     const nova={nome,matricula,tipo,km:'—'};
     const novaV={...nova,id:nextViatId++};viats.push(novaV);
-    saveToLocal();supaInsert('viaturas',nova).then(r=>{if(r&&r[0])viats[viats.length-1].id=r[0].id;showSyncStatus('Viatura guardada!');});
+    saveToLocal();supaInsert('viaturas',nova).then(r=>{if(r&&r[0])viats[viats.length-1].id=r[0].id;showSyncStatus('Viatura guardada!');backupExcelParaDrive();});
     closeViatModal();renderViats();renderCombust();afterSaveViat();
   }
 }
@@ -2811,6 +2811,7 @@ function importarExcel(e){
       showSyncStatus('Dados importados! A substituir na cloud (para não duplicar em nenhum dispositivo)...',true);
       substituirNaCloud(flags).then(({nTx,nF,nE,nV})=>{
         showSyncStatus('✓ Importado: '+nTx+' lançamentos, '+nF+' feiras/eventos, '+nE+' empregados, '+nV+' viaturas (substituído na cloud, sem duplicados)',true);
+        backupExcelParaDrive();
       });
     }catch(err){
       console.error(err);
@@ -2844,9 +2845,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.2';
+const APP_VERSION='3.3';
 const APP_UPDATE_DATE='2026-08-27'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.3',data:'2026-08-27',notas:[
+    'Corrigido: o backup automático do Excel na Google Drive só se atualizava quando mexias em lançamentos — criar, editar ou remover feiras/eventos, empregados ou viaturas ficava de fora e o ficheiro na Drive ficava desatualizado. Agora atualiza sempre que algo muda.'
+  ]},
   {v:'3.2',data:'2026-08-27',notas:[
     'Corrigido bug grave: ao importar um Excel com muitos lançamentos (largas centenas), só uma parte chegava à cloud (o resto ficava só neste aparelho, sem aviso). Agora o envio é feito de uma vez só, em bloco, em vez de um lançamento de cada vez.'
   ]},
@@ -3233,12 +3237,12 @@ function confirmarApagarTudo(){
   nextId=1;nextFairId=1;nextEmpId=1;nextViatId=1;
   localStorage.removeItem(lsKey('rv_gestao_v1'));
   localStorage.removeItem(lsKey('rv_logo'));
-  Promise.all([supaFetch('lancamentos','DELETE',null,'id=gt.0'),supaFetch('feiras','DELETE',null,'id=gt.0'),supaFetch('empregados','DELETE',null,'id=gt.0'),supaFetch('viaturas','DELETE',null,'id=gt.0')]).then(()=>showSyncStatus('Todos os dados eliminados!',false));
+  Promise.all([supaFetch('lancamentos','DELETE',null,'id=gt.0'),supaFetch('feiras','DELETE',null,'id=gt.0'),supaFetch('empregados','DELETE',null,'id=gt.0'),supaFetch('viaturas','DELETE',null,'id=gt.0')]).then(()=>{showSyncStatus('Todos os dados eliminados!',false);backupExcelParaDrive();});
   renderDashboard();renderConfiguracoes();
 }
-function deleteFairCfg(id){if(!confirm('Remover esta feira?'))return;fairs=fairs.filter(f=>f.id!==id);saveToLocal();supaDelete('feiras',id).then(()=>showSyncStatus('Feira removida!'));renderConfiguracoes();renderDashboard();}
-function deleteEmpCfg(id){if(!confirm('Remover este empregado?'))return;emps=emps.filter(e=>e.id!==id);saveToLocal();supaDelete('empregados',id).then(()=>showSyncStatus('Empregado removido!'));renderConfiguracoes();}
-function deleteViatCfg(id){if(!confirm('Remover esta viatura?'))return;viats=viats.filter(v=>v.id!==id);saveToLocal();supaDelete('viaturas',id).then(()=>showSyncStatus('Viatura removida!'));renderConfiguracoes();}
+function deleteFairCfg(id){if(!confirm('Remover esta feira?'))return;fairs=fairs.filter(f=>f.id!==id);saveToLocal();supaDelete('feiras',id).then(()=>{showSyncStatus('Feira removida!');backupExcelParaDrive();});renderConfiguracoes();renderDashboard();}
+function deleteEmpCfg(id){if(!confirm('Remover este empregado?'))return;emps=emps.filter(e=>e.id!==id);saveToLocal();supaDelete('empregados',id).then(()=>{showSyncStatus('Empregado removido!');backupExcelParaDrive();});renderConfiguracoes();}
+function deleteViatCfg(id){if(!confirm('Remover esta viatura?'))return;viats=viats.filter(v=>v.id!==id);saveToLocal();supaDelete('viaturas',id).then(()=>{showSyncStatus('Viatura removida!');backupExcelParaDrive();});renderConfiguracoes();}
 
 // CATS CFG
 let cfgCatEditIdx=null;
