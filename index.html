@@ -3001,9 +3001,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.17';
+const APP_VERSION='3.18';
 const APP_UPDATE_DATE='2026-08-27'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.18',data:'2026-08-27',notas:[
+    'Corrigido um caso em que a app podia mostrar "sincronizado" sem erro nenhum mas com todos os dados a zero: se a sessão tivesse caducado nos bastidores, a app continuava a pedir dados à nuvem sem sessão válida, e a segurança da base de dados devolvia sempre "sucesso" com zero linhas, sem avisar. Agora, quando isto acontece, a app pede para iniciares sessão outra vez em vez de mostrar tudo vazio como se fosse normal.',
+  ]},
   {v:'3.17',data:'2026-08-27',notas:[
     'Corrigido: em ligações fracas (ex.: wifi/dados numa feira), a sincronização com a nuvem podia ficar "pendurada" para sempre — sem erro nenhum, mas também sem dados, e a etiqueta "A sincronizar..." nunca mais mudava. Agora, se não houver resposta em 15 segundos, a app desiste desse pedido e mostra um aviso claro, em vez de ficar presa sem explicação.',
   ]},
@@ -3117,16 +3120,44 @@ function lsKey(base){
   return base+'_'+uid;
 }
 
+/* Se a sessão morrer sem aviso (ex.: o "refresh token" deixou de ser válido) e a app
+   continuar a usar a chave pública para pedidos que precisam de sessão, o Supabase não
+   dá erro nenhum — devolve sempre "sucesso" com zero linhas, porque a segurança da base
+   de dados bloqueia sem sessão. Isso parecia "sincronizado" mas com tudo vazio, sem
+   qualquer aviso. Este bloqueio evita chamar forcarNovoLogin() em catadupa quando vários
+   pedidos falham ao mesmo tempo (ex.: os 4 do loadAllFromCloud). */
+let aForcarLogin=false;
+async function forcarNovoLogin(){
+  if(aForcarLogin)return;
+  aForcarLogin=true;
+  try{ await supaClient.auth.signOut(); }catch(e){}
+  appStarted=false;
+  currentUser=null;
+  const overlay=document.getElementById('authOverlay'); if(overlay)overlay.style.display='flex';
+  const root=document.getElementById('appRoot'); if(root)root.style.display='none';
+  showAuthForm('login');
+  authMsg('A tua sessão expirou. Inicia sessão outra vez para continuares.','');
+}
+
 async function supaFetch(table,method='GET',body=null,filter=null){
   // Envia sempre o token da sessão autenticada (incluindo em GET) — sem ele o RLS
   // não sabe quem está a pedir e devolve sempre zero resultados, em silêncio.
   let url=`${SUPA_URL}/rest/v1/${table}?apikey=${SUPA_KEY}`;
   if(filter)url+=`&${filter}`;
-  let token=SUPA_KEY;
+  let token=null;
   try{
     const{data}=await supaClient.auth.getSession();
     if(data&&data.session&&data.session.access_token)token=data.session.access_token;
   }catch(e){}
+  if(!token){
+    // Sem sessão válida (caducou e não foi possível renovar): NUNCA continuar com a chave
+    // pública só para "não falhar" — isso é exatamente o que causava o "sincronizado, mas
+    // zero dados" sem erro nenhum. Em vez disso, força reautenticação de forma visível.
+    console.error('Sem sessão válida ao contactar Supabase ('+table+') — a pedir novo login.');
+    showSyncStatus('A sessão expirou — inicia sessão novamente',false);
+    forcarNovoLogin();
+    return null;
+  }
   const opts={method,headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+token}};
   if(method!=='GET'){
     opts.headers['Content-Type']='application/json';
