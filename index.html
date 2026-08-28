@@ -1142,6 +1142,7 @@ let gdriveTokenExpiry=0;
 let gdriveClient=null;
 let gdrivePending=[];
 let lastCloudSync=0;
+let ultimaEscritaCloud=0; // momento da última escrita CONFIRMADA na cloud (ver supaFetch)
 /* Assinatura simples do estado atual dos dados — usada só para saber se algo mudou desde
    o último backup automático do Excel na Drive (ver backupExcelParaDrive/loadAllFromCloud). */
 let ultimaAssinaturaBackup=null;
@@ -2185,7 +2186,11 @@ function renderEmpList(){
     </div>`).join(''):`<div class="empty"><i class="ti ti-users"></i>Sem empregados registados</div>`;
 }
 function renderEmpPay(){
-  const pays=txList.filter(t=>t.cat==='Empregados').sort((a,b)=>b.id-a.id).slice(0,20);
+  // Mostra TODAS as despesas ligadas a empregados: as da categoria "Empregados" E as de
+  // qualquer outra categoria que tenham um empregado associado (ex.: uma "Reparação" paga
+  // ao Jorge) — antes só a categoria "Empregados" contava e as restantes ficavam invisíveis.
+  // As receitas com empregado associado ficam de fora: isto é uma lista de pagamentos.
+  const pays=txList.filter(t=>t.tipo==='Despesa'&&(t.cat==='Empregados'||(t.empregado&&String(t.empregado).trim()))).sort((a,b)=>b.id-a.id);
   // A coluna "Empregado" mostra o empregado ASSOCIADO ao lançamento (p.empregado) — antes
   // tentava adivinhá-lo partindo o nome da Conta/Local no hífen (resto de um formato antigo
   // "Local-Empregado"), o que punha pedaços do nome da feira na coluna do empregado e nunca
@@ -3018,9 +3023,13 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.25';
+const APP_VERSION='3.26';
 const APP_UPDATE_DATE='2026-08-28'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.26',data:'2026-08-28',notas:[
+    'Corrigido: um lançamento acabado de gravar podia DESAPARECER da app segundos depois, se a sincronização automática (a cada 45s) estivesse a meio nesse preciso momento — a resposta da nuvem, "fotografada" antes da gravação, vinha sem ele e apagava-o da app (voltava na sincronização seguinte, mas parecia perdido). Agora a app deteta quando uma resposta da nuvem é anterior a uma gravação recente, ignora-a e volta a pedir os dados 2 segundos depois.',
+    'A tabela "Pagamentos registados" (página Empregados) passou a mostrar TODAS as despesas ligadas a empregados: além das da categoria "Empregados", agora aparecem também as de outras categorias que tenham um empregado associado (ex.: uma reparação paga a um empregado). Deixou também de estar limitada aos 20 mais recentes — mostra o histórico completo. As receitas com empregado associado continuam de fora, por não serem pagamentos.',
+  ]},
   {v:'3.25',data:'2026-08-28',notas:[
     'Corrigido: na página de Empregados, a tabela "Pagamentos registados" mostrava pedaços do nome da feira na coluna "Empregado" em vez do empregado realmente associado ao lançamento — mesmo escolhendo o empregado no formulário, nunca aparecia. Agora a coluna "Empregado" mostra o empregado associado e a coluna "Local" mostra a feira/evento.',
   ]},
@@ -3220,6 +3229,10 @@ async function supaFetch(table,method='GET',body=null,filter=null){
       showSyncStatus('Erro Supabase: '+res.status,false);
       return null;
     }
+    // Regista o momento de cada ESCRITA confirmada na cloud — usado pelo loadAllFromCloud
+    // para detetar quando uma sincronização foi "fotografada" antes de uma gravação recente
+    // e por isso traria dados já desatualizados (ver comentário nessa função).
+    if(method!=='GET')ultimaEscritaCloud=Date.now();
     return text?JSON.parse(text):true;
   }catch(e){
     console.error('Fetch error:',e.message);
@@ -3346,6 +3359,13 @@ function atualizarLabelSync(){
 async function loadAllFromCloud(){
   showSyncStatus('A carregar dados...',true);
   try{
+    // Momento em que este pedido à cloud começou — se uma ESCRITA for confirmada
+    // enquanto a resposta vem a caminho, a resposta é uma "fotografia" tirada ANTES
+    // dessa gravação e já vem desatualizada. Aplicá-la fazia o registo acabado de
+    // gravar DESAPARECER da app (ele já não está marcado como pendente, e a fotografia
+    // antiga não o traz) até à sincronização seguinte. Nesse caso, deita-se fora esta
+    // resposta e repete-se o pedido daí a 2 segundos.
+    const inicioPedido=Date.now();
     // Sempre pelo wrapper com token de sessão (supaGet) — um fetch cru sem o token
     // não leva Authorization e o RLS devolve zero resultados, em silêncio, sem erro.
     const [tx,fs,em,vi]=await Promise.all([
@@ -3359,6 +3379,14 @@ async function loadAllFromCloud(){
       showSyncStatus('Erro ao carregar dados do Supabase',false);
       loadFromLocal();
       renderDashboard();populateFilters();
+      return;
+    }
+    if(ultimaEscritaCloud>inicioPedido){
+      // Houve uma gravação confirmada DEPOIS de este pedido começar — esta resposta é
+      // anterior a ela e aplicá-la apagaria da app o que acabou de ser gravado. Ignora
+      // e volta a pedir daqui a 2s (ver comentário no início da função).
+      console.log('Sync descartada: houve uma gravação a meio do pedido; a repetir...');
+      setTimeout(loadAllFromCloud,2000);
       return;
     }
     {
