@@ -2947,7 +2947,11 @@ function importarExcel(e){
       if(wb.Sheets['Empregados']){
         const rows=XLSX.utils.sheet_to_json(wb.Sheets['Empregados']);
         if(rows.length){
-          emps=rows.map(r=>({id:parseInt(r.ID)||nextEmpId--,nome:r.Nome||'',local:r.Local||'',sal:parseFloat(r['Salário/Dia'])||0,cor:r.Cor||'#185FA5',obs:r.Observações||'',feira:r.Feira||''}));
+          // Só os campos que a tabela "empregados" da cloud realmente tem (nome, local,
+          // sal, cor) — o Excel exportado traz também colunas "Observações" e "Feira",
+          // mas a cloud não tem essas colunas e REJEITAVA o lote inteiro por causa delas:
+          // zero empregados gravados, e a sincronização seguinte apagava-os do aparelho.
+          emps=rows.map(r=>({id:parseInt(r.ID)||nextEmpId--,nome:r.Nome||'',local:r.Local||'',sal:parseFloat(r['Salário/Dia'])||0,cor:r.Cor||'#185FA5',_local:true}));
           if(emps.length)nextEmpId=Math.min(0,...emps.map(e=>e.id))-1;
           flags.e=true;
         }
@@ -2956,7 +2960,7 @@ function importarExcel(e){
       if(wb.Sheets['Viaturas']){
         const rows=XLSX.utils.sheet_to_json(wb.Sheets['Viaturas']);
         if(rows.length){
-          viats=rows.map(r=>({id:parseInt(r.ID)||nextViatId--,nome:r.Nome||'',matricula:r.Matrícula||r.Matricula||'',tipo:r.Tipo||'Carrinha',km:r.Km||'—'}));
+          viats=rows.map(r=>({id:parseInt(r.ID)||nextViatId--,nome:r.Nome||'',matricula:r.Matrícula||r.Matricula||'',tipo:r.Tipo||'Carrinha',km:r.Km||'—',_local:true}));
           if(viats.length)nextViatId=Math.min(0,...viats.map(v=>v.id))-1;
           flags.v=true;
         }
@@ -3010,9 +3014,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.23';
+const APP_VERSION='3.24';
 const APP_UPDATE_DATE='2026-08-28'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.24',data:'2026-08-28',notas:[
+    'Corrigido: importar um Excel deixava os Empregados de fora — o ficheiro trazia duas colunas extra ("Observações" e "Feira") que a nuvem não aceita, e isso fazia falhar a gravação de TODOS os empregados; a sincronização seguinte apagava-os também do aparelho. Agora a importação envia só os campos certos, e tanto empregados como viaturas importados ficam protegidos contra apagamento se a nuvem falhar nesse momento (tal como já acontecia com lançamentos e feiras).',
+  ]},
   {v:'3.23',data:'2026-08-28',notas:[
     'Botões do menu principal com cor mais clara (fundo quase branco com o tom suave de cada botão) e um contorno colorido de destaque à volta de cada um — o botão selecionado fica com o fundo mais preenchido e contorno mais grosso. Feita também uma revisão geral ao código (sem problemas encontrados).',
   ]},
