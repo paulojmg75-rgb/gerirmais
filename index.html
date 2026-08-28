@@ -1353,6 +1353,12 @@ let txList=[];
 let nextId=-1;
 let activeFilter='todos';
 let editTxId=null;
+/* Estado do interruptor "Receita partilhada". Tem de ser declarado aqui: sem esta
+   declaração, a variável só passava a existir quando closeTxModal/setSplitOff corriam
+   pela primeira vez — e numa página acabada de abrir, o primeiro "Guardar" de um
+   lançamento novo lia-a antes disso e rebentava com ReferenceError, sem gravar NADA
+   (nem local, nem cloud) e sem qualquer aviso visível ao utilizador. */
+let splitEnabled=false;
 let fluxoChart=null,despChart=null;
 
 let fairs=[];
@@ -3004,9 +3010,13 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.21';
-const APP_UPDATE_DATE='2026-08-27'; // formato AAAA-MM-DD
+const APP_VERSION='3.22';
+const APP_UPDATE_DATE='2026-08-28'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.22',data:'2026-08-28',notas:[
+    'Corrigido um erro grave que existia desde o início da app: numa página acabada de abrir, o primeiro "Guardar" de um lançamento novo podia falhar por completo em silêncio — o lançamento não era gravado nem no aparelho nem na nuvem, sem qualquer aviso (e a mensagem verde da sincronização automática, se aparecesse nesse momento, dava a ilusão de que tinha gravado). Era isto que fazia lançamentos "desaparecer" e os aparelhos não baterem certo um com o outro.',
+    'Auto-recuperação: lançamentos (e feiras/empregados/viaturas) que ficaram gravados só num aparelho por uma falha antiga (ex.: sessão caducada no momento da gravação) passam a ser reenviados automaticamente para a nuvem na sincronização seguinte — deixam de ficar presos para sempre nesse aparelho à espera do botão manual "Enviar dados locais".',
+  ]},
   {v:'3.21',data:'2026-08-27',notas:[
     'Mais afinações visuais: o logotipo ficou bastante maior (topo e cabeçalho do telemóvel); a hora de sincronização passou para debaixo dos botões de Drive/Exportar/Importar/Sincronizar; os pequenos traços entre os botões do menu foram removidos; e os botões de Drive/Exportar/Importar/Sincronizar/Configurações/Terminar sessão ganharam também um contorno leve, tal como os do menu principal.',
   ]},
@@ -3370,6 +3380,17 @@ async function loadAllFromCloud(){
       const viLocais=viats.filter(v=>!viCloudIds.has(v.id) && v._local);
       viats=[...vi, ...viLocais];
       nextViatId=Math.min(0,...viats.map(v=>v.id))-1;
+    }
+
+    // Auto-recuperação de registos "órfãos": um registo marcado _local é um que este
+    // aparelho criou mas nunca chegou a confirmar na cloud (ex.: gravação falhou com a
+    // sessão caducada, ou sem rede). Antes, esses registos ficavam presos neste aparelho
+    // PARA SEMPRE — nada voltava a tentar enviá-los a não ser o botão manual "Enviar dados
+    // locais → cloud", que ninguém sabia que tinha de usar. Agora, sempre que uma
+    // sincronização corre com a cloud acessível, os pendentes são reenviados sozinhos.
+    if(txList.some(t=>t._local)||fairs.some(f=>f._local)||emps.some(e=>e._local)||viats.some(v=>v._local)){
+      const env=await enviarLocaisParaCloud(false);
+      if(env.nTx||env.nF||env.nE||env.nV)showSyncStatus('✓ Recuperados '+(env.nTx+env.nF+env.nE+env.nV)+' registo(s) que estavam só neste aparelho — já estão na cloud',true);
     }
 
     // O backup do Excel na Drive só se refazia quando havia uma ação local (criar/editar/
