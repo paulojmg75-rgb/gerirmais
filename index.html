@@ -74,7 +74,7 @@ body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;backgrou
 .nav-row .nav-item{flex:1 1 0;min-width:0;justify-content:center}
 .nav-sync-label{font-size:9px;color:var(--side-text-dim);white-space:nowrap;text-align:center;margin-top:1px}
 /* NAV — estilo "pill" moderno, em linha */
-.nav-item{display:flex;align-items:center;gap:5px;padding:6px 9px;margin:0;cursor:pointer;font-size:11.5px;color:var(--side-text);border-radius:9px;border:1px solid var(--ac-l,var(--border2));transition:all .18s cubic-bezier(.4,0,.2,1);position:relative;white-space:nowrap;flex-shrink:0;height:34px;background:linear-gradient(135deg,var(--ac-l,transparent) 0%,rgba(255,255,255,0) 90%);box-shadow:0 1px 3px rgba(28,25,23,.08)}
+.nav-item{display:flex;align-items:center;gap:5px;padding:6px 9px;margin:0;cursor:pointer;font-size:11.5px;color:var(--ink);border-radius:9px;border:1.5px solid var(--ac,var(--border2));transition:all .18s cubic-bezier(.4,0,.2,1);position:relative;white-space:nowrap;flex-shrink:0;height:34px;background:linear-gradient(135deg,var(--ac-l,#fff) 0%,#fff 80%);box-shadow:0 1px 3px rgba(28,25,23,.1)}
 .nav-dropdown{position:relative;flex-shrink:0}
 .nav-drop-toggle{display:flex;align-items:center;gap:5px;padding:6px 9px;cursor:pointer;font-size:11.5px;color:var(--side-text);border-radius:9px;border:1px solid transparent;white-space:nowrap;height:34px;transition:all .18s}
 .nav-drop-toggle:hover{background:var(--bg2)}
@@ -83,8 +83,8 @@ body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;backgrou
 .nav-dropdown.open .nav-drop-menu{display:flex}
 .nav-drop-menu .nav-item{width:auto;height:36px}
 .nav-item i,.nav-drop-toggle i{font-size:14px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:all .18s;flex-shrink:0;color:var(--nav-ic)!important}
-.nav-item:hover{background:linear-gradient(135deg,var(--ac-l,rgba(28,25,23,.05)),#fff);color:var(--ink);box-shadow:0 2px 6px rgba(28,25,23,.14)}
-.nav-item.active{background:linear-gradient(135deg,var(--ac-l,var(--bg2)),#fff);color:var(--ink);font-weight:700;border:1.5px solid var(--ac,var(--accent));box-shadow:0 2px 5px rgba(28,25,23,.12)}
+.nav-item:hover{background:linear-gradient(135deg,var(--ac-l,rgba(28,25,23,.05)) 0%,#fff 100%);color:var(--ink);box-shadow:0 2px 7px rgba(28,25,23,.16)}
+.nav-item.active{background:linear-gradient(135deg,var(--ac-l,var(--bg2)) 0%,var(--ac-l,#fff) 100%);color:var(--ink);font-weight:700;border:2px solid var(--ac,var(--accent));box-shadow:0 2px 6px rgba(28,25,23,.15)}
 .nav-item.active i{background:#fff;box-shadow:0 0 0 1px var(--ac,var(--accent)) inset}
 .nav-item-settings{background:linear-gradient(135deg,#C68A42,#9C5F1F);border:1px solid #9C5F1F;box-shadow:0 2px 6px rgba(156,95,31,.3);padding-left:9px;padding-right:9px}
 .nav-item-settings i{color:#fff!important;background:transparent!important;box-shadow:none!important}
@@ -3010,9 +3010,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.22';
+const APP_VERSION='3.23';
 const APP_UPDATE_DATE='2026-08-28'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.23',data:'2026-08-28',notas:[
+    'Botões do menu principal com cor mais clara (fundo quase branco com o tom suave de cada botão) e um contorno colorido de destaque à volta de cada um — o botão selecionado fica com o fundo mais preenchido e contorno mais grosso. Feita também uma revisão geral ao código (sem problemas encontrados).',
+  ]},
   {v:'3.22',data:'2026-08-28',notas:[
     'Corrigido um erro grave que existia desde o início da app: numa página acabada de abrir, o primeiro "Guardar" de um lançamento novo podia falhar por completo em silêncio — o lançamento não era gravado nem no aparelho nem na nuvem, sem qualquer aviso (e a mensagem verde da sincronização automática, se aparecesse nesse momento, dava a ilusão de que tinha gravado). Era isto que fazia lançamentos "desaparecer" e os aparelhos não baterem certo um com o outro.',
     'Auto-recuperação: lançamentos (e feiras/empregados/viaturas) que ficaram gravados só num aparelho por uma falha antiga (ex.: sessão caducada no momento da gravação) passam a ser reenviados automaticamente para a nuvem na sincronização seguinte — deixam de ficar presos para sempre nesse aparelho à espera do botão manual "Enviar dados locais".',
