@@ -2186,8 +2186,12 @@ function renderEmpList(){
 }
 function renderEmpPay(){
   const pays=txList.filter(t=>t.cat==='Empregados').sort((a,b)=>b.id-a.id).slice(0,20);
-  document.getElementById('empPayBody').innerHTML=pays.length?pays.map(p=>{const cAtual=getConta(p),pts=cAtual.split('-');return`<tr>
-    <td>${pts[1]||cAtual}</td><td>${pts[0]}</td><td style="text-transform:capitalize">${p.mes}</td>
+  // A coluna "Empregado" mostra o empregado ASSOCIADO ao lançamento (p.empregado) — antes
+  // tentava adivinhá-lo partindo o nome da Conta/Local no hífen (resto de um formato antigo
+  // "Local-Empregado"), o que punha pedaços do nome da feira na coluna do empregado e nunca
+  // mostrava o empregado realmente escolhido no formulário.
+  document.getElementById('empPayBody').innerHTML=pays.length?pays.map(p=>{return`<tr>
+    <td>${p.empregado||'—'}</td><td>${getConta(p)||'—'}</td><td style="text-transform:capitalize">${p.mes}</td>
     <td style="font-size:10px;color:var(--text2);font-style:italic">${p.notas||'—'}</td>
     <td style="text-align:right;font-weight:600">${fmt(p.valor)}</td>
     <td style="text-align:center;white-space:nowrap">
@@ -3014,9 +3018,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.24';
+const APP_VERSION='3.25';
 const APP_UPDATE_DATE='2026-08-28'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.25',data:'2026-08-28',notas:[
+    'Corrigido: na página de Empregados, a tabela "Pagamentos registados" mostrava pedaços do nome da feira na coluna "Empregado" em vez do empregado realmente associado ao lançamento — mesmo escolhendo o empregado no formulário, nunca aparecia. Agora a coluna "Empregado" mostra o empregado associado e a coluna "Local" mostra a feira/evento.',
+  ]},
   {v:'3.24',data:'2026-08-28',notas:[
     'Corrigido: importar um Excel deixava os Empregados de fora — o ficheiro trazia duas colunas extra ("Observações" e "Feira") que a nuvem não aceita, e isso fazia falhar a gravação de TODOS os empregados; a sincronização seguinte apagava-os também do aparelho. Agora a importação envia só os campos certos, e tanto empregados como viaturas importados ficam protegidos contra apagamento se a nuvem falhar nesse momento (tal como já acontecia com lançamentos e feiras).',
   ]},
