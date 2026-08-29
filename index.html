@@ -94,8 +94,10 @@ body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;backgrou
 .nav-divider{width:1px;height:26px;background:var(--side-line);flex-shrink:0;margin:0 2px}
 .topbar-actions-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;margin-left:auto;flex-shrink:0;padding-left:.625rem;border-left:1px solid var(--side-line);height:100%}
 .topbar-actions{display:flex;align-items:center;gap:6px}
-.topbar-actions .btn{padding:5px 8px;font-size:10px;box-shadow:0 1px 3px rgba(28,25,23,.12)}
+.topbar-actions .btn{padding:5px 8px;font-size:10px;box-shadow:0 1px 3px rgba(28,25,23,.12);flex:1;justify-content:center}
 .topbar-actions .btn span{display:none}
+/* O botão de Configurações estica ao lado das 2 linhas de ações, com a mesma altura do bloco */
+.topbar-actions-wrap .nav-item-settings{height:auto}
 
 /* MAIN */
 .main{flex:1;overflow-y:auto;background:var(--bg3);min-width:0;width:100%}
@@ -459,14 +461,20 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
     </div>
   </div>
   <div class="topbar-actions-wrap">
-    <div class="topbar-actions">
+    <div style="display:flex;align-items:stretch;gap:6px">
       <div class="nav-item nav-item-settings" data-page="configuracoes" title="Configurações" style="--ac:var(--accent);--ac-l:var(--accent-l)"><i class="ti ti-settings"></i></div>
-      <button class="btn btn-icon" onclick="syncLocalToCloud()" title="Enviar dados locais para a cloud (igualar PC e telemóvel)" style="color:var(--n7);border-color:var(--n7-l);background:linear-gradient(135deg,var(--n7-l),#fff)"><i class="ti ti-cloud-up"></i></button>
-      <button class="btn btn-icon" onclick="loadAllFromCloud()" title="Sincronizar agora" style="color:var(--n2);border-color:var(--n2-l);background:linear-gradient(135deg,var(--n2-l),#fff)"><i class="ti ti-refresh"></i></button>
-      <button class="btn btn-icon" onclick="exportarExcel()" title="Exportar Excel" style="color:var(--n1);border-color:var(--n1-l);background:linear-gradient(135deg,var(--n1-l),#fff)"><i class="ti ti-download"></i></button>
-      <label class="btn btn-icon" title="Importar Excel" style="cursor:pointer;color:var(--n9);border-color:var(--n9-l);background:linear-gradient(135deg,var(--n9-l),#fff)"><i class="ti ti-upload"></i><input type="file" accept=".xlsx,.xls" onchange="importarExcel(event)" style="display:none"></label>
-      <button class="btn btn-icon" onclick="gdriveAuth(()=>showSyncStatus('Google Drive ligado! ✓',true))" title="Ligar Google Drive" style="color:var(--n5);border-color:var(--n5-l);background:linear-gradient(135deg,var(--n5-l),#fff)"><i class="ti ti-brand-google-drive"></i></button>
-      <button class="btn btn-icon" onclick="doLogout()" title="Terminar sessão" style="color:var(--n6);border-color:var(--n6-l);background:linear-gradient(135deg,var(--n6-l),#fff)"><i class="ti ti-key"></i></button>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div class="topbar-actions">
+          <button class="btn btn-icon" onclick="syncLocalToCloud()" title="Enviar dados locais para a cloud (igualar PC e telemóvel)" style="color:var(--n7);border-color:var(--n7-l);background:linear-gradient(135deg,var(--n7-l),#fff)"><i class="ti ti-cloud-up"></i></button>
+          <button class="btn btn-icon" onclick="gdriveAuth(()=>showSyncStatus('Google Drive ligado! ✓',true))" title="Ligar Google Drive" style="color:var(--n5);border-color:var(--n5-l);background:linear-gradient(135deg,var(--n5-l),#fff)"><i class="ti ti-brand-google-drive"></i></button>
+          <button class="btn btn-icon" onclick="loadAllFromCloud()" title="Sincronizar agora" style="color:var(--n2);border-color:var(--n2-l);background:linear-gradient(135deg,var(--n2-l),#fff)"><i class="ti ti-refresh"></i></button>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn btn-icon" onclick="exportarExcel()" title="Exportar Excel" style="color:var(--n1);border-color:var(--n1-l);background:linear-gradient(135deg,var(--n1-l),#fff)"><i class="ti ti-download"></i></button>
+          <label class="btn btn-icon" title="Importar Excel" style="cursor:pointer;color:var(--n9);border-color:var(--n9-l);background:linear-gradient(135deg,var(--n9-l),#fff)"><i class="ti ti-upload"></i><input type="file" accept=".xlsx,.xls" onchange="importarExcel(event)" style="display:none"></label>
+          <button class="btn btn-icon" onclick="doLogout()" title="Terminar sessão" style="color:var(--n6);border-color:var(--n6-l);background:linear-gradient(135deg,var(--n6-l),#fff)"><i class="ti ti-key"></i></button>
+        </div>
+      </div>
     </div>
     <div class="nav-sync-label" id="lastSyncLabel">A sincronizar...</div>
   </div>
@@ -1340,8 +1348,12 @@ function fetchLogoFromDrive(){
 }
 
 /* ---- DATA ---- */
-let catsDesp=['Combustível','Alimentação','Empregados','Renda do Terreno','Reparações','Material','Seguros','Portagens','Impostos e Taxas','Saúde','Donativos','Viagens','Compras e Aquisições','Prestação de Viatura','Estacionamento','Inspeção/Certificados'];
-let catsRec=['Vendas','Serviços','Aluguer de Equipamento','Entradas/Bilhetes','Outros'];
+/* Listas reais deste negócio (repostas a partir dos dados/Excel do utilizador) — são o
+   ponto de partida "de fábrica"; continuam 100% editáveis em Configurações (criar,
+   renomear, reordenar, apagar). NOTA: "Combustivel" tem de ficar escrito sem acento —
+   é o valor usado nos lançamentos existentes e o que ativa o campo "Viatura" no formulário. */
+let catsDesp=['Combustivel','Alimentação','Empregados','Terrenos','Reparações','Material','Seguros','Portagens','Obrigações','Saúde','Donativos','Viagens.Avião','Compras.Aquisições','Prestação Vito','Estacionamento','Certificado Inspeção','Luz','IVA','Pagamento do Reboque','Pneus'];
+let catsRec=['Máquinas Simulador VR 9D','Máquina Machado','Máquinas VR','Aluguer Espaço Simulador','Aluguer Simulador'];
 let contas=[];
 
 let txList=[];
@@ -2984,6 +2996,7 @@ function importarExcel(e){
         if(nd.length)catsDesp=nd;
         if(nc.length)contas=nc;
       }
+      garantirCategoriasDosLancamentos();
       saveToLocal();
       renderDashboard();populateFilters();renderConfiguracoes();
       showSyncStatus('Dados importados! A substituir na cloud (para não duplicar em nenhum dispositivo)...',true);
@@ -3023,9 +3036,17 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.26';
-const APP_UPDATE_DATE='2026-08-28'; // formato AAAA-MM-DD
+const APP_VERSION='3.28';
+const APP_UPDATE_DATE='2026-08-29'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.28',data:'2026-08-29',notas:[
+    'Arrumação dos botões de ações (topo, no PC): agora em 2 linhas — em cima Enviar para a cloud, Google Drive e Sincronizar; em baixo Exportar, Importar e Terminar sessão. O botão de Configurações estica ao lado das duas linhas, e a hora de sincronização continua por baixo do bloco.',
+  ]},
+  {v:'3.27',data:'2026-08-29',notas:[
+    'As categorias de despesa e tipos de receita deste negócio (Máquinas Simulador VR 9D, Máquina Machado, Combustivel, Terrenos, Obrigações, Prestação Vito, etc.) passaram a vir "de fábrica" na app, em vez das listas genéricas antigas — e continuam totalmente editáveis em Configurações (criar, renomear, reordenar, apagar).',
+    'Verificação automática: qualquer categoria usada por lançamentos que falte na lista é reposta sozinha após cada sincronização ou importação — nenhuma categoria em uso volta a ficar invisível nos formulários e filtros.',
+    'Renomear uma categoria passou a atualizar automaticamente todos os lançamentos que a usam (na app e na cloud, tal como já acontecia ao renomear feiras). Ao apagar uma categoria ainda em uso, a app avisa quantos lançamentos a usam e o que acontece.',
+  ]},
   {v:'3.26',data:'2026-08-28',notas:[
     'Corrigido: um lançamento acabado de gravar podia DESAPARECER da app segundos depois, se a sincronização automática (a cada 45s) estivesse a meio nesse preciso momento — a resposta da nuvem, "fotografada" antes da gravação, vinha sem ele e apagava-o da app (voltava na sincronização seguinte, mas parecia perdido). Agora a app deteta quando uma resposta da nuvem é anterior a uma gravação recente, ignora-a e volta a pedir os dados 2 segundos depois.',
     'A tabela "Pagamentos registados" (página Empregados) passou a mostrar TODAS as despesas ligadas a empregados: além das da categoria "Empregados", agora aparecem também as de outras categorias que tenham um empregado associado (ex.: uma reparação paga a um empregado). Deixou também de estar limitada aos 20 mais recentes — mostra o histórico completo. As receitas com empregado associado continuam de fora, por não serem pagamentos.',
@@ -3350,6 +3371,21 @@ function initAutoPing(){
    junto ao botão "Sincronizar" (topo, no PC; cabeçalho, no telemóvel). Serve para
    confirmar a olho se a sincronização automática (a cada ~45s) está mesmo a acontecer,
    sem ter de adivinhar. */
+/* Garante que TODA a categoria usada por algum lançamento existe na lista respetiva
+   (receitas ou despesas) — sem isto, uma categoria em uso mas ausente da lista ficava
+   invisível nos formulários e filtros (ex.: dados antigos num aparelho novo, onde as
+   listas personalizadas ainda não existiam). Corre após cada sincronização e importação.
+   Não impede apagar categorias: apenas repõe as que ainda estão em uso por lançamentos. */
+function garantirCategoriasDosLancamentos(){
+  let mudou=false;
+  txList.forEach(t=>{
+    if(!t.cat)return;
+    if(t.tipo==='Receita'&&!catsRec.includes(t.cat)){catsRec.push(t.cat);mudou=true;}
+    else if(t.tipo==='Despesa'&&!catsDesp.includes(t.cat)){catsDesp.push(t.cat);mudou=true;}
+  });
+  if(mudou)saveToLocal();
+  return mudou;
+}
 function atualizarLabelSync(){
   const hora=new Date(lastCloudSync).toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   const txt='Sincronizado às '+hora;
@@ -3437,6 +3473,10 @@ async function loadAllFromCloud(){
       const env=await enviarLocaisParaCloud(false);
       if(env.nTx||env.nF||env.nE||env.nV)showSyncStatus('✓ Recuperados '+(env.nTx+env.nF+env.nE+env.nV)+' registo(s) que estavam só neste aparelho — já estão na cloud',true);
     }
+
+    // Repõe nas listas qualquer categoria em uso pelos lançamentos que ainda lá não esteja
+    // (ex.: primeira sincronização num aparelho novo, onde as listas personalizadas não existiam).
+    garantirCategoriasDosLancamentos();
 
     // O backup do Excel na Drive só se refazia quando havia uma ação local (criar/editar/
     // apagar) NESTE aparelho — um lançamento feito noutro dispositivo chegava por aqui via
@@ -3671,7 +3711,12 @@ function editCfgCat(grupo,idx){
 }
 function deleteCfgCat(grupo,idx){
   const list=grupo==='receita'?catsRec:catsDesp;
-  if(!confirm(`Eliminar "${list[idx]}"?`))return;
+  const tipoTx=grupo==='receita'?'Receita':'Despesa';
+  const emUso=txList.filter(t=>t.tipo===tipoTx&&t.cat===list[idx]).length;
+  const aviso=emUso
+    ?`Eliminar "${list[idx]}"?\n\nAtenção: está usada em ${emUso} lançamento(s). Esses lançamentos mantêm-na, por isso a categoria volta a aparecer na lista enquanto existirem — para a remover de vez, muda primeiro a categoria desses lançamentos (ou renomeia-a em vez de a apagar).`
+    :`Eliminar "${list[idx]}"?`;
+  if(!confirm(aviso))return;
   if(grupo==='receita')catsRec.splice(idx,1);
   else catsDesp.splice(idx,1);
   saveToLocal();
@@ -3682,7 +3727,26 @@ function saveCfgCat(){
   const grupo=document.getElementById('cfg-cat-grupo').value;
   if(!nome)return;
   const list=grupo==='receita'?catsRec:catsDesp;
-  if(cfgCatEditIdx!==null){list[cfgCatEditIdx]=nome;}
+  if(cfgCatEditIdx!==null){
+    const antigo=list[cfgCatEditIdx];
+    list[cfgCatEditIdx]=nome;
+    // Renomear cascateia para os lançamentos que usam esta categoria (tal como acontece
+    // ao renomear feiras) — sem isto, os lançamentos antigos ficavam "presos" ao nome
+    // antigo e desapareciam dos filtros/relatórios dessa categoria.
+    if(antigo && antigo!==nome){
+      const tipoTx=grupo==='receita'?'Receita':'Despesa';
+      const afetados=txList.filter(t=>t.tipo===tipoTx&&t.cat===antigo);
+      afetados.forEach(t=>{t.cat=nome;});
+      if(afetados.length){
+        // Um único pedido à cloud atualiza todos de uma vez (em vez de um pedido por lançamento).
+        supaFetch('lancamentos','PATCH',{cat:nome},'cat=eq.'+encodeURIComponent(antigo)+'&tipo=eq.'+encodeURIComponent(tipoTx)).then(r=>{
+          if(r)showSyncStatus(afetados.length+' lançamento(s) atualizados para o novo nome da categoria',true);
+          else showSyncStatus('Categoria renomeada localmente, mas falhou na cloud — sincroniza mais tarde',false);
+        });
+        renderTxTable();renderDashboard();populateFilters();
+      }
+    }
+  }
   else if(!list.includes(nome)){list.push(nome);}
   document.getElementById('cfgCatModal').style.display='none';
   saveToLocal();renderConfiguracoes();
