@@ -294,6 +294,10 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 
 /* RESPONSIVE */
 @media(max-width:768px){
+  /* Cabeçalho do Dashboard no telemóvel: Ano + Termo + Configurações compactos e a caber */
+  .hdr-btn{height:30px!important;padding:4px 8px!important;font-size:11px!important}
+  #dashYear{height:30px!important;padding:4px 8px!important;font-size:12px!important}
+
   .sidebar{display:none}
   .mobile-header{display:flex}
   .mobile-nav{display:flex}
@@ -449,8 +453,6 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
       <div class="nav-item active" data-page="dashboard" style="--ac:var(--n1);--ac-l:var(--n1-l)"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
       <div class="nav-item" data-page="lancamentos" style="--ac:var(--n7);--ac-l:var(--n7-l)"><i class="ti ti-receipt"></i> Lançamentos</div>
       <div class="nav-item" data-page="feiras" style="--ac:var(--n2);--ac-l:var(--n2-l)"><i class="ti ti-calendar-event"></i> Feiras/Eventos</div>
-      <div class="nav-item" data-page="empregados" style="--ac:var(--n6);--ac-l:var(--n6-l)"><i class="ti ti-users"></i> Empregados</div>
-      <div class="nav-item" data-page="viaturas" style="--ac:var(--n9);--ac-l:var(--n9-l)"><i class="ti ti-car"></i> Viaturas</div>
       <div class="nav-item" data-page="filtros" style="--ac:var(--n8);--ac-l:var(--n8-l)"><i class="ti ti-filter"></i> Filtros</div>
       <div class="nav-item" data-page="relatorio" style="--ac:var(--n10);--ac-l:var(--n10-l)"><i class="ti ti-chart-bar"></i> Relatório</div>
       <div class="nav-item" data-page="comparar" style="--ac:var(--n3);--ac-l:var(--n3-l)"><i class="ti ti-arrows-left-right"></i> Comparar</div>
@@ -506,8 +508,6 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 <div class="mobile-more-overlay" id="mobileMoreOverlay" onclick="toggleMobileMore()"></div>
 <div class="mobile-more-panel" id="mobileMorePanel">
   <div class="mobile-more-handle"></div>
-  <div class="mobile-more-item" data-page="empregados"><i class="ti ti-users"></i><span>Empregados</span></div>
-  <div class="mobile-more-item" data-page="viaturas"><i class="ti ti-car"></i><span>Viaturas</span></div>
   <div class="mobile-more-item" data-page="relatorio"><i class="ti ti-chart-bar"></i><span>Relatório</span></div>
   <div class="mobile-more-item" data-page="comparar"><i class="ti ti-arrows-left-right"></i><span>Comparar</span></div>
   <div class="mobile-more-item" data-page="configuracoes"><i class="ti ti-settings"></i><span>Configurações</span></div>
@@ -525,11 +525,11 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
   <div class="page-header">
     <div><h1>Dashboard</h1><p id="dash-sub">Resumo financeiro</p></div>
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">
-      <div style="display:flex;align-items:center;gap:8px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">
         <label style="font-size:12px;color:var(--text2);font-weight:500">Ano:</label>
         <select id="dashYear" onchange="renderDashboard()" style="height:34px;padding:6px 10px;font-size:13px;font-weight:600;border-radius:var(--radius);border:.5px solid var(--border2);background:var(--bg2);color:var(--text)"></select>
-        <button class="btn" onclick="abrirDocumentos(null)" title="Gerar o Termo de Responsabilidade de uma feira/evento" style="height:34px;padding:6px 10px;font-size:13px;font-weight:600;white-space:nowrap;flex-shrink:0;color:var(--amber);border-color:var(--amber-l);background:linear-gradient(135deg,var(--amber-l),#fff)"><i class="ti ti-file-text"></i> Termo Resp.</button>
-        <button class="btn" onclick="navTo('configuracoes')" title="Configurações" style="height:34px;padding:6px 10px;font-size:13px;font-weight:600;white-space:nowrap;flex-shrink:0;color:#fff;border-color:#9C5F1F;background:linear-gradient(135deg,#C68A42,#9C5F1F)"><i class="ti ti-settings" style="color:#fff"></i> Configurações</button>
+        <button class="btn hdr-btn" onclick="abrirDocumentos(null)" title="Gerar o Termo de Responsabilidade de uma feira/evento" style="height:34px;padding:6px 10px;font-size:13px;font-weight:600;white-space:nowrap;flex-shrink:0;color:var(--amber);border-color:var(--amber-l);background:linear-gradient(135deg,var(--amber-l),#fff)"><i class="ti ti-file-text"></i> Termo Resp.</button>
+        <button class="btn hdr-btn" onclick="navTo('configuracoes')" title="Configurações" style="height:34px;padding:6px 10px;font-size:13px;font-weight:600;white-space:nowrap;flex-shrink:0;color:#fff;border-color:#9C5F1F;background:linear-gradient(135deg,#C68A42,#9C5F1F)"><i class="ti ti-settings" style="color:#fff"></i> Configurações</button>
       </div>
       <div id="dash-result-mobile" class="only-mobile"></div>
     </div>
@@ -663,6 +663,10 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 <div class="page" id="page-configuracoes">
   <div class="page-header">
     <div><h1>Configurações</h1><p>Gere todas as listas usadas nos lançamentos</p></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn btn-sm" onclick="navTo('empregados')" style="color:var(--n6);border-color:var(--n6-l);background:linear-gradient(135deg,var(--n6-l),#fff)"><i class="ti ti-users"></i> Empregados</button>
+      <button class="btn btn-sm" onclick="navTo('viaturas')" style="color:var(--n9);border-color:var(--n9-l);background:linear-gradient(135deg,var(--n9-l),#fff)"><i class="ti ti-car"></i> Viaturas</button>
+    </div>
   </div>
   <div style="display:flex;gap:.75rem;align-items:flex-start">
     <!-- COLUNA 1: Tipos de Receita -->
@@ -3090,9 +3094,13 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.42';
+const APP_VERSION='3.43';
 const APP_UPDATE_DATE='2026-08-30'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.43',data:'2026-08-30',notas:[
+    'Menu principal mais limpo: Empregados e Viaturas saíram da barra do topo (e do painel "Mais" do telemóvel) e passaram para dentro de Configurações, com dois botões no topo dessa página — afinal são áreas de configuração; para consultar despesas por empregado ou viatura usam-se os Filtros. As páginas em si ficaram exatamente iguais.',
+    'No telemóvel, os botões Ano/Termo Resp./Configurações do Dashboard ficaram mais compactos e passam para uma segunda linha se não couberem — deixam de ficar espremidos ou cortados.',
+  ]},
   {v:'3.42',data:'2026-08-30',notas:[
     'Por segurança, o botão "Apagar todos os dados" saiu do topo das Configurações e passou para o FIM da página, numa "Zona de perigo" própria com aviso claro — agora que o botão de Configurações está mais à mão no Dashboard, deixa de haver risco de tocar no apagar sem querer.',
   ]},
