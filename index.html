@@ -304,6 +304,8 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
   /* Cabeçalho do Dashboard no telemóvel: Ano + Termo + Configurações compactos e a caber */
   .hdr-btn{height:30px!important;padding:4px 6px!important;font-size:11px!important}
   .hdr-trio{width:100%;gap:6px}
+  /* A mensagem de estado aparece ACIMA do menu inferior, para nunca o tapar visualmente */
+  #syncStatus{bottom:72px!important}
 
   .sidebar{display:none}
   .mobile-header{display:flex}
@@ -2866,7 +2868,10 @@ function loadFromLocal(){
 
 function showSyncStatus(msg,ok=true){
   let el=document.getElementById('syncStatus');
-  if(!el){el=document.createElement('div');el.id='syncStatus';el.style.cssText='position:fixed;bottom:16px;right:16px;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:500;z-index:9999;transition:opacity .5s;box-shadow:0 2px 8px rgba(0,0,0,.15)';document.body.appendChild(el);}
+  // pointer-events:none é ESSENCIAL: sem isso, a mensagem (mesmo já invisível, porque o
+  // desaparecer é só opacidade) ficava a bloquear os toques por baixo dela — no telemóvel
+  // tapava os botões Feiras/Filtros/Mais do menu inferior, que pareciam "não funcionar".
+  if(!el){el=document.createElement('div');el.id='syncStatus';el.style.cssText='position:fixed;bottom:16px;right:16px;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:500;z-index:9999;transition:opacity .5s;box-shadow:0 2px 8px rgba(0,0,0,.15);pointer-events:none';document.body.appendChild(el);}
   el.style.background=ok?'#E1F5EE':'#FCEBEB';
   el.style.color=ok?'#0F6E56':'#A32D2D';
   el.style.opacity='1';
@@ -3105,9 +3110,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.45';
+const APP_VERSION='3.46';
 const APP_UPDATE_DATE='2026-08-30'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.46',data:'2026-08-30',notas:[
+    'Encontrada e corrigida a verdadeira causa dos toques "mortos" no menu de baixo do telemóvel (Feiras, Filtros, Mais): a mensagem verde de estado (ex.: "lançamentos carregados!") ficava invisível mas continuava por cima desses botões a bloquear os toques. Agora a mensagem nunca bloqueia toques e, no telemóvel, aparece acima do menu inferior. O botão flutuante de ajuda também passou a nascer acima do menu.',
+  ]},
   {v:'3.45',data:'2026-08-30',notas:[
     'Cabeçalho do telemóvel reorganizado: logo mais pequeno com o nome do negócio por baixo; botões (cloud/Sincronizar/Drive/sessão) ligeiramente mais pequenos; e a hora de sincronização, a conta e a versão passaram para debaixo dos botões.',
     'Corrigido o menu de baixo do telemóvel: tocar em cima do ícone às vezes não fazia nada (só o texto funcionava) — agora qualquer toque no botão conta, e a área de toque de cada botão ficou maior.',
@@ -4813,7 +4821,7 @@ function initAjudaBtn(){
   let salvo=null;
   try{ salvo=JSON.parse(localStorage.getItem('ajudaBtnPos')||'null'); }catch(e){}
   if(salvo&&typeof salvo.x==='number'&&typeof salvo.y==='number'){ posicionarAjudaBtn(salvo.x,salvo.y); }
-  else{ posicionarAjudaBtn(window.innerWidth-66,window.innerHeight-96); }
+  else{ posicionarAjudaBtn(window.innerWidth-66,window.innerHeight-150); } // acima do menu inferior do telemóvel
   let dragging=false,moveu=false,offX=0,offY=0,startX=0,startY=0;
   btn.addEventListener('pointerdown',e=>{
     dragging=true; moveu=false;
