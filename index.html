@@ -73,6 +73,10 @@ body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;backgrou
 .nav-row{display:flex;align-items:center;gap:4px 6px}
 .nav-row .nav-item{flex:1 1 0;min-width:0;justify-content:center}
 .nav-sync-label{font-size:9px;color:var(--side-text-dim);white-space:nowrap;text-align:center;margin-top:1px}
+/* Trio Ano/Termo/Configurações do Dashboard: grelha de 3 colunas IGUAIS (a largura vem do
+   conteúdo mais largo), sempre na mesma linha — no PC e no telemóvel */
+.hdr-trio{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px;align-items:stretch}
+.hdr-btn{height:34px;padding:6px 12px;font-size:13px;width:100%}
 /* NAV — estilo "pill" moderno, em linha */
 .nav-item{display:flex;align-items:center;gap:4px;padding:6px 7px;margin:0;cursor:pointer;font-size:11px;color:var(--ink);border-radius:9px;border:1.5px solid var(--ac,var(--border2));transition:all .18s cubic-bezier(.4,0,.2,1);position:relative;white-space:nowrap;flex-shrink:0;height:34px;background:linear-gradient(135deg,var(--ac-l,#fff) 0%,#fff 80%);box-shadow:0 1px 3px rgba(28,25,23,.1)}
 .nav-dropdown{position:relative;flex-shrink:0}
@@ -295,8 +299,8 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 /* RESPONSIVE */
 @media(max-width:768px){
   /* Cabeçalho do Dashboard no telemóvel: Ano + Termo + Configurações compactos e a caber */
-  .hdr-btn{height:30px!important;padding:4px 8px!important;font-size:11px!important}
-  #dashYear{height:30px!important;padding:4px 8px!important;font-size:12px!important}
+  .hdr-btn{height:30px!important;padding:4px 6px!important;font-size:11px!important}
+  .hdr-trio{width:100%;gap:6px}
 
   .sidebar{display:none}
   .mobile-header{display:flex}
@@ -525,11 +529,12 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
   <div class="page-header">
     <div><h1>Dashboard</h1><p id="dash-sub">Resumo financeiro</p></div>
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">
-        <label style="font-size:12px;color:var(--text2);font-weight:500">Ano:</label>
-        <select id="dashYear" onchange="renderDashboard()" style="height:34px;padding:6px 10px;font-size:13px;font-weight:600;border-radius:var(--radius);border:.5px solid var(--border2);background:var(--bg2);color:var(--text)"></select>
-        <button class="btn hdr-btn" onclick="abrirDocumentos(null)" title="Gerar o Termo de Responsabilidade de uma feira/evento" style="height:34px;padding:6px 10px;font-size:13px;font-weight:600;white-space:nowrap;flex-shrink:0;color:var(--amber);border-color:var(--amber-l);background:linear-gradient(135deg,var(--amber-l),#fff)"><i class="ti ti-file-text"></i> Termo Resp.</button>
-        <button class="btn hdr-btn" onclick="navTo('configuracoes')" title="Configurações" style="height:34px;padding:6px 10px;font-size:13px;font-weight:600;white-space:nowrap;flex-shrink:0;color:#fff;border-color:#9C5F1F;background:linear-gradient(135deg,#C68A42,#9C5F1F)"><i class="ti ti-settings" style="color:#fff"></i> Configurações</button>
+      <!-- Ano + Termo Resp. + Configurações: sempre na MESMA linha, os 3 com larguras
+           iguais (definidas pelo conteúdo mais largo), no PC e no telemóvel -->
+      <div class="hdr-trio">
+        <select id="dashYear" onchange="renderDashboard()" title="Ano" class="hdr-btn" style="font-weight:600;border-radius:var(--radius);border:.5px solid var(--border2);background:var(--bg2);color:var(--text);text-align:center"></select>
+        <button class="btn hdr-btn" onclick="abrirDocumentos(null)" title="Gerar o Termo de Responsabilidade de uma feira/evento" style="font-weight:600;white-space:nowrap;justify-content:center;color:var(--amber);border-color:var(--amber-l);background:linear-gradient(135deg,var(--amber-l),#fff)"><i class="ti ti-file-text"></i> Termo Resp.</button>
+        <button class="btn hdr-btn" onclick="navTo('configuracoes')" title="Configurações" style="font-weight:600;white-space:nowrap;justify-content:center;color:#fff;border-color:#9C5F1F;background:linear-gradient(135deg,#C68A42,#9C5F1F)"><i class="ti ti-settings" style="color:#fff"></i> Configurações</button>
       </div>
       <div id="dash-result-mobile" class="only-mobile"></div>
     </div>
@@ -3094,9 +3099,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.43';
+const APP_VERSION='3.44';
 const APP_UPDATE_DATE='2026-08-30'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.44',data:'2026-08-30',notas:[
+    'Os botões Ano, Termo Resp. e Configurações do Dashboard ficam agora sempre os 3 na mesma linha, com larguras exatamente iguais (ajustadas ao conteúdo) — tanto no PC como no telemóvel, onde encolhem em conjunto para caberem sem cortes.',
+  ]},
   {v:'3.43',data:'2026-08-30',notas:[
     'Menu principal mais limpo: Empregados e Viaturas saíram da barra do topo (e do painel "Mais" do telemóvel) e passaram para dentro de Configurações, com dois botões no topo dessa página — afinal são áreas de configuração; para consultar despesas por empregado ou viatura usam-se os Filtros. As páginas em si ficaram exatamente iguais.',
     'No telemóvel, os botões Ano/Termo Resp./Configurações do Dashboard ficaram mais compactos e passam para uma segunda linha se não couberem — deixam de ficar espremidos ou cortados.',
