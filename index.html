@@ -275,7 +275,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 
 /* MOBILE HEADER — escondido por defeito, só aparece em ecrãs pequenos */
 .mobile-header{display:none;align-items:center;gap:10px;padding:10px 14px;background:var(--side);border-bottom:1px solid var(--side-line);position:sticky;top:0;z-index:90}
-.mobile-header-logo{width:76px;height:76px;border-radius:8px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
+.mobile-header-logo{width:48px;height:48px;border-radius:8px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
 .mobile-header-logo img{width:100%;height:100%;object-fit:contain}
 .mobile-header-title{min-width:0}
 
@@ -285,6 +285,9 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 .mobile-more-panel{display:none;position:fixed;left:0;right:0;bottom:0;background:var(--bg2);border-radius:16px 16px 0 0;padding:8px 0 max(16px,env(safe-area-inset-bottom));z-index:160;box-shadow:0 -8px 24px rgba(0,0,0,.15);transform:translateY(100%);transition:transform .25s cubic-bezier(.4,0,.2,1)}
 .mobile-more-panel.open{display:block;transform:translateY(0)}
 .mobile-more-handle{width:36px;height:4px;border-radius:2px;background:var(--border2);margin:6px auto 10px}
+/* Toques no ícone ou no texto contam SEMPRE como toque no botão (sem isto, tocar
+   exatamente em cima do ícone podia não registar — só funcionava tocando no texto) */
+.mobile-nav-item i,.mobile-nav-item span,.mobile-more-item i,.mobile-more-item span,.drive-more-item i,.drive-more-item span{pointer-events:none}
 .mobile-more-item{display:flex;align-items:center;gap:12px;padding:14px 20px;font-size:14px;font-weight:600;color:var(--text);cursor:pointer}
 .mobile-more-item:active{background:var(--bg3)}
 .mobile-more-item i{font-size:19px;color:var(--accent);width:24px;text-align:center}
@@ -292,7 +295,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 .drive-more-item:active{background:var(--bg3)}
 .drive-more-item i{font-size:19px;color:var(--amber);width:24px;text-align:center}
 .mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--side);border-top:1px solid var(--side-line);padding:5px 0;z-index:100;justify-content:space-around}
-.mobile-nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:3px 6px;cursor:pointer;color:var(--side-text-dim);font-size:8px;font-weight:600;border-radius:var(--radius);transition:all .15s;flex:1}
+.mobile-nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px 6px;min-height:44px;cursor:pointer;color:var(--side-text-dim);font-size:8px;font-weight:600;border-radius:var(--radius);transition:all .15s;flex:1}
 .mobile-nav-item i{font-size:20px}
 .mobile-nav-item.active{color:var(--accent)}
 
@@ -481,21 +484,24 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 
 <!-- MOBILE HEADER (logo, visível só em ecrãs pequenos) -->
 <header class="mobile-header">
-  <div class="mobile-header-logo" id="mobileLogoWrap">
-    <span id="mobileLogoPlaceholder" style="font-size:8px;font-weight:700;color:var(--side-text-dim);letter-spacing:.05em">LOGO</span>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0">
+    <div class="mobile-header-logo" id="mobileLogoWrap">
+      <span id="mobileLogoPlaceholder" style="font-size:8px;font-weight:700;color:var(--side-text-dim);letter-spacing:.05em">LOGO</span>
+    </div>
+    <div class="logo-title" id="sidebarTitleMobile" style="font-size:10px;max-width:110px;text-align:center">Gestão de Negócio</div>
   </div>
-  <div class="mobile-header-title">
-    <div class="logo-title" id="sidebarTitleMobile" style="font-size:13px">Gestão de Negócio</div>
-    <div class="logo-sub" id="logoSubMobile" style="font-size:9px">Gestão financeira</div>
-    <div id="lastSyncLabelMobile" style="font-size:8px;color:var(--side-text-dim);margin-top:1px">A sincronizar...</div>
-    <div id="contaAtivaLabelMobile" title="Conta com sessão iniciada neste aparelho" style="font-size:8px;color:var(--side-text-dim);font-weight:600"></div>
-    <div id="appVersaoLabelMobile" title="Versão da aplicação" style="font-size:8px;color:var(--side-text-dim)"></div>
-  </div>
-  <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
-    <button class="btn btn-icon" onclick="syncLocalToCloud()" title="Enviar dados locais para a cloud" style="color:var(--teal);border-color:var(--teal-l);background:var(--teal-l);padding:7px 9px"><i class="ti ti-cloud-up"></i></button>
-    <button class="btn btn-icon" onclick="loadAllFromCloud()" title="Sincronizar agora" style="color:var(--blue);border-color:var(--blue-l);background:var(--blue-l);padding:7px 9px"><i class="ti ti-refresh"></i></button>
-    <button class="btn btn-icon" onclick="gdriveConnectInteractive()" title="Ligar Google Drive" style="color:var(--amber);border-color:var(--amber-l);background:var(--amber-l);padding:7px 9px"><i class="ti ti-brand-google-drive"></i></button>
-    <button class="btn btn-icon" onclick="doLogout()" title="Terminar sessão" style="color:var(--red);border-color:var(--red-l);background:var(--red-l);padding:7px 9px"><i class="ti ti-key"></i></button>
+  <div style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:0">
+    <div style="display:flex;align-items:center;gap:6px">
+      <button class="btn btn-icon" onclick="syncLocalToCloud()" title="Enviar dados locais para a cloud" style="color:var(--teal);border-color:var(--teal-l);background:var(--teal-l);padding:5px 7px"><i class="ti ti-cloud-up" style="font-size:13px"></i></button>
+      <button class="btn btn-icon" onclick="loadAllFromCloud()" title="Sincronizar agora" style="color:var(--blue);border-color:var(--blue-l);background:var(--blue-l);padding:5px 7px"><i class="ti ti-refresh" style="font-size:13px"></i></button>
+      <button class="btn btn-icon" onclick="gdriveConnectInteractive()" title="Ligar Google Drive" style="color:var(--amber);border-color:var(--amber-l);background:var(--amber-l);padding:5px 7px"><i class="ti ti-brand-google-drive" style="font-size:13px"></i></button>
+      <button class="btn btn-icon" onclick="doLogout()" title="Terminar sessão" style="color:var(--red);border-color:var(--red-l);background:var(--red-l);padding:5px 7px"><i class="ti ti-key" style="font-size:13px"></i></button>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;line-height:1.35">
+      <div id="lastSyncLabelMobile" style="font-size:8px;color:var(--side-text-dim)">A sincronizar...</div>
+      <div id="contaAtivaLabelMobile" title="Conta com sessão iniciada neste aparelho" style="font-size:8px;color:var(--side-text-dim);font-weight:600"></div>
+      <div id="appVersaoLabelMobile" title="Versão da aplicação" style="font-size:8px;color:var(--side-text-dim)"></div>
+    </div>
   </div>
 </header>
 
@@ -3099,9 +3105,13 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.44';
+const APP_VERSION='3.45';
 const APP_UPDATE_DATE='2026-08-30'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.45',data:'2026-08-30',notas:[
+    'Cabeçalho do telemóvel reorganizado: logo mais pequeno com o nome do negócio por baixo; botões (cloud/Sincronizar/Drive/sessão) ligeiramente mais pequenos; e a hora de sincronização, a conta e a versão passaram para debaixo dos botões.',
+    'Corrigido o menu de baixo do telemóvel: tocar em cima do ícone às vezes não fazia nada (só o texto funcionava) — agora qualquer toque no botão conta, e a área de toque de cada botão ficou maior.',
+  ]},
   {v:'3.44',data:'2026-08-30',notas:[
     'Os botões Ano, Termo Resp. e Configurações do Dashboard ficam agora sempre os 3 na mesma linha, com larguras exatamente iguais (ajustadas ao conteúdo) — tanto no PC como no telemóvel, onde encolhem em conjunto para caberem sem cortes.',
   ]},
