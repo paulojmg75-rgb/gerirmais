@@ -54,6 +54,9 @@
 }
 body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg3);color:var(--text);font-size:12px;line-height:1.45;height:100vh;overflow:hidden}
 .app{display:flex;flex-direction:column;height:100vh;width:100vw;overflow:hidden}
+/* Nos telemóveis, 100vh inclui a zona escondida atrás da barra do browser — o fundo das
+   páginas ficava cortado. 100dvh é a altura realmente visível, ajustada em tempo real. */
+@supports(height:100dvh){body{height:100dvh}.app{height:100dvh}}
 
 /* TOPBAR (antiga sidebar) */
 .sidebar{width:100%;display:flex;flex-direction:row;align-items:center;flex-wrap:wrap;background:var(--side);flex-shrink:0;box-shadow:0 1px 8px rgba(0,0,0,.05);border-bottom:1px solid var(--side-line);padding:6px .75rem;gap:4px 6px;overflow:visible;min-height:56px}
@@ -313,8 +316,11 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
   .sidebar{display:none}
   .mobile-header{display:flex}
   .mobile-nav{display:flex}
-  .main{padding-bottom:120px}
-  .page{padding:.75rem}
+  /* O espaço extra fica na PRÓPRIA página (não no contentor de rolagem, cujo padding
+     inferior alguns browsers móveis ignoram) — garante que se chega sempre ao fim,
+     mesmo com o menu inferior fixo por cima. */
+  .main{padding-bottom:0}
+  .page{padding:.75rem .75rem 150px}
   .only-mobile{display:block}
   #dash-result-mobile{flex:1 1 100%;display:flex;gap:5px;margin-top:2px}
   #dash-result-mobile>.metric{flex:1;margin:0;padding:6px 10px;box-shadow:none;display:flex;flex-direction:column;justify-content:center}
@@ -3113,9 +3119,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.47';
+const APP_VERSION='3.48';
 const APP_UPDATE_DATE='2026-08-30'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.48',data:'2026-08-30',notas:[
+    'Corrigido: no telemóvel, algumas páginas (ex.: Configurações) não deixavam ver o conteúdo até ao fim — o fundo ficava cortado pela barra do browser e pelo menu inferior. A app passou a usar a altura realmente visível do ecrã e a reservar espaço de rolagem no fundo de todas as páginas, por isso agora chega-se sempre ao final.',
+  ]},
   {v:'3.47',data:'2026-08-30',notas:[
     'No telemóvel, os botões Empregados e Viaturas (topo das Configurações) ficam agora lado a lado, com larguras iguais — como no PC, em vez de empilhados um por baixo do outro.',
   ]},
