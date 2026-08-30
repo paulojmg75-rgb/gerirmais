@@ -540,7 +540,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
            iguais (definidas pelo conteúdo mais largo), no PC e no telemóvel -->
       <div class="hdr-trio">
         <select id="dashYear" onchange="renderDashboard()" title="Ano" class="hdr-btn" style="font-weight:600;border-radius:var(--radius);border:.5px solid var(--border2);background:var(--bg2);color:var(--text);text-align:center"></select>
-        <button class="btn hdr-btn" onclick="abrirDocumentos(null)" title="Gerar o Termo de Responsabilidade de uma feira/evento" style="font-weight:600;white-space:nowrap;justify-content:center;color:var(--amber);border-color:var(--amber-l);background:linear-gradient(135deg,var(--amber-l),#fff)"><i class="ti ti-file-text"></i> Termo Resp.</button>
+        <button class="btn hdr-btn" onclick="abrirDocumentos(null)" title="Termo de Responsabilidade / Contactos das Feiras" style="font-weight:600;white-space:nowrap;justify-content:center;color:var(--amber);border-color:var(--amber-l);background:linear-gradient(135deg,var(--amber-l),#fff)"><i class="ti ti-file-text"></i> Termo / Contactos</button>
         <button class="btn hdr-btn" onclick="navTo('configuracoes')" title="Configurações" style="font-weight:600;white-space:nowrap;justify-content:center;color:#fff;border-color:#9C5F1F;background:linear-gradient(135deg,#C68A42,#9C5F1F)"><i class="ti ti-settings" style="color:#fff"></i> Configurações</button>
       </div>
       <div id="dash-result-mobile" class="only-mobile"></div>
@@ -853,7 +853,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 <!-- TERMO DE RESPONSABILIDADE -->
 <div class="page" id="page-documentos">
   <div class="page-header">
-    <div><h1>Termo de Responsabilidade</h1><p>Gera o termo já preenchido com a feira/evento escolhida — imprime ou guarda em PDF e envia pelo teu email</p></div>
+    <div><h1>Termo de Responsabilidade / Contactos das Feiras</h1><p>Gera o termo já preenchido com a feira/evento escolhida — imprime ou guarda em PDF e envia pelo teu email</p></div>
     <div class="form-group" style="margin:0;min-width:220px"><label class="form-label">Feira / Evento</label>
       <select id="doc-feira" onchange="docFeiraSel=parseInt(this.value)||null"></select>
     </div>
@@ -3110,9 +3110,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.50';
+const APP_VERSION='3.51';
 const APP_UPDATE_DATE='2026-08-30'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.51',data:'2026-08-30',notas:[
+    'A página do termo passou a chamar-se "Termo de Responsabilidade / Contactos das Feiras" e o botão do Dashboard "Termo / Contactos" (PC e telemóvel). Nos contactos das feiras, cada linha ganhou um botão "Guardar" que grava o email e o telemóvel de uma vez, com confirmação clara — o guardar automático ao sair do campo também se mantém.',
+  ]},
   {v:'3.50',data:'2026-08-30',notas:[
     'Corrigido (agora a sério): no telemóvel, o fim das páginas ficava escondido debaixo do menu inferior — era por isso que o botão "Apagar todos os dados" das Configurações não aparecia. Uma regra antiga dos ecrãs pequenos anulava o espaço de rolagem do fundo; foi corrigida e validada num browser real com ecrã de telemóvel.',
   ]},
@@ -4147,11 +4150,12 @@ function renderContactos(){
   area.innerHTML=nomes.map(nome=>{
     const c=m[nome]||{};
     const enc=encodeURIComponent(nome);
-    return`<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius);margin-bottom:6px;flex-wrap:wrap">
+    return`<div class="contacto-feira-linha" style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius);margin-bottom:6px;flex-wrap:wrap">
       <i class="ti ti-building-carousel" style="color:var(--text3)"></i>
       <div style="flex:1 1 150px;min-width:120px;font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(nome)}">${escHtml(nome)}</div>
-      <input type="email" placeholder="email da entidade" value="${escHtml(c.email||'')}" onchange="guardarContactoFeira('${enc}','email',this.value)" style="flex:1 1 170px;min-width:140px;font-size:11px;padding:5px 8px;border-radius:var(--radius);border:.5px solid var(--border2)">
-      <input type="tel" placeholder="telemóvel" value="${escHtml(c.tel||'')}" onchange="guardarContactoFeira('${enc}','tel',this.value)" style="flex:0 1 110px;min-width:90px;font-size:11px;padding:5px 8px;border-radius:var(--radius);border:.5px solid var(--border2)">
+      <input type="email" class="cf-email" placeholder="email da entidade" value="${escHtml(c.email||'')}" onchange="guardarContactoFeira('${enc}','email',this.value)" style="flex:1 1 170px;min-width:140px;font-size:11px;padding:5px 8px;border-radius:var(--radius);border:.5px solid var(--border2)">
+      <input type="tel" class="cf-tel" placeholder="telemóvel" value="${escHtml(c.tel||'')}" onchange="guardarContactoFeira('${enc}','tel',this.value)" style="flex:0 1 110px;min-width:90px;font-size:11px;padding:5px 8px;border-radius:var(--radius);border:.5px solid var(--border2)">
+      <button class="btn btn-sm" title="Guardar email e telemóvel desta feira" onclick="guardarContactoLinha('${enc}',this)" style="color:var(--accent);background:var(--accent-l);border-color:var(--accent-l)"><i class="ti ti-device-floppy" style="font-size:12px"></i> Guardar</button>
       <button class="btn btn-sm btn-icon" title="Escrever email" onclick="emailContactoFeira('${enc}')" style="color:var(--teal);background:var(--teal-l);border-color:var(--teal-l)"><i class="ti ti-mail-forward" style="font-size:12px"></i></button>
     </div>`;
   }).join('');
@@ -4163,6 +4167,18 @@ function guardarContactoFeira(nomeEnc,campo,valor){
   m[nome][campo]=String(valor||'').trim();
   saveDocContactosFeira(m);
   showSyncStatus('Contacto de "'+nome+'" guardado!',true);
+}
+/* Botão "Guardar" da linha: grava o email E o telemóvel de uma vez (além do guardar
+   automático ao sair de cada campo, que se mantém) — dá a confirmação clara que faltava. */
+function guardarContactoLinha(nomeEnc,btn){
+  const nome=decodeURIComponent(nomeEnc);
+  const linha=btn.closest('.contacto-feira-linha');
+  const m=docContactosFeira();
+  m[nome]=m[nome]||{};
+  m[nome].email=(linha.querySelector('.cf-email').value||'').trim();
+  m[nome].tel=(linha.querySelector('.cf-tel').value||'').trim();
+  saveDocContactosFeira(m);
+  showSyncStatus('Contacto de "'+nome+'" guardado! ✓',true);
 }
 function emailContactoFeira(nomeEnc){
   const nome=decodeURIComponent(nomeEnc);
