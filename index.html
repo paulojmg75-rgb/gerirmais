@@ -367,7 +367,9 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
   #dash-result-mobile .metric-value{font-size:14px!important}
   #dash-metrics>.metric>.metric-value{font-size:clamp(11px,3.3vw,15px)}
   .filter-grid{grid-template-columns:1fr}
-  .page{padding:.5rem}
+  /* O fundo de 150px é OBRIGATÓRIO: sem ele, o fim das páginas fica debaixo do menu
+     inferior fixo e inacessível (era o que escondia o botão "Apagar todos os dados") */
+  .page{padding:.5rem .5rem 150px}
   .metric-value{font-size:16px}
   .grid2{gap:.5rem}
   .ycal-grid{grid-template-columns:1fr}
@@ -3108,9 +3110,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.49';
+const APP_VERSION='3.50';
 const APP_UPDATE_DATE='2026-08-30'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.50',data:'2026-08-30',notas:[
+    'Corrigido (agora a sério): no telemóvel, o fim das páginas ficava escondido debaixo do menu inferior — era por isso que o botão "Apagar todos os dados" das Configurações não aparecia. Uma regra antiga dos ecrãs pequenos anulava o espaço de rolagem do fundo; foi corrigida e validada num browser real com ecrã de telemóvel.',
+  ]},
   {v:'3.49',data:'2026-08-30',notas:[
     'Menu de baixo do telemóvel simplificado: o botão "Mais" desapareceu — tudo o que lá estava já tem acesso direto (Configurações e Termo no Dashboard; cloud/Drive/Sincronizar no cabeçalho) — e no seu lugar entraram o Relatório e o Comparar, que eram os únicos sem acesso. A barra fica com 6 botões diretos: Início, Lançar, Feiras/Ev., Filtros, Relatório e Comparar.',
   ]},
