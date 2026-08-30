@@ -306,6 +306,9 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
   .hdr-trio{width:100%;gap:6px}
   /* A mensagem de estado aparece ACIMA do menu inferior, para nunca o tapar visualmente */
   #syncStatus{bottom:72px!important}
+  /* Empregados e Viaturas lado a lado nas Configurações, como no PC */
+  .cfg-header-btns{width:100%}
+  .cfg-header-btns .btn{width:auto!important;flex:1}
 
   .sidebar{display:none}
   .mobile-header{display:flex}
@@ -676,7 +679,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 <div class="page" id="page-configuracoes">
   <div class="page-header">
     <div><h1>Configurações</h1><p>Gere todas as listas usadas nos lançamentos</p></div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap">
+    <div class="cfg-header-btns" style="display:flex;gap:6px;flex-wrap:nowrap">
       <button class="btn btn-sm" onclick="navTo('empregados')" style="color:var(--n6);border-color:var(--n6-l);background:linear-gradient(135deg,var(--n6-l),#fff)"><i class="ti ti-users"></i> Empregados</button>
       <button class="btn btn-sm" onclick="navTo('viaturas')" style="color:var(--n9);border-color:var(--n9-l);background:linear-gradient(135deg,var(--n9-l),#fff)"><i class="ti ti-car"></i> Viaturas</button>
     </div>
@@ -3110,9 +3113,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.46';
+const APP_VERSION='3.47';
 const APP_UPDATE_DATE='2026-08-30'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.47',data:'2026-08-30',notas:[
+    'No telemóvel, os botões Empregados e Viaturas (topo das Configurações) ficam agora lado a lado, com larguras iguais — como no PC, em vez de empilhados um por baixo do outro.',
+  ]},
   {v:'3.46',data:'2026-08-30',notas:[
     'Encontrada e corrigida a verdadeira causa dos toques "mortos" no menu de baixo do telemóvel (Feiras, Filtros, Mais): a mensagem verde de estado (ex.: "lançamentos carregados!") ficava invisível mas continuava por cima desses botões a bloquear os toques. Agora a mensagem nunca bloqueia toques e, no telemóvel, aparece acima do menu inferior. O botão flutuante de ajuda também passou a nascer acima do menu.',
   ]},
