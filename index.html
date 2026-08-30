@@ -663,7 +663,6 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 <div class="page" id="page-configuracoes">
   <div class="page-header">
     <div><h1>Configurações</h1><p>Gere todas as listas usadas nos lançamentos</p></div>
-    <button class="btn btn-del" onclick="confirmarApagarTudo()" style="font-size:11px"><i class="ti ti-trash"></i> Apagar todos os dados</button>
   </div>
   <div style="display:flex;gap:.75rem;align-items:flex-start">
     <!-- COLUNA 1: Tipos de Receita -->
@@ -752,6 +751,16 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
       <button class="btn btn-sm" onclick="toggleChangelog()"><i class="ti ti-chevron-down" id="changelogToggleIcon"></i> Novidades</button>
     </div>
     <div id="changelogBox" style="display:none;position:relative;margin-top:.65rem;padding-top:.65rem;border-top:1px dashed var(--border2)"></div>
+  </div>
+  <!-- ZONA DE PERIGO: no fim da página, longe dos botões do dia a dia, por segurança -->
+  <div class="card" style="margin-top:.75rem;border:1px solid var(--red-l);background:var(--red-l)">
+    <div style="display:flex;align-items:center;gap:.85rem;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px">
+        <div style="font-weight:700;font-size:12px;color:var(--red)"><i class="ti ti-alert-triangle"></i> Zona de perigo</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px">Apaga TODOS os dados desta conta (lançamentos, feiras, empregados, viaturas) na nuvem e em todos os dispositivos. Ação irreversível.</div>
+      </div>
+      <button class="btn btn-del" onclick="confirmarApagarTudo()" style="font-size:11px"><i class="ti ti-trash"></i> Apagar todos os dados</button>
+    </div>
   </div>
 </div>
 
@@ -3081,9 +3090,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.41';
+const APP_VERSION='3.42';
 const APP_UPDATE_DATE='2026-08-30'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.42',data:'2026-08-30',notas:[
+    'Por segurança, o botão "Apagar todos os dados" saiu do topo das Configurações e passou para o FIM da página, numa "Zona de perigo" própria com aviso claro — agora que o botão de Configurações está mais à mão no Dashboard, deixa de haver risco de tocar no apagar sem querer.',
+  ]},
   {v:'3.41',data:'2026-08-30',notas:[
     'No Termo de Responsabilidade, o nome da feira/evento aparece agora sublinhado (e ligeiramente destacado) — mais fácil de identificar à primeira vista no documento impresso.',
   ]},
