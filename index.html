@@ -69,12 +69,12 @@ body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;backgrou
 .logo-area:hover~.logo-tools,.logo-tools:hover{display:flex;align-items:center;padding:0 .625rem;height:100%}
 #logoInput{display:none}
 .nav-section{display:none}
-.nav-rows{display:flex;flex-direction:column;gap:4px;flex:1;min-width:280px}
+.nav-rows{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
 .nav-row{display:flex;align-items:center;gap:4px 6px}
 .nav-row .nav-item{flex:1 1 0;min-width:0;justify-content:center}
 .nav-sync-label{font-size:9px;color:var(--side-text-dim);white-space:nowrap;text-align:center;margin-top:1px}
 /* NAV — estilo "pill" moderno, em linha */
-.nav-item{display:flex;align-items:center;gap:5px;padding:6px 9px;margin:0;cursor:pointer;font-size:11.5px;color:var(--ink);border-radius:9px;border:1.5px solid var(--ac,var(--border2));transition:all .18s cubic-bezier(.4,0,.2,1);position:relative;white-space:nowrap;flex-shrink:0;height:34px;background:linear-gradient(135deg,var(--ac-l,#fff) 0%,#fff 80%);box-shadow:0 1px 3px rgba(28,25,23,.1)}
+.nav-item{display:flex;align-items:center;gap:4px;padding:6px 7px;margin:0;cursor:pointer;font-size:11px;color:var(--ink);border-radius:9px;border:1.5px solid var(--ac,var(--border2));transition:all .18s cubic-bezier(.4,0,.2,1);position:relative;white-space:nowrap;flex-shrink:0;height:34px;background:linear-gradient(135deg,var(--ac-l,#fff) 0%,#fff 80%);box-shadow:0 1px 3px rgba(28,25,23,.1)}
 .nav-dropdown{position:relative;flex-shrink:0}
 .nav-drop-toggle{display:flex;align-items:center;gap:5px;padding:6px 9px;cursor:pointer;font-size:11.5px;color:var(--side-text);border-radius:9px;border:1px solid transparent;white-space:nowrap;height:34px;transition:all .18s}
 .nav-drop-toggle:hover{background:var(--bg2)}
@@ -92,12 +92,10 @@ body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;backgrou
 .nav-item-settings.active{background:linear-gradient(135deg,#C68A42,#9C5F1F);border:1.5px solid #7A4A18;box-shadow:0 2px 8px rgba(124,74,24,.4);color:var(--side-text)}
 .nav-item-settings.active i{background:transparent!important;box-shadow:none!important}
 .nav-divider{width:1px;height:26px;background:var(--side-line);flex-shrink:0;margin:0 2px}
-.topbar-actions-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;margin-left:auto;flex-shrink:0;padding-left:.625rem;border-left:1px solid var(--side-line);height:100%}
+.topbar-actions-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;margin-left:auto;flex-shrink:0;padding-left:.625rem;border-left:1px solid var(--side-line);height:100%}
 .topbar-actions{display:flex;align-items:center;gap:6px}
 .topbar-actions .btn{padding:5px 8px;font-size:10px;box-shadow:0 1px 3px rgba(28,25,23,.12);flex:1;justify-content:center}
 .topbar-actions .btn span{display:none}
-/* O botão de Configurações estica ao lado das 2 linhas de ações, com a mesma altura do bloco */
-.topbar-actions-wrap .nav-item-settings{height:auto}
 
 /* MAIN */
 .main{flex:1;overflow-y:auto;background:var(--bg3);min-width:0;width:100%}
@@ -452,8 +450,6 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
       <div class="nav-item" data-page="lancamentos" style="--ac:var(--n7);--ac-l:var(--n7-l)"><i class="ti ti-receipt"></i> Lançamentos</div>
       <div class="nav-item" data-page="feiras" style="--ac:var(--n2);--ac-l:var(--n2-l)"><i class="ti ti-calendar-event"></i> Feiras/Eventos</div>
       <div class="nav-item" data-page="empregados" style="--ac:var(--n6);--ac-l:var(--n6-l)"><i class="ti ti-users"></i> Empregados</div>
-    </div>
-    <div class="nav-row">
       <div class="nav-item" data-page="viaturas" style="--ac:var(--n9);--ac-l:var(--n9-l)"><i class="ti ti-car"></i> Viaturas</div>
       <div class="nav-item" data-page="filtros" style="--ac:var(--n8);--ac-l:var(--n8-l)"><i class="ti ti-filter"></i> Filtros</div>
       <div class="nav-item" data-page="relatorio" style="--ac:var(--n10);--ac-l:var(--n10-l)"><i class="ti ti-chart-bar"></i> Relatório</div>
@@ -461,23 +457,19 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
     </div>
   </div>
   <div class="topbar-actions-wrap">
-    <div style="display:flex;align-items:stretch;gap:6px">
-      <div class="nav-item nav-item-settings" data-page="configuracoes" title="Configurações" style="--ac:var(--accent);--ac-l:var(--accent-l)"><i class="ti ti-settings"></i></div>
-      <div style="display:flex;flex-direction:column;gap:4px">
-        <div class="topbar-actions">
-          <button class="btn btn-icon" onclick="syncLocalToCloud()" title="Enviar dados locais para a cloud (igualar PC e telemóvel)" style="color:var(--n7);border-color:var(--n7-l);background:linear-gradient(135deg,var(--n7-l),#fff)"><i class="ti ti-cloud-up"></i></button>
-          <button class="btn btn-icon" onclick="gdriveAuth(()=>showSyncStatus('Google Drive ligado! ✓',true))" title="Ligar Google Drive" style="color:var(--n5);border-color:var(--n5-l);background:linear-gradient(135deg,var(--n5-l),#fff)"><i class="ti ti-brand-google-drive"></i></button>
-          <button class="btn btn-icon" onclick="loadAllFromCloud()" title="Sincronizar agora" style="color:var(--n2);border-color:var(--n2-l);background:linear-gradient(135deg,var(--n2-l),#fff)"><i class="ti ti-refresh"></i></button>
-        </div>
-        <div class="topbar-actions">
-          <button class="btn btn-icon" onclick="exportarExcel()" title="Exportar Excel" style="color:var(--n1);border-color:var(--n1-l);background:linear-gradient(135deg,var(--n1-l),#fff)"><i class="ti ti-download"></i></button>
-          <label class="btn btn-icon" title="Importar Excel" style="cursor:pointer;color:var(--n9);border-color:var(--n9-l);background:linear-gradient(135deg,var(--n9-l),#fff)"><i class="ti ti-upload"></i><input type="file" accept=".xlsx,.xls" onchange="importarExcel(event)" style="display:none"></label>
-          <button class="btn btn-icon" onclick="doLogout()" title="Terminar sessão" style="color:var(--n6);border-color:var(--n6-l);background:linear-gradient(135deg,var(--n6-l),#fff)"><i class="ti ti-key"></i></button>
-        </div>
-      </div>
+    <div class="topbar-actions">
+      <button class="btn btn-icon" onclick="syncLocalToCloud()" title="Enviar dados locais para a cloud (igualar PC e telemóvel)" style="color:var(--n7);border-color:var(--n7-l);background:linear-gradient(135deg,var(--n7-l),#fff)"><i class="ti ti-cloud-up"></i></button>
+      <button class="btn btn-icon" onclick="gdriveAuth(()=>showSyncStatus('Google Drive ligado! ✓',true))" title="Ligar Google Drive" style="color:var(--n5);border-color:var(--n5-l);background:linear-gradient(135deg,var(--n5-l),#fff)"><i class="ti ti-brand-google-drive"></i></button>
+      <button class="btn btn-icon" onclick="loadAllFromCloud()" title="Sincronizar agora" style="color:var(--n2);border-color:var(--n2-l);background:linear-gradient(135deg,var(--n2-l),#fff)"><i class="ti ti-refresh"></i></button>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-icon" onclick="exportarExcel()" title="Exportar Excel" style="color:var(--n1);border-color:var(--n1-l);background:linear-gradient(135deg,var(--n1-l),#fff)"><i class="ti ti-download"></i></button>
+      <label class="btn btn-icon" title="Importar Excel" style="cursor:pointer;color:var(--n9);border-color:var(--n9-l);background:linear-gradient(135deg,var(--n9-l),#fff)"><i class="ti ti-upload"></i><input type="file" accept=".xlsx,.xls" onchange="importarExcel(event)" style="display:none"></label>
+      <button class="btn btn-icon" onclick="doLogout()" title="Terminar sessão" style="color:var(--n6);border-color:var(--n6-l);background:linear-gradient(135deg,var(--n6-l),#fff)"><i class="ti ti-key"></i></button>
     </div>
     <div class="nav-sync-label" id="lastSyncLabel">A sincronizar...</div>
     <div class="nav-sync-label" id="contaAtivaLabel" title="Conta com sessão iniciada neste aparelho" style="font-weight:600"></div>
+    <div class="nav-sync-label" id="appVersaoLabel" title="Versão da aplicação"></div>
   </div>
 </div>
 
@@ -491,6 +483,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
     <div class="logo-sub" id="logoSubMobile" style="font-size:9px">Gestão financeira</div>
     <div id="lastSyncLabelMobile" style="font-size:8px;color:var(--side-text-dim);margin-top:1px">A sincronizar...</div>
     <div id="contaAtivaLabelMobile" title="Conta com sessão iniciada neste aparelho" style="font-size:8px;color:var(--side-text-dim);font-weight:600"></div>
+    <div id="appVersaoLabelMobile" title="Versão da aplicação" style="font-size:8px;color:var(--side-text-dim)"></div>
   </div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
     <button class="btn btn-icon" onclick="syncLocalToCloud()" title="Enviar dados locais para a cloud" style="color:var(--teal);border-color:var(--teal-l);background:var(--teal-l);padding:7px 9px"><i class="ti ti-cloud-up"></i></button>
@@ -518,6 +511,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
   <div class="mobile-more-item" data-page="relatorio"><i class="ti ti-chart-bar"></i><span>Relatório</span></div>
   <div class="mobile-more-item" data-page="comparar"><i class="ti ti-arrows-left-right"></i><span>Comparar</span></div>
   <div class="mobile-more-item" data-page="configuracoes"><i class="ti ti-settings"></i><span>Configurações</span></div>
+  <div class="drive-more-item" onclick="closeMobileMore();abrirDocumentos(null)"><i class="ti ti-file-text"></i><span>Termo de Responsabilidade</span></div>
   <div class="drive-more-item" onclick="closeMobileMore();syncLocalToCloud()"><i class="ti ti-cloud-up"></i><span>Enviar dados locais → cloud</span></div>
   <div class="drive-more-item" onclick="closeMobileMore();gdriveConnectInteractive()"><i class="ti ti-brand-google-drive"></i><span>Ligar Google Drive</span></div>
   <div class="drive-more-item" onclick="closeMobileMore();loadAllFromCloud()"><i class="ti ti-refresh"></i><span>Sincronizar agora</span></div>
@@ -533,7 +527,9 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">
       <div style="display:flex;align-items:center;gap:8px">
         <label style="font-size:12px;color:var(--text2);font-weight:500">Ano:</label>
-        <select id="dashYear" onchange="renderDashboard()" style="padding:6px 10px;font-size:13px;font-weight:600;border-radius:var(--radius);border:.5px solid var(--border2);background:var(--bg2);color:var(--text)"></select>
+        <select id="dashYear" onchange="renderDashboard()" style="height:34px;padding:6px 10px;font-size:13px;font-weight:600;border-radius:var(--radius);border:.5px solid var(--border2);background:var(--bg2);color:var(--text)"></select>
+        <button class="btn" onclick="abrirDocumentos(null)" title="Gerar o Termo de Responsabilidade de uma feira/evento" style="height:34px;padding:6px 10px;font-size:13px;font-weight:600;white-space:nowrap;flex-shrink:0;color:var(--amber);border-color:var(--amber-l);background:linear-gradient(135deg,var(--amber-l),#fff)"><i class="ti ti-file-text"></i> Termo Resp.</button>
+        <button class="btn" onclick="navTo('configuracoes')" title="Configurações" style="height:34px;padding:6px 10px;font-size:13px;font-weight:600;white-space:nowrap;flex-shrink:0;color:#fff;border-color:#9C5F1F;background:linear-gradient(135deg,#C68A42,#9C5F1F)"><i class="ti ti-settings" style="color:#fff"></i> Configurações</button>
       </div>
       <div id="dash-result-mobile" class="only-mobile"></div>
     </div>
@@ -828,6 +824,51 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
     </div>
   </div>
 </div>
+
+<!-- TERMO DE RESPONSABILIDADE -->
+<div class="page" id="page-documentos">
+  <div class="page-header">
+    <div><h1>Termo de Responsabilidade</h1><p>Gera o termo já preenchido com a feira/evento escolhida — imprime ou guarda em PDF e envia pelo teu email</p></div>
+    <div class="form-group" style="margin:0;min-width:220px"><label class="form-label">Feira / Evento</label>
+      <select id="doc-feira" onchange="docFeiraSel=parseInt(this.value)||null"></select>
+    </div>
+  </div>
+
+  <div class="card" style="padding:1rem;margin-bottom:1rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+      <span class="card-title" style="margin-bottom:0"><i class="ti ti-file-text"></i> Gerar o termo</span>
+      <button class="btn btn-primary" onclick="gerarTermo()"><i class="ti ti-printer"></i> Gerar / Imprimir termo</button>
+    </div>
+    <div style="font-size:10px;color:var(--text3)">Escolhe a feira acima e carrega em Gerar — abre pronto a imprimir, com o teu logo no cabeçalho. Na janela de imprimir podes "Guardar como PDF" para enviar por email. Depois de impresso, é só assinar.</div>
+  </div>
+
+  <div class="card" style="padding:1rem;margin-bottom:1rem">
+    <div class="card-title" style="cursor:pointer" onclick="const c=document.getElementById('doc-declarante-body');c.style.display=c.style.display==='none'?'block':'none'"><i class="ti ti-user-check"></i> Os meus dados (para o termo) <span style="font-size:10px;color:var(--text3)">— clica para abrir/fechar</span></div>
+    <div id="doc-declarante-body" style="display:none">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:10px">
+        <div class="form-group" style="margin:0"><label class="form-label">Nome</label><input type="text" id="dec-nome"></div>
+        <div class="form-group" style="margin:0"><label class="form-label">Na qualidade de</label><input type="text" id="dec-qualidade" placeholder="Proprietário"></div>
+        <div class="form-group" style="margin:0"><label class="form-label">Sede/Morada</label><input type="text" id="dec-morada"></div>
+        <div class="form-group" style="margin:0"><label class="form-label">NIF</label><input type="text" id="dec-nif"></div>
+        <div class="form-group" style="margin:0"><label class="form-label">Equipamento de diversão</label><input type="text" id="dec-equipamento" placeholder="SIMULADOR REALIDADE VIRTUAL 9D"></div>
+      </div>
+      <div class="form-group" style="margin:0 0 10px"><label class="form-label">Texto do termo (personalizável — as etiquetas {NOME}, {QUALIDADE}, {MORADA}, {NIF}, {EQUIPAMENTO}, {FEIRA}, {INICIO}, {FIM} e {DATA} são substituídas automaticamente)</label>
+        <textarea id="doc-termo-tpl" rows="8" style="width:100%;font-size:12px;font-family:inherit;padding:8px;border-radius:var(--radius);border:.5px solid var(--border2);resize:vertical"></textarea>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-sm" onclick="guardarDeclarante()"><i class="ti ti-device-floppy"></i> Guardar dados e texto</button>
+        <button class="btn btn-sm" onclick="reporTermoTpl()" title="Volta ao texto original do termo"><i class="ti ti-restore"></i> Repor texto original</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="padding:1rem">
+    <div class="card-title"><i class="ti ti-mail"></i> Contactos das feiras/eventos</div>
+    <div style="font-size:10px;color:var(--text3);margin-bottom:10px">A lista vem das feiras/eventos que já criaste (cada feira aparece uma vez, seja de que ano for). Preenche o email e o telemóvel de cada uma — ficam guardados sozinhos. O ✉ abre o teu email já com o destinatário e o assunto preenchidos; o telemóvel é só para consulta.</div>
+    <div id="doc-contactos-lista"><div class="empty">Ainda não há feiras/eventos criados</div></div>
+  </div>
+</div>
+
 
 <!-- RELATÓRIO -->
 <div class="page" id="page-relatorio">
@@ -1403,6 +1444,7 @@ function navTo(p){
   if(p==='relatorio'){renderReport('mensal');}
   if(p==='comparar'){initComparar();}
   if(p==='filtros'){initFiltros();aplicarFiltros();}
+  if(p==='documentos'){initDocumentos();}
   if(p==='configuracoes'){renderConfiguracoes();}
   closeMobileMore();
   window.scrollTo(0,0);
@@ -2101,6 +2143,7 @@ function renderFairList(){
       <div class="fair-dot" style="background:${f.cor}"></div>
       <div class="fair-info"><div class="fair-name">${f.nome} <span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;background:${f.tipo==='evento'?'var(--blue-l)':'var(--amber-l)'};color:${f.tipo==='evento'?'var(--blue)':'var(--amber)'}">${f.tipo==='evento'?'EVENTO':'FEIRA'}</span></div><div class="fair-dates">${f.inicio} → ${f.fim}</div></div>
       <span class="fair-days">${dias}d</span>
+      <button class="btn btn-sm btn-icon" onclick="abrirDocumentos(${f.id})" title="Gerar o Termo de Responsabilidade desta feira" style="color:var(--amber);background:var(--amber-l);border-color:var(--amber-l)"><i class="ti ti-file-text" style="font-size:12px"></i></button>
       <button class="btn btn-sm btn-icon" onclick="duplicateFair(${f.id})" title="Repetir esta feira/evento noutro ano (o ano vem sugerido, mas podes escolher qualquer um)" style="color:var(--teal);background:var(--teal-l);border-color:var(--teal-l)"><i class="ti ti-copy" style="font-size:12px"></i></button>
       <button class="btn btn-sm btn-icon btn-edit" onclick="editFair(${f.id})" title="Editar feira"><i class="ti ti-pencil" style="font-size:12px"></i></button>
       <button class="btn btn-sm btn-icon btn-del" onclick="deleteFair(${f.id})" title="Remover feira"><i class="ti ti-trash" style="font-size:12px"></i></button>
@@ -3038,9 +3081,40 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.31';
+const APP_VERSION='3.41';
 const APP_UPDATE_DATE='2026-08-30'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.41',data:'2026-08-30',notas:[
+    'No Termo de Responsabilidade, o nome da feira/evento aparece agora sublinhado (e ligeiramente destacado) — mais fácil de identificar à primeira vista no documento impresso.',
+  ]},
+  {v:'3.40',data:'2026-08-30',notas:[
+    'O botão de Configurações saiu de cima do logo e passou para o Dashboard, ao lado do botão "Termo Resp." — com o mesmo tamanho e o destaque dourado de sempre.',
+  ]},
+  {v:'3.39',data:'2026-08-30',notas:[
+    'Afinações na barra do topo: o botão "Termo Resp." do Dashboard fica sempre numa só linha; o ícone de Configurações ⚙ passou para cima do logo da empresa (canto da zona do logo), em miniatura; e os botões pequenos de ações voltaram às 2 filas de 3 (cloud/Drive/Sincronizar em cima, Exportar/Importar/Terminar sessão em baixo), com a hora de sincronização, a conta e a versão por baixo.',
+  ]},
+  {v:'3.38',data:'2026-08-30',notas:[
+    'O número da versão da app passou a estar sempre visível por baixo dos botões de ações, junto à hora de sincronização e à conta ativa (no telemóvel, no cabeçalho) — assim confirma-se num relance se cada aparelho já tem a atualização mais recente, sem ir a Configurações.',
+  ]},
+  {v:'3.37',data:'2026-08-30',notas:[
+    'Contactos do Termo de Responsabilidade renovados: a lista passa a vir automaticamente das feiras/eventos já criados (cada feira aparece uma só vez, seja de que ano for) — só precisas de preencher o email e o telemóvel de cada uma, que ficam guardados sozinhos. O ✉ abre o teu email já endereçado com o assunto preenchido; o telemóvel fica guardado para consulta. O botão "Termo Resp." do Dashboard ficou com a altura exatamente igual à do seletor de ano.',
+  ]},
+  {v:'3.36',data:'2026-08-30',notas:[
+    'Barra do topo reorganizada numa só linha: os 8 botões do menu ficam todos em fila, ligeiramente mais compactos, e os botões de ações (Configurações, cloud, Drive, Sincronizar, Exportar, Importar, Terminar sessão) numa única fila ao lado, com a hora de sincronização e a conta ativa por baixo. Em ecrãs mais estreitos a barra ajusta-se sozinha para não cortar botões.',
+  ]},
+  {v:'3.35',data:'2026-08-30',notas:[
+    'Página de documentos simplificada e renomeada para "Termo de Responsabilidade": ficou só o essencial — gerar o termo (pronto a imprimir/PDF, com logo no cabeçalho) e a lista de contactos das entidades (câmaras, associações...), onde o ✉ abre o email já endereçado e com o assunto preenchido; cada um envia pelo seu próprio email e anexa o que precisar. O carregamento de documentos para a Drive e o envio com links foram removidos, para não criar complicações. O botão no Dashboard chama-se agora "Termo Resp." e tem o mesmo tamanho do seletor de ano.',
+  ]},
+  {v:'3.34',data:'2026-08-30',notas:[
+    'O termo de responsabilidade e a folha de impressão dos Filtros passaram a ter cabeçalho com o logo da empresa (o mesmo que está na barra da app) e nome do negócio, e rodapé com os dados do declarante (nome, morada, NIF) e a data — com aspeto de documento oficial, tanto em papel como em PDF.',
+  ]},
+  {v:'3.33',data:'2026-08-30',notas:[
+    'Destinatários guardados na página Documentos: cria-se uma vez cada entidade (ex.: "Câmara Municipal de Barcelos" + email) e depois é só escolher no menu — o email preenche-se sozinho e o nome pode entrar no texto com a etiqueta {DESTINATARIO}. Também se podem eliminar destinatários guardados.',
+  ]},
+  {v:'3.32',data:'2026-08-30',notas:[
+    'Nova página "Documentos": para cada feira/evento, gera automaticamente o Termo de Responsabilidade já preenchido (nome da feira e período vêm da própria feira; os teus dados — nome, morada, NIF, equipamento — preenchem-se uma vez e ficam guardados; o texto do termo é personalizável) e guarda os documentos da feira (ficha de inspeção, seguro de responsabilidade civil, seguro de acidentes pessoais...) na tua Google Drive, numa pasta por feira — visíveis no PC e no telemóvel.',
+    'Itens de documentos personalizáveis (criar novos, eliminar), envio por email com texto tipo editável e links da Drive para os documentos selecionados (só esses ficheiros ficam visíveis por link; o resto da Drive continua privado), ou descarregar os selecionados para anexar à mão. Acesso: botão "Documentos" no Dashboard, botão 📄 em cada feira, e no painel "Mais" do telemóvel.',
+  ]},
   {v:'3.31',data:'2026-08-30',notas:[
     'Novo botão "Imprimir" na página de Filtros: escolhe-se a feira/evento (ex.: Viana), receitas e despesas — ou só receitas, ou só despesas — e imprime-se uma folha limpa com esses lançamentos, os totais e a data de impressão. Na janela de imprimir do browser também é possível "Guardar como PDF" em vez de imprimir em papel.',
   ]},
@@ -3935,8 +4009,11 @@ function imprimirFiltros(){
     `<tr class="tot final"><td colspan="6">${filtros.tipo==='Receita'?'Total de receitas':filtros.tipo==='Despesa'?'Total de despesas':'Resultado'}</td><td class="val ${res>=0?'rec':'desp'}">${fmt(filtros.tipo==='Receita'?rec:filtros.tipo==='Despesa'?desp:res)}</td></tr>`;
   const w=window.open('','_blank');
   if(!w){alert('O browser bloqueou a janela de impressão — permite pop-ups para este site e tenta novamente.');return;}
+  const logoImp=getLogoSrc();
   w.document.write(`<!DOCTYPE html><html lang="pt"><head><meta charset="utf-8"><title>${nomeNegocio} — Impressão de lançamentos</title><style>
     body{font-family:Arial,Helvetica,sans-serif;color:#1a1a1a;margin:24px;font-size:12px}
+    .cab{display:flex;align-items:center;gap:12px;border-bottom:2px solid #333;padding-bottom:8px;margin-bottom:12px}
+    .cab img{max-height:44px;max-width:120px;object-fit:contain}
     h1{font-size:17px;margin:0 0 2px}
     .sub{color:#555;font-size:11px;margin-bottom:4px}
     .crit{font-size:11px;color:#333;margin:8px 0 14px;padding:7px 10px;background:#f4f4f4;border-radius:6px}
@@ -3950,8 +4027,8 @@ function imprimirFiltros(){
     .rodape{margin-top:18px;font-size:9px;color:#777;text-align:right}
     @media print{body{margin:8mm}}
   </style></head><body>
-    <h1>${nomeNegocio}</h1>
-    <div class="sub">Lançamentos — ${data.length} registo(s)</div>
+    <div class="cab">${logoImp?`<img src="${logoImp}" alt="Logo">`:''}<div><h1>${nomeNegocio}</h1>
+    <div class="sub">Lançamentos — ${data.length} registo(s)</div></div></div>
     <div class="crit">${criterios.join(' · ')}</div>
     <table><thead><tr><th>Data</th><th>Categoria</th><th>Feira/Local</th><th>Empregado</th><th>Meio</th><th>Tipo</th><th style="text-align:right">Valor</th></tr></thead>
     <tbody>${linhas}${totais}</tbody></table>
@@ -3961,6 +4038,126 @@ function imprimirFiltros(){
   w.focus();
   setTimeout(()=>{try{w.print();}catch(e){}},400);
 }
+
+/* ---- TERMO DE RESPONSABILIDADE ---- */
+/* Gera o termo já preenchido com a feira escolhida (nome e período vêm da própria feira;
+   os dados do declarante preenchem-se uma vez e ficam guardados; o texto é personalizável).
+   Inclui uma lista de contactos (câmaras, associações...) para abrir o email já endereçado —
+   o envio e os anexos fazem-se no programa de email de cada um, sem complicações. */
+let docFeiraSel=null;
+const TERMO_TPL_DEF='TERMO DE RESPONSABILIDADE\n\nNome: {NOME}\nNa qualidade de: {QUALIDADE}\nCom Sede/Morada: {MORADA}\nNIF: {NIF}\n\nDeclaro a conformidade, bem como a sua correta instalação e colocação em funcionamento de acordo com as normas técnicas de segurança aplicáveis, do seguinte equipamento de diversão:\n\n>> {EQUIPAMENTO}\n\nMais declaro que o equipamento referido se destina a ser utilizado em {FEIRA}, no período de {INICIO} a {FIM}.\n\nAos {DATA}\n\n\n_________________________________\n{NOME}';
+function getDeclarante(){try{return JSON.parse(localStorage.getItem(lsKey('rv_declarante'))||'{}')||{};}catch(e){return{};}}
+function getTermoTpl(){try{return localStorage.getItem(lsKey('rv_termo_tpl'))||TERMO_TPL_DEF;}catch(e){return TERMO_TPL_DEF;}}
+function guardarDeclarante(){
+  const d={nome:document.getElementById('dec-nome').value.trim(),qualidade:document.getElementById('dec-qualidade').value.trim(),morada:document.getElementById('dec-morada').value.trim(),nif:document.getElementById('dec-nif').value.trim(),equipamento:document.getElementById('dec-equipamento').value.trim()};
+  try{localStorage.setItem(lsKey('rv_declarante'),JSON.stringify(d));localStorage.setItem(lsKey('rv_termo_tpl'),document.getElementById('doc-termo-tpl').value);}catch(e){}
+  showSyncStatus('Dados do termo guardados!',true);
+}
+function reporTermoTpl(){document.getElementById('doc-termo-tpl').value=TERMO_TPL_DEF;showSyncStatus('Texto original reposto (carrega em Guardar para fixar)',true);}
+function abrirDocumentos(fid){docFeiraSel=fid||docFeiraSel;navTo('documentos');}
+function initDocumentos(){
+  const sel=document.getElementById('doc-feira');
+  const lista=fairs.filter(f=>f.nome).sort((a,b)=>String(b.ano).localeCompare(String(a.ano))||a.nome.localeCompare(b.nome));
+  sel.innerHTML='<option value="">— Escolhe a feira/evento —</option>'+lista.map(f=>`<option value="${f.id}"${docFeiraSel===f.id?' selected':''}>${f.nome} (${f.ano})</option>`).join('');
+  const d=getDeclarante();
+  document.getElementById('dec-nome').value=d.nome||'';
+  document.getElementById('dec-qualidade').value=d.qualidade||'';
+  document.getElementById('dec-morada').value=d.morada||'';
+  document.getElementById('dec-nif').value=d.nif||'';
+  document.getElementById('dec-equipamento').value=d.equipamento||'';
+  document.getElementById('doc-termo-tpl').value=getTermoTpl();
+  renderContactos();
+}
+function dataPT(s){return s&&s.length>=10?s.slice(8,10)+'/'+s.slice(5,7)+'/'+s.slice(0,4):(s||'');}
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+/* Contactos por feira/evento: a lista vem das feiras já criadas (cada NOME aparece uma
+   vez, seja de que ano for — sem repetir edições). Para cada uma guarda-se o email (para
+   enviar com um clique) e o telemóvel (só para consulta). Guardado por nome de feira,
+   por isso a edição de 2027 herda automaticamente o contacto preenchido em 2026. */
+function docContactosFeira(){try{return JSON.parse(localStorage.getItem(lsKey('rv_doc_contactos_feira'))||'{}')||{};}catch(e){return{};}}
+function saveDocContactosFeira(m){try{localStorage.setItem(lsKey('rv_doc_contactos_feira'),JSON.stringify(m));}catch(e){}}
+function renderContactos(){
+  const area=document.getElementById('doc-contactos-lista');if(!area)return;
+  const vistos=new Set();
+  const nomes=fairs.filter(f=>f.nome)
+    .sort((a,b)=>String(b.ano).localeCompare(String(a.ano))||a.nome.localeCompare(b.nome))
+    .filter(f=>{const k=f.nome.trim();if(vistos.has(k))return false;vistos.add(k);return true;})
+    .map(f=>f.nome.trim())
+    .sort((a,b)=>a.localeCompare(b));
+  if(!nomes.length){area.innerHTML='<div class="empty">Ainda não há feiras/eventos criados</div>';return;}
+  const m=docContactosFeira();
+  area.innerHTML=nomes.map(nome=>{
+    const c=m[nome]||{};
+    const enc=encodeURIComponent(nome);
+    return`<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius);margin-bottom:6px;flex-wrap:wrap">
+      <i class="ti ti-building-carousel" style="color:var(--text3)"></i>
+      <div style="flex:1 1 150px;min-width:120px;font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(nome)}">${escHtml(nome)}</div>
+      <input type="email" placeholder="email da entidade" value="${escHtml(c.email||'')}" onchange="guardarContactoFeira('${enc}','email',this.value)" style="flex:1 1 170px;min-width:140px;font-size:11px;padding:5px 8px;border-radius:var(--radius);border:.5px solid var(--border2)">
+      <input type="tel" placeholder="telemóvel" value="${escHtml(c.tel||'')}" onchange="guardarContactoFeira('${enc}','tel',this.value)" style="flex:0 1 110px;min-width:90px;font-size:11px;padding:5px 8px;border-radius:var(--radius);border:.5px solid var(--border2)">
+      <button class="btn btn-sm btn-icon" title="Escrever email" onclick="emailContactoFeira('${enc}')" style="color:var(--teal);background:var(--teal-l);border-color:var(--teal-l)"><i class="ti ti-mail-forward" style="font-size:12px"></i></button>
+    </div>`;
+  }).join('');
+}
+function guardarContactoFeira(nomeEnc,campo,valor){
+  const nome=decodeURIComponent(nomeEnc);
+  const m=docContactosFeira();
+  m[nome]=m[nome]||{};
+  m[nome][campo]=String(valor||'').trim();
+  saveDocContactosFeira(m);
+  showSyncStatus('Contacto de "'+nome+'" guardado!',true);
+}
+function emailContactoFeira(nomeEnc){
+  const nome=decodeURIComponent(nomeEnc);
+  const c=docContactosFeira()[nome];
+  if(!c||!c.email){alert('Preenche primeiro o email desta feira (fica logo guardado).');return;}
+  location.href='mailto:'+encodeURIComponent(c.email)+'?subject='+encodeURIComponent('Documentação — '+nome);
+}
+
+function gerarTermo(){
+  const f=fairs.find(x=>x.id===docFeiraSel);
+  if(!f){alert('Escolhe primeiro a feira/evento.');return;}
+  const d=getDeclarante();
+  if(!d.nome){alert('Preenche primeiro "Os meus dados" (nome, morada, NIF...) e carrega em Guardar.');const c=document.getElementById('doc-declarante-body');if(c)c.style.display='block';return;}
+  const tpl=document.getElementById('doc-termo-tpl').value||TERMO_TPL_DEF;
+  const texto=tpl
+    .replaceAll('{NOME}',d.nome||'').replaceAll('{QUALIDADE}',d.qualidade||'').replaceAll('{MORADA}',d.morada||'')
+    .replaceAll('{NIF}',d.nif||'').replaceAll('{EQUIPAMENTO}',d.equipamento||'')
+    .replaceAll('{FEIRA}',f.nome).replaceAll('{INICIO}',dataPT(f.inicio)).replaceAll('{FIM}',dataPT(f.fim))
+    .replaceAll('{DATA}',new Date().toLocaleDateString('pt-PT'));
+  const w=window.open('','_blank');
+  if(!w){alert('O browser bloqueou a janela — permite pop-ups para este site.');return;}
+  // O nome da feira aparece sublinhado (e a negrito leve) no termo, para se destacar.
+  const nomeEsc=escHtml(f.nome);
+  const linhas=texto.split('\n').map(l=>{
+    if(l.trim()==='')return'<div style="height:12px"></div>';
+    let h=escHtml(l);
+    if(nomeEsc)h=h.split(nomeEsc).join('<u style="font-weight:600">'+nomeEsc+'</u>');
+    return`<p>${h}</p>`;
+  }).join('');
+  // Cabeçalho com o logo da app (o mesmo da barra superior) + nome do negócio,
+  // e rodapé com os dados do declarante — presentes também na impressão/PDF.
+  const logo=getLogoSrc();
+  const nomeNeg=(document.getElementById('sidebarTitle')?.textContent)||'Gestão de Negócio';
+  const cab=`<div class="cab">${logo?`<img src="${logo}" alt="Logo">`:''}<div class="cab-t"><div class="cab-n">${escHtml(nomeNeg)}</div><div class="cab-s">${escHtml(d.nome||'')}${d.nif?' · NIF '+escHtml(d.nif):''}</div></div></div>`;
+  const rod=`<div class="rod">${escHtml(d.nome||'')}${d.morada?' · '+escHtml(d.morada):''}${d.nif?' · NIF '+escHtml(d.nif):''}<br>Documento gerado em ${new Date().toLocaleDateString('pt-PT')} · gerirmais.com</div>`;
+  w.document.write(`<!DOCTYPE html><html lang="pt"><head><meta charset="utf-8"><title>Termo de Responsabilidade — ${escHtml(f.nome)}</title><style>
+    body{font-family:Georgia,'Times New Roman',serif;color:#111;margin:48px auto;max-width:680px;font-size:14px;line-height:1.5;position:relative;padding-bottom:70px;min-height:90vh;box-sizing:border-box}
+    p{margin:2px 0}
+    .conteudo p:first-child{font-size:19px;font-weight:700;text-align:center;margin-bottom:22px}
+    .cab{display:flex;align-items:center;gap:14px;border-bottom:2px solid #333;padding-bottom:10px;margin-bottom:26px}
+    .cab img{max-height:56px;max-width:150px;object-fit:contain}
+    .cab-n{font-size:15px;font-weight:700;letter-spacing:.02em}
+    .cab-s{font-size:10px;color:#555;margin-top:2px}
+    .rod{position:absolute;bottom:0;left:0;right:0;border-top:1px solid #999;padding-top:6px;font-size:9px;color:#666;text-align:center;line-height:1.5}
+    @media print{
+      body{margin:14mm;padding-bottom:0;min-height:auto}
+      .rod{position:fixed;bottom:6mm;left:14mm;right:14mm}
+    }
+  </style></head><body>${cab}<div class="conteudo">${linhas}</div>${rod}</body></html>`);
+  w.document.close();w.focus();
+  setTimeout(()=>{try{w.print();}catch(e){}},400);
+}
+
 
 /* ---- GOOGLE DRIVE ---- */
 function gdriveValid(){ return gdriveToken && Date.now()<gdriveTokenExpiry; }
@@ -4654,6 +4851,10 @@ async function enterApp(session){
   // a olhar para os dados de uma conta pensando que é outra ("os dados desapareceram!").
   const contaLbl=document.getElementById('contaAtivaLabel'); if(contaLbl)contaLbl.textContent='👤 '+(currentUser.email||'');
   const contaLblM=document.getElementById('contaAtivaLabelMobile'); if(contaLblM)contaLblM.textContent='👤 '+(currentUser.email||'');
+  // Versão da app sempre visível junto à hora de sincronização e à conta ativa —
+  // dá para confirmar num relance se o aparelho já está na atualização mais recente.
+  const verLbl=document.getElementById('appVersaoLabel'); if(verLbl)verLbl.textContent='Versão '+APP_VERSION+' ('+dataPT(APP_UPDATE_DATE)+')';
+  const verLblM=document.getElementById('appVersaoLabelMobile'); if(verLblM)verLblM.textContent='Versão '+APP_VERSION;
   loadBusinessName();
   renderVersionCard();
   renderMinhaValidade();
