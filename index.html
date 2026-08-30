@@ -298,7 +298,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 .drive-more-item:active{background:var(--bg3)}
 .drive-more-item i{font-size:19px;color:var(--amber);width:24px;text-align:center}
 .mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--side);border-top:1px solid var(--side-line);padding:5px 0;z-index:100;justify-content:space-around}
-.mobile-nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px 6px;min-height:44px;cursor:pointer;color:var(--side-text-dim);font-size:8px;font-weight:600;border-radius:var(--radius);transition:all .15s;flex:1}
+.mobile-nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px 2px;min-height:44px;cursor:pointer;color:var(--side-text-dim);font-size:8px;font-weight:600;border-radius:var(--radius);transition:all .15s;flex:1;min-width:0;white-space:nowrap}
 .mobile-nav-item i{font-size:20px}
 .mobile-nav-item.active{color:var(--accent)}
 
@@ -522,21 +522,9 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
   <div class="mobile-nav-item" data-page="lancamentos"><i class="ti ti-receipt"></i><span>Lançar</span></div>
   <div class="mobile-nav-item" data-page="feiras"><i class="ti ti-calendar-event"></i><span>Feiras/Ev.</span></div>
   <div class="mobile-nav-item" data-page="filtros"><i class="ti ti-filter"></i><span>Filtros</span></div>
-  <div class="mobile-nav-item" id="mobileMoreBtn" onclick="toggleMobileMore()"><i class="ti ti-dots"></i><span>Mais</span></div>
+  <div class="mobile-nav-item" data-page="relatorio"><i class="ti ti-chart-bar"></i><span>Relatório</span></div>
+  <div class="mobile-nav-item" data-page="comparar"><i class="ti ti-arrows-left-right"></i><span>Comparar</span></div>
 </nav>
-
-<!-- MOBILE "MAIS" PANEL -->
-<div class="mobile-more-overlay" id="mobileMoreOverlay" onclick="toggleMobileMore()"></div>
-<div class="mobile-more-panel" id="mobileMorePanel">
-  <div class="mobile-more-handle"></div>
-  <div class="mobile-more-item" data-page="relatorio"><i class="ti ti-chart-bar"></i><span>Relatório</span></div>
-  <div class="mobile-more-item" data-page="comparar"><i class="ti ti-arrows-left-right"></i><span>Comparar</span></div>
-  <div class="mobile-more-item" data-page="configuracoes"><i class="ti ti-settings"></i><span>Configurações</span></div>
-  <div class="drive-more-item" onclick="closeMobileMore();abrirDocumentos(null)"><i class="ti ti-file-text"></i><span>Termo de Responsabilidade</span></div>
-  <div class="drive-more-item" onclick="closeMobileMore();syncLocalToCloud()"><i class="ti ti-cloud-up"></i><span>Enviar dados locais → cloud</span></div>
-  <div class="drive-more-item" onclick="closeMobileMore();gdriveConnectInteractive()"><i class="ti ti-brand-google-drive"></i><span>Ligar Google Drive</span></div>
-  <div class="drive-more-item" onclick="closeMobileMore();loadAllFromCloud()"><i class="ti ti-refresh"></i><span>Sincronizar agora</span></div>
-</div>
 
 <!-- MAIN -->
 <div class="main">
@@ -1490,6 +1478,7 @@ document.querySelectorAll('.nav-item,.mobile-nav-item,.mobile-more-item').forEac
 /* Painel "Mais" da navegação móvel */
 function toggleMobileMore(){
   const panel=document.getElementById('mobileMorePanel'),overlay=document.getElementById('mobileMoreOverlay');
+  if(!panel||!overlay)return;
   const isOpen=panel.classList.contains('open');
   if(isOpen){closeMobileMore();}
   else{panel.classList.add('open');overlay.classList.add('open');}
@@ -3119,9 +3108,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.48';
+const APP_VERSION='3.49';
 const APP_UPDATE_DATE='2026-08-30'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.49',data:'2026-08-30',notas:[
+    'Menu de baixo do telemóvel simplificado: o botão "Mais" desapareceu — tudo o que lá estava já tem acesso direto (Configurações e Termo no Dashboard; cloud/Drive/Sincronizar no cabeçalho) — e no seu lugar entraram o Relatório e o Comparar, que eram os únicos sem acesso. A barra fica com 6 botões diretos: Início, Lançar, Feiras/Ev., Filtros, Relatório e Comparar.',
+  ]},
   {v:'3.48',data:'2026-08-30',notas:[
     'Corrigido: no telemóvel, algumas páginas (ex.: Configurações) não deixavam ver o conteúdo até ao fim — o fundo ficava cortado pela barra do browser e pelo menu inferior. A app passou a usar a altura realmente visível do ecrã e a reservar espaço de rolagem no fundo de todas as páginas, por isso agora chega-se sempre ao final.',
   ]},
