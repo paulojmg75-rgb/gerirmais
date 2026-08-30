@@ -784,7 +784,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 
 <!-- FILTROS -->
 <div class="page" id="page-filtros">
-  <div class="page-header"><div><h1>Filtros</h1><p>Consulta os teus lançamentos por qualquer critério</p></div><button class="btn btn-sm" onclick="limparFiltros()"><i class="ti ti-x"></i> Limpar</button></div>
+  <div class="page-header"><div><h1>Filtros</h1><p>Consulta os teus lançamentos por qualquer critério</p></div><div style="display:flex;gap:6px"><button class="btn btn-sm btn-primary" onclick="imprimirFiltros()"><i class="ti ti-printer"></i> Imprimir</button><button class="btn btn-sm" onclick="limparFiltros()"><i class="ti ti-x"></i> Limpar</button></div></div>
 
   <div class="card" style="padding:1rem;margin-bottom:1rem">
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
@@ -3038,9 +3038,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.30';
-const APP_UPDATE_DATE='2026-08-29'; // formato AAAA-MM-DD
+const APP_VERSION='3.31';
+const APP_UPDATE_DATE='2026-08-30'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.31',data:'2026-08-30',notas:[
+    'Novo botão "Imprimir" na página de Filtros: escolhe-se a feira/evento (ex.: Viana), receitas e despesas — ou só receitas, ou só despesas — e imprime-se uma folha limpa com esses lançamentos, os totais e a data de impressão. Na janela de imprimir do browser também é possível "Guardar como PDF" em vez de imprimir em papel.',
+  ]},
   {v:'3.30',data:'2026-08-29',notas:[
     'O email da conta com sessão iniciada passou a estar sempre visível: no PC, por baixo da hora de sincronização (canto superior direito); no telemóvel, no cabeçalho. Assim vê-se de imediato QUAL conta está aberta em cada aparelho — e acaba a confusão de olhar para os dados de uma conta pensando que é outra.',
   ]},
@@ -3859,7 +3862,10 @@ function limparFiltros(){
   document.querySelectorAll('#page-filtros .btn-sm.active').forEach(b=>b.classList.remove('active'));
   aplicarFiltros();
 }
-function aplicarFiltros(){
+/* Lê os filtros da página e devolve os lançamentos correspondentes + totais.
+   Usada por aplicarFiltros (tabela no ecrã) e por imprimirFiltros (folha de impressão),
+   para os dois mostrarem SEMPRE exatamente o mesmo resultado. */
+function obterDadosFiltrados(){
   const inicio=document.getElementById('fi-inicio').value;
   const fim=document.getElementById('fi-fim').value;
   const ano=document.getElementById('fi-ano').value;
@@ -3884,7 +3890,10 @@ function aplicarFiltros(){
 
   const rec=data.filter(t=>t.tipo==='Receita').reduce((s,t)=>s+t.valor,0);
   const desp=data.filter(t=>t.tipo==='Despesa').reduce((s,t)=>s+t.valor,0);
-  const res=rec-desp;
+  return{data,rec,desp,res:rec-desp,filtros:{inicio,fim,tipo,cat,emp,conta}};
+}
+function aplicarFiltros(){
+  const{data,rec,desp,res}=obterDadosFiltrados();
 
   document.getElementById('filtros-resultado').style.display='block';
   document.getElementById('fi-count').textContent=data.length+' registos';
@@ -3902,6 +3911,55 @@ function aplicarFiltros(){
     <td><span class="pill ${t.tipo==='Receita'?'p-rec':t.tipo==='Despesa'?'p-desp':'p-fundo'}">${t.tipo}</span></td>
     <td style="text-align:right;font-weight:600;color:${t.tipo==='Receita'?'var(--teal)':'var(--red)'}">${fmt(t.valor)}</td>
   </tr>`).join(''):`<tr><td colspan="7"><div class="empty"><i class="ti ti-inbox"></i>Sem resultados</div></td></tr>`;
+}
+
+/* Abre uma folha limpa, pronta a imprimir, com exatamente o que os filtros mostram —
+   ex.: seleciona-se a feira de Viana + "Só receitas" e imprime-se só isso. A impressão
+   usa a janela de imprimir do próprio browser (onde também se pode "Guardar como PDF"). */
+function imprimirFiltros(){
+  const{data,rec,desp,res,filtros}=obterDadosFiltrados();
+  if(!data.length){alert('Não há registos para imprimir com os filtros selecionados.');return;}
+  const nomeNegocio=(document.getElementById('sidebarTitle')?.textContent)||'Gestão de Negócio';
+  const criterios=[];
+  criterios.push(filtros.conta?('Feira/Evento: '+filtros.conta):'Todas as feiras/eventos');
+  criterios.push(filtros.tipo==='Receita'?'Só receitas':filtros.tipo==='Despesa'?'Só despesas':'Receitas e despesas');
+  if(filtros.cat)criterios.push('Categoria: '+filtros.cat);
+  if(filtros.emp)criterios.push('Empregado: '+filtros.emp);
+  if(filtros.inicio||filtros.fim)criterios.push('Período: '+(filtros.inicio||'início')+' a '+(filtros.fim||'hoje'));
+  const linhas=data.map(t=>`<tr>
+    <td>${t.data}</td><td>${t.cat||''}</td><td>${getConta(t)||''}</td><td>${t.empregado||''}</td><td>${t.meio||''}</td>
+    <td>${t.tipo}</td><td class="val ${t.tipo==='Receita'?'rec':'desp'}">${fmt(t.valor)}</td>
+  </tr>`).join('');
+  const totais=(filtros.tipo?'':`<tr class="tot"><td colspan="6">Total de receitas</td><td class="val rec">${fmt(rec)}</td></tr>
+    <tr class="tot"><td colspan="6">Total de despesas</td><td class="val desp">${fmt(desp)}</td></tr>`)+
+    `<tr class="tot final"><td colspan="6">${filtros.tipo==='Receita'?'Total de receitas':filtros.tipo==='Despesa'?'Total de despesas':'Resultado'}</td><td class="val ${res>=0?'rec':'desp'}">${fmt(filtros.tipo==='Receita'?rec:filtros.tipo==='Despesa'?desp:res)}</td></tr>`;
+  const w=window.open('','_blank');
+  if(!w){alert('O browser bloqueou a janela de impressão — permite pop-ups para este site e tenta novamente.');return;}
+  w.document.write(`<!DOCTYPE html><html lang="pt"><head><meta charset="utf-8"><title>${nomeNegocio} — Impressão de lançamentos</title><style>
+    body{font-family:Arial,Helvetica,sans-serif;color:#1a1a1a;margin:24px;font-size:12px}
+    h1{font-size:17px;margin:0 0 2px}
+    .sub{color:#555;font-size:11px;margin-bottom:4px}
+    .crit{font-size:11px;color:#333;margin:8px 0 14px;padding:7px 10px;background:#f4f4f4;border-radius:6px}
+    table{width:100%;border-collapse:collapse}
+    th{font-size:10px;text-transform:uppercase;letter-spacing:.04em;text-align:left;border-bottom:1.5px solid #333;padding:5px 6px}
+    td{padding:5px 6px;border-bottom:.5px solid #ddd}
+    .val{text-align:right;font-weight:600;white-space:nowrap}
+    .rec{color:#0F6E56}.desp{color:#A32D2D}
+    .tot td{border-bottom:none;border-top:1.5px solid #333;font-weight:700;padding-top:7px}
+    .tot.final td{font-size:13px}
+    .rodape{margin-top:18px;font-size:9px;color:#777;text-align:right}
+    @media print{body{margin:8mm}}
+  </style></head><body>
+    <h1>${nomeNegocio}</h1>
+    <div class="sub">Lançamentos — ${data.length} registo(s)</div>
+    <div class="crit">${criterios.join(' · ')}</div>
+    <table><thead><tr><th>Data</th><th>Categoria</th><th>Feira/Local</th><th>Empregado</th><th>Meio</th><th>Tipo</th><th style="text-align:right">Valor</th></tr></thead>
+    <tbody>${linhas}${totais}</tbody></table>
+    <div class="rodape">Impresso em ${new Date().toLocaleString('pt-PT')} · gerirmais.com</div>
+  </body></html>`);
+  w.document.close();
+  w.focus();
+  setTimeout(()=>{try{w.print();}catch(e){}},400);
 }
 
 /* ---- GOOGLE DRIVE ---- */
