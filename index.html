@@ -3184,9 +3184,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.72';
+const APP_VERSION='3.73';
 const APP_UPDATE_DATE='2026-08-31'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.73',data:'2026-08-31',notas:[
+    'O email profissional entra agora SEMPRE no email à câmara/festeiro: os botões ✉ e "📎 + Termo" leem o campo "O meu email profissional" tal como está à vista (mesmo que ainda não tenhas carregado em Guardar — fica guardado de caminho). Também ficou protegido na sincronização: um aparelho com a app antiga já não o consegue apagar sem querer. Nota: nas apps de email, o CC pode vir recolhido — toca na setinha ao lado do destinatário para o ver.',
+  ]},
   {v:'3.72',data:'2026-08-31',notas:[
     'Em vez de um campo por feira, há agora UM só campo "O meu email profissional" em "Os meus dados" — o email que usas para a troca de informação com as câmaras e festeiros. Ao abrir um email pelos botões ✉ ou "📎 + Termo", o destinatário é o da câmara/festeiro e o teu email profissional segue em cópia (CC), ficando essa caixa sempre com registo da conversa. Sincroniza entre aparelhos pela Drive, como os restantes dados do termo. (Nota: o remetente é sempre a conta configurada na app de email do aparelho — nenhum site o pode escolher.)',
   ]},
@@ -4363,6 +4366,9 @@ function mesclarDefsTermo(loc,nuv){
   const lc=loc.contactos||{};
   Object.keys(lc).forEach(k=>{const a=lc[k]||{},b=m[k];if(!b||((a.ts||0)>=(b.ts||0)))m[k]=a;});
   const dec=(((loc.declarante||{}).ts||0)>=(((nuv.declarante||{}).ts)||0))?loc.declarante:nuv.declarante;
+  // não deixar um aparelho com versão antiga (sem o campo email) apagar o email profissional
+  const decPerdedor=(dec===loc.declarante)?nuv.declarante:loc.declarante;
+  if(dec&&!dec.email&&decPerdedor&&decPerdedor.email)dec.email=decPerdedor.email;
   const tpl=(((loc.termoTpl||{}).ts||0)>=(((nuv.termoTpl||{}).ts)||0))?loc.termoTpl:nuv.termoTpl;
   return{contactos:m,declarante:dec||{},termoTpl:tpl||{txt:TERMO_TPL_DEF,ts:0}};
 }
@@ -4545,7 +4551,17 @@ function emailVisivelContacto(nomeEnc){
    em "Os meus dados"), para essa caixa ficar sempre com cópia da troca de informação.
    (O remetente é sempre a conta configurada na app de email do aparelho — nenhum site o pode escolher.) */
 function abrirEmailPara(email,assunto){
-  const meu=(getDeclarante().email||'').trim();
+  // o teu email profissional: primeiro o que está VISÍVEL no campo (mesmo sem Guardar), senão o guardado
+  const d=getDeclarante();
+  let meu='';
+  const inp=document.getElementById('dec-email');
+  if(inp&&(inp.value||'').trim())meu=inp.value.trim();
+  if(!meu)meu=(d.email||'').trim();
+  if(meu&&meu!==(d.email||'')){ // fixa-o de caminho (e envia à Drive)
+    d.email=meu;d.ts=Date.now();
+    try{localStorage.setItem(lsKey('rv_declarante'),JSON.stringify(d));}catch(e){}
+    enviarDefinicoesTermoDrive();
+  }
   let url='mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent(assunto);
   if(meu&&meu.toLowerCase()!==email.toLowerCase())url+='&cc='+encodeURIComponent(meu);
   location.href=url;
