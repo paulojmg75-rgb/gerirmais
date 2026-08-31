@@ -399,15 +399,15 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
   /* Botões coloridos: cada item mantém a sua cor (--ac/--ac-l), com contorno e fundo tintado */
   /* Botões "pílula" totalmente preenchidos (estilo da imagem de referência): cor viva
      própria, círculo branco com o ícone à esquerda, texto branco em maiúsculas */
-  .nav-item[data-page="dashboard"]{--ac:#7A9E7E!important}
-  .nav-item[data-page="lancamentos"]{--ac:#7BA8A0!important}
-  .nav-item[data-page="feiras"]{--ac:#7E97B8!important}
-  .nav-item[data-page="filtros"]{--ac:#C4A272!important}
-  .nav-item[data-page="relatorio"]{--ac:#A08CB8!important}
-  .nav-item[data-page="comparar"]{--ac:#C08B84!important}
-  .nav-item[data-page="documentos"]{--ac:#B08E6E!important}
-  .nav-item[data-page="configuracoes"]{--ac:#9A8C7B!important}
-  .nav-item{height:34px!important;border:none!important;background:var(--ac,var(--accent))!important;border-radius:999px!important;font-size:10.5px!important;text-transform:uppercase;letter-spacing:.05em;padding:5px 14px 5px 5px!important;gap:10px!important;color:#fff!important;font-weight:800!important;box-shadow:0 1px 2px rgba(28,25,23,.08)!important;transition:all .18s cubic-bezier(.4,0,.2,1)!important}
+  .nav-item[data-page="dashboard"]{--ac:#3FA96F!important}
+  .nav-item[data-page="lancamentos"]{--ac:#2FB5A5!important}
+  .nav-item[data-page="feiras"]{--ac:#3F8FD8!important}
+  .nav-item[data-page="filtros"]{--ac:#F2A03D!important}
+  .nav-item[data-page="relatorio"]{--ac:#9C6BC9!important}
+  .nav-item[data-page="comparar"]{--ac:#E8705F!important}
+  .nav-item[data-page="documentos"]{--ac:#C98F4E!important}
+  .nav-item[data-page="configuracoes"]{--ac:#7F8C99!important}
+  .nav-item{height:34px!important;border:none!important;background:var(--ac,var(--accent))!important;border-radius:999px!important;font-size:10.5px!important;text-transform:uppercase;letter-spacing:.05em;padding:5px 14px 5px 5px!important;gap:10px!important;color:#1F1C18!important;font-weight:800!important;box-shadow:0 1px 2px rgba(28,25,23,.08)!important;transition:all .18s cubic-bezier(.4,0,.2,1)!important}
   .nav-item:hover{box-shadow:0 3px 8px -2px var(--ac,rgba(28,25,23,.3))!important;transform:translateX(3px)}
   .nav-item i{width:28px!important;height:28px!important;font-size:14px!important;border-radius:50%!important;background:#fff!important;color:var(--ac,var(--nav-ic))!important;box-shadow:none}
   /* Selecionado: linha fina e escura à volta */
@@ -3175,9 +3175,18 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.62';
+const APP_VERSION='3.65';
 const APP_UPDATE_DATE='2026-08-31'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.65',data:'2026-08-31',notas:[
+    'Texto dos botões do menu em cor escura (quase preto), em vez de branco — melhor leitura sobre as cores dos botões.',
+  ]},
+  {v:'3.64',data:'2026-08-31',notas:[
+    'Cores dos botões do menu mais alegres e vivas (verde, turquesa, azul, laranja, roxo, coral, dourado) — o meio-termo entre as cores berrantes e as anteriores demasiado apagadas.',
+  ]},
+  {v:'3.63',data:'2026-08-31',notas:[
+    'A assinatura passa a ser guardada SEM fundo: ao carregar a foto, o papel é removido automaticamente (fica transparente, só a tinta sobrevive, com recorte justo) — no termo não se nota nenhum retângulo de fundo, como se tivesse sido assinado diretamente no papel. Se já tinhas uma assinatura guardada, volta a carregá-la para ganhar o fundo transparente.',
+  ]},
   {v:'3.62',data:'2026-08-31',notas:[
     'Assinatura automática no termo: em "Os meus dados" há agora um campo para carregar uma imagem da tua assinatura (assina numa folha, tira foto e carrega uma vez) — ao gerar o termo, a assinatura aparece automaticamente pousada na linha, por cima do nome, pronta para guardar em PDF e enviar. A linha de assinatura e o nome passaram a sair centrados no documento.',
   ]},
@@ -4224,19 +4233,56 @@ function refreshAssinaturaUI(){
   if(a){img.src=a;img.style.display='inline-block';if(btn)btn.style.display='inline-flex';}
   else{img.style.display='none';if(btn)btn.style.display='none';}
 }
+/* Remove o fundo da foto da assinatura: o papel (tons claros) fica transparente e só a
+   tinta sobrevive, com recorte justo — no termo não se nota nenhum retângulo de fundo.
+   A referência do "branco do papel" é medida na própria foto (percentil 90 da luz),
+   por isso funciona mesmo com fotos acinzentadas ou com sombra ligeira. */
+function limparFundoAssinatura(c){
+  const x=c.getContext('2d');
+  const img=x.getImageData(0,0,c.width,c.height);
+  const d=img.data;
+  const lums=[];
+  for(let i=0;i<d.length;i+=64){lums.push(0.299*d[i]+0.587*d[i+1]+0.114*d[i+2]);}
+  lums.sort((a,b)=>a-b);
+  const branco=lums[Math.floor(lums.length*0.9)]||255;
+  // Papel (mesmo com sombra ligeira) fica a 0; tinta fica opaca; transição suave no meio.
+  const alto=branco*0.85, baixo=branco*0.5;
+  let minX=c.width,minY=c.height,maxX=0,maxY=0;
+  for(let i=0;i<d.length;i+=4){
+    const lum=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
+    let a=(alto-lum)/((alto-baixo)||1);
+    a=Math.max(0,Math.min(1,a));
+    a=Math.pow(a,0.9);
+    d[i+3]=Math.round(a*255);
+    if(d[i+3]>25){
+      const px=(i/4)%c.width, py=Math.floor((i/4)/c.width);
+      if(px<minX)minX=px; if(px>maxX)maxX=px; if(py<minY)minY=py; if(py>maxY)maxY=py;
+    }
+  }
+  x.putImageData(img,0,0);
+  if(maxX<=minX||maxY<=minY)return c;
+  const pad=6;
+  minX=Math.max(0,minX-pad);minY=Math.max(0,minY-pad);
+  maxX=Math.min(c.width-1,maxX+pad);maxY=Math.min(c.height-1,maxY+pad);
+  const c2=document.createElement('canvas');
+  c2.width=maxX-minX+1;c2.height=maxY-minY+1;
+  c2.getContext('2d').drawImage(c,minX,minY,c2.width,c2.height,0,0,c2.width,c2.height);
+  return c2;
+}
 function assinaturaSelecionada(e){
   const f=e.target.files[0];if(!f)return;
   const rd=new FileReader();
   rd.onload=()=>{
     const im=new Image();
     im.onload=()=>{
-      const esc=Math.min(1,600/im.width);
-      const c=document.createElement('canvas');
+      const esc=Math.min(1,700/im.width);
+      let c=document.createElement('canvas');
       c.width=Math.round(im.width*esc);c.height=Math.round(im.height*esc);
       c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+      c=limparFundoAssinatura(c);
       try{localStorage.setItem(lsKey('rv_assinatura'),c.toDataURL('image/png'));}catch(err){showSyncStatus('Imagem demasiado grande para guardar',false);return;}
       refreshAssinaturaUI();
-      showSyncStatus('Assinatura guardada — entra automaticamente no termo!',true);
+      showSyncStatus('Assinatura guardada sem fundo — entra automaticamente no termo!',true);
     };
     im.src=rd.result;
   };
