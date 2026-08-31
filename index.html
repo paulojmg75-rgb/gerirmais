@@ -941,6 +941,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
         <span style="font-size:11px;font-weight:700;color:var(--text2)"><i class="ti ti-signature"></i> Assinatura:</span>
         <img id="assinaturaPreview" alt="Assinatura" style="max-height:44px;max-width:150px;display:none;background:#fff;border:.5px solid var(--border2);border-radius:6px;padding:2px">
         <button class="btn btn-sm" onclick="document.getElementById('assinaturaInput').click()"><i class="ti ti-upload"></i> Carregar assinatura</button>
+        <button class="btn btn-sm" onclick="recuperarAssinaturaDrive()" title="Recuperar a assinatura guardada no Google Drive (ex.: carregada no telemóvel)"><i class="ti ti-brand-google-drive"></i> Recuperar do Drive</button>
         <button class="btn btn-sm btn-icon btn-del" id="assinaturaRemover" style="display:none" onclick="removerAssinatura()" title="Remover assinatura"><i class="ti ti-trash"></i></button>
         <input type="file" id="assinaturaInput" accept="image/*" style="display:none" onchange="assinaturaSelecionada(event)">
         <span style="font-size:9px;color:var(--text3);flex:1;min-width:160px">Assina numa folha branca, tira foto/digitaliza e carrega aqui — entra automaticamente no termo, pousada na linha por cima do nome.</span>
@@ -3175,9 +3176,13 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.66';
+const APP_VERSION='3.67';
 const APP_UPDATE_DATE='2026-08-31'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.67',data:'2026-08-31',notas:[
+    'A assinatura passa a ficar guardada também no Google Drive (pasta GestaoNegocio/Assinatura) — carregada num aparelho, aparece nos outros: recupera sozinha ao abrir a página do termo com a Drive ligada, ou com o novo botão "Recuperar do Drive". (O armazenamento local é próprio de cada aparelho — era por isso que a assinatura do telemóvel não aparecia no PC.)',
+    'No termo, a assinatura fica agora pousada NA linha (a linha atravessa a parte de baixo da assinatura, como numa assinatura real), em vez de flutuar por cima.',
+  ]},
   {v:'3.66',data:'2026-08-31',notas:[
     'Texto dos botões do menu sem negrito — peso normal, mais leve e elegante.',
   ]},
@@ -4283,16 +4288,69 @@ function assinaturaSelecionada(e){
       c.width=Math.round(im.width*esc);c.height=Math.round(im.height*esc);
       c.getContext('2d').drawImage(im,0,0,c.width,c.height);
       c=limparFundoAssinatura(c);
-      try{localStorage.setItem(lsKey('rv_assinatura'),c.toDataURL('image/png'));}catch(err){showSyncStatus('Imagem demasiado grande para guardar',false);return;}
+      const dataUrl=c.toDataURL('image/png');
+      try{localStorage.setItem(lsKey('rv_assinatura'),dataUrl);}catch(err){showSyncStatus('Imagem demasiado grande para guardar',false);return;}
       refreshAssinaturaUI();
       showSyncStatus('Assinatura guardada sem fundo — entra automaticamente no termo!',true);
+      // envia também para a Drive, para ficar disponível no PC e no telemóvel
+      if(gdriveToken){
+        uploadToGDriveReplace(dataUrl,'assinatura.png','image/png','Assinatura')
+          .then(()=>showSyncStatus('Assinatura também guardada no Google Drive! ✓',true))
+          .catch(()=>{});
+      }
     };
     im.src=rd.result;
   };
   rd.readAsDataURL(f);
   e.target.value='';
 }
-function removerAssinatura(){try{localStorage.removeItem(lsKey('rv_assinatura'));}catch(e){}refreshAssinaturaUI();showSyncStatus('Assinatura removida.',true);}
+function removerAssinatura(){
+  try{localStorage.removeItem(lsKey('rv_assinatura'));}catch(e){}
+  refreshAssinaturaUI();
+  // remove também a cópia na Drive (senão a recuperação automática trazia-a de volta)
+  if(gdriveValid()){
+    gdriveAuth(async()=>{
+      try{
+        const folderId=await gdriveGetSubfolder('Assinatura');
+        const q=encodeURIComponent(`name='assinatura.png' and '${folderId}' in parents and trashed=false`);
+        const res=await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}`,{headers:{'Authorization':'Bearer '+gdriveToken}});
+        const data=await res.json();
+        for(const f of (data.files||[]))await gdriveDeleteFile(f.id);
+      }catch(e){}
+    });
+  }
+  showSyncStatus('Assinatura removida.',true);
+}
+/* Procura a assinatura guardada em GestaoNegocio/Assinatura na Drive (para aparecer
+   também nos outros dispositivos — o armazenamento local é próprio de cada aparelho). */
+async function gdriveFindAssinatura(){
+  return new Promise((resolve)=>{
+    gdriveAuth(async()=>{
+      try{
+        const folderId=await gdriveGetSubfolder('Assinatura');
+        const q=encodeURIComponent(`name='assinatura.png' and '${folderId}' in parents and trashed=false`);
+        const res=await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}`,{headers:{'Authorization':'Bearer '+gdriveToken}});
+        const data=await res.json();
+        if(data.files&&data.files.length)resolve(await gdriveDownloadFile(data.files[0].id));
+        else resolve(null);
+      }catch(e){resolve(null);}
+    });
+  });
+}
+function recuperarAssinaturaDrive(){
+  gdriveAuth(()=>{
+    gdriveFindAssinaturaEAplicar(true);
+  });
+}
+function gdriveFindAssinaturaEAplicar(avisar){
+  gdriveFindAssinatura().then(dataUrl=>{
+    if(dataUrl){
+      try{localStorage.setItem(lsKey('rv_assinatura'),dataUrl);}catch(e){}
+      refreshAssinaturaUI();
+      if(avisar)showSyncStatus('Assinatura recuperada do Google Drive! ✓',true);
+    }else if(avisar)showSyncStatus('Não há assinatura guardada no Google Drive.',false);
+  });
+}
 function abrirDocumentos(fid){docFeiraSel=fid||docFeiraSel;navTo('documentos');}
 function initDocumentos(){
   const sel=document.getElementById('doc-feira');
@@ -4306,6 +4364,8 @@ function initDocumentos(){
   document.getElementById('dec-equipamento').value=d.equipamento||'';
   document.getElementById('doc-termo-tpl').value=getTermoTpl();
   refreshAssinaturaUI();
+  // Sem assinatura neste aparelho mas Drive já ligada? Recupera sozinha (guardada noutro aparelho).
+  if(!getAssinatura()&&gdriveValid())gdriveFindAssinaturaEAplicar(false);
   renderContactos();
 }
 function dataPT(s){return s&&s.length>=10?s.slice(8,10)+'/'+s.slice(5,7)+'/'+s.slice(0,4):(s||'');}
@@ -4415,7 +4475,7 @@ function gerarTermo(){
     .cab-s{font-size:10px;color:#555;margin-top:2px}
     .rod{position:absolute;bottom:0;left:0;right:0;border-top:1px solid #999;padding-top:6px;font-size:9px;color:#666;text-align:center;line-height:1.5}
     .ass-bloco{text-align:center;margin-top:30px}
-    .ass-img{max-height:72px;max-width:220px;display:block;margin:0 auto -14px}
+    .ass-img{max-height:72px;max-width:220px;display:block;margin:0 auto -34px;position:relative;z-index:1}
     .ass-linha{letter-spacing:1px}
     @media print{
       body{margin:14mm;padding-bottom:0;min-height:auto}
