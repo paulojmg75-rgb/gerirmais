@@ -3184,9 +3184,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.73';
+const APP_VERSION='3.74';
 const APP_UPDATE_DATE='2026-08-31'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.74',data:'2026-08-31',notas:[
+    'O email profissional passa a ser o REMETENTE (quem envia), não o CC: sendo uma conta Gmail, os botões ✉ e "📎 + Termo" abrem o Gmail já entrado nessa conta, com o destinatário e o assunto preenchidos — o email sai dessa conta. É preciso essa conta Google estar com sessão iniciada no browser do aparelho (uma vez chega). Se não for Gmail, ou se a janela for bloqueada, abre a app de email do aparelho, onde o remetente é o que lá estiver configurado.',
+  ]},
   {v:'3.73',data:'2026-08-31',notas:[
     'O email profissional entra agora SEMPRE no email à câmara/festeiro: os botões ✉ e "📎 + Termo" leem o campo "O meu email profissional" tal como está à vista (mesmo que ainda não tenhas carregado em Guardar — fica guardado de caminho). Também ficou protegido na sincronização: um aparelho com a app antiga já não o consegue apagar sem querer. Nota: nas apps de email, o CC pode vir recolhido — toca na setinha ao lado do destinatário para o ver.',
   ]},
@@ -4562,9 +4565,15 @@ function abrirEmailPara(email,assunto){
     try{localStorage.setItem(lsKey('rv_declarante'),JSON.stringify(d));}catch(e){}
     enviarDefinicoesTermoDrive();
   }
-  let url='mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent(assunto);
-  if(meu&&meu.toLowerCase()!==email.toLowerCase())url+='&cc='+encodeURIComponent(meu);
-  location.href=url;
+  // Conta Gmail? Abre o Gmail já ENTRADO nessa conta — o email sai DESSA conta (remetente).
+  if(/@(gmail|googlemail)\.com$/i.test(meu)){
+    const u='https://mail.google.com/mail/u/?authuser='+encodeURIComponent(meu)
+      +'&view=cm&fm=1&to='+encodeURIComponent(email)+'&su='+encodeURIComponent(assunto);
+    const w=window.open(u,'_blank');
+    if(w)return; // aberto no Gmail com o remetente certo
+  }
+  // Sem Gmail (ou janela bloqueada): app de email do aparelho — o remetente é o que lá estiver configurado
+  location.href='mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent(assunto);
 }
 function emailContactoFeira(nomeEnc){
   const nome=decodeURIComponent(nomeEnc);
@@ -4704,9 +4713,10 @@ function emailContactoComTermo(nomeEnc){
   const fLinha=fairs.filter(x=>x.nome&&x.nome.trim()===nome)
     .sort((a,b)=>String(b.ano||'').localeCompare(String(a.ano||''))||String(b.inicio||'').localeCompare(String(a.inicio||'')))[0];
   const r=gerarTermoPDF(fLinha);if(!r)return;
+  // abre o email PRIMEIRO (ainda dentro do clique — senão o browser bloqueia a janela do Gmail)
+  abrirEmailPara(email,'Documentação — '+nome);
   r.doc.save(r.nomeFicheiro);
-  showSyncStatus('PDF do termo descarregado ("'+r.nomeFicheiro+'") — anexa-o no email que se vai abrir',true);
-  setTimeout(()=>{abrirEmailPara(email,'Documentação — '+nome);},900);
+  showSyncStatus('PDF do termo descarregado ("'+r.nomeFicheiro+'") — anexa-o no email aberto',true);
 }
 
 
