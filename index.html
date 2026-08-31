@@ -14,6 +14,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
@@ -919,7 +920,10 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
   <div class="card" style="padding:1rem;margin-bottom:1rem">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px">
       <span class="card-title" style="margin-bottom:0"><i class="ti ti-file-text"></i> Gerar o termo</span>
-      <button class="btn btn-primary" onclick="gerarTermo()"><i class="ti ti-printer"></i> Gerar / Imprimir termo</button>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="gerarTermo()"><i class="ti ti-printer"></i> Gerar / Imprimir termo</button>
+        <button class="btn" onclick="descarregarTermoPDF()" title="Descarrega o termo já em ficheiro PDF, pronto a anexar num email"><i class="ti ti-file-type-pdf"></i> Descarregar PDF</button>
+      </div>
     </div>
     <div style="font-size:10px;color:var(--text3)">Escolhe a feira acima e carrega em Gerar — abre pronto a imprimir, com o teu logo no cabeçalho. Na janela de imprimir podes "Guardar como PDF" para enviar por email. Depois de impresso, é só assinar.</div>
   </div>
@@ -954,7 +958,10 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
   </div>
 
   <div class="card" style="padding:1rem">
-    <div class="card-title"><i class="ti ti-mail"></i> Contactos das feiras/eventos</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <span class="card-title" style="margin-bottom:0"><i class="ti ti-mail"></i> Contactos das feiras/eventos</span>
+      <button class="btn btn-sm" onclick="recuperarContactosDrive()" title="Buscar/juntar os contactos guardados noutros aparelhos (via Google Drive)"><i class="ti ti-brand-google-drive"></i> Sincronizar contactos</button>
+    </div>
     <div style="font-size:10px;color:var(--text3);margin-bottom:10px">A lista vem das feiras/eventos que já criaste (cada feira aparece uma vez, seja de que ano for). Preenche o email e o telemóvel de cada uma — ficam guardados sozinhos. O ✉ abre o teu email já com o destinatário e o assunto preenchidos; o telemóvel é só para consulta.</div>
     <div id="doc-contactos-lista"><div class="empty">Ainda não há feiras/eventos criados</div></div>
   </div>
@@ -3176,9 +3183,16 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.67';
+const APP_VERSION='3.69';
 const APP_UPDATE_DATE='2026-08-31'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.69',data:'2026-08-31',notas:[
+    'O termo passa a poder sair diretamente em ficheiro PDF, sem passar pela janela de imprimir: novo botão "Descarregar PDF" no cartão do termo, e em cada contacto um botão "📎 + Termo" que descarrega o PDF do termo (da feira escolhida) e abre logo o email endereçado a essa entidade — fica só o gesto de anexar o ficheiro da pasta Transferências (nenhum site consegue anexar ficheiros ao email por ti; é uma proteção dos browsers).',
+    'Os contactos das feiras (emails e telemóveis), os teus dados do termo e o modelo do texto passam a sincronizar entre aparelhos através do Google Drive (ficheiro GestaoNegocio/Definicoes/definicoes_termo.json) — era por isso que os emails guardados no telemóvel não apareciam no PC (ficavam só nesse aparelho). Agora, ao abrir a página do termo com a Drive ligada, tudo sincroniza sozinho; há também um botão "Sincronizar contactos". Em caso de diferença entre aparelhos, vale a alteração mais recente. Nota: a Drive tem de estar ligada com a MESMA conta Google nos dois aparelhos.',
+  ]},
+  {v:'3.68',data:'2026-08-31',notas:[
+    'Ao carregar a assinatura sem a Drive ligada nesse aparelho, a app avisa agora claramente que ela ficou SÓ nesse aparelho (antes o envio à Drive falhava em silêncio e parecia que tinha subido). Com a Drive ligada, confirma com "também guardada no Google Drive ✓".',
+  ]},
   {v:'3.67',data:'2026-08-31',notas:[
     'A assinatura passa a ficar guardada também no Google Drive (pasta GestaoNegocio/Assinatura) — carregada num aparelho, aparece nos outros: recupera sozinha ao abrir a página do termo com a Drive ligada, ou com o novo botão "Recuperar do Drive". (O armazenamento local é próprio de cada aparelho — era por isso que a assinatura do telemóvel não aparecia no PC.)',
     'No termo, a assinatura fica agora pousada NA linha (a linha atravessa a parte de baixo da assinatura, como numa assinatura real), em vez de flutuar por cima.',
@@ -4226,9 +4240,10 @@ const TERMO_TPL_DEF='TERMO DE RESPONSABILIDADE\n\nNome: {NOME}\nNa qualidade de:
 function getDeclarante(){try{return JSON.parse(localStorage.getItem(lsKey('rv_declarante'))||'{}')||{};}catch(e){return{};}}
 function getTermoTpl(){try{return localStorage.getItem(lsKey('rv_termo_tpl'))||TERMO_TPL_DEF;}catch(e){return TERMO_TPL_DEF;}}
 function guardarDeclarante(){
-  const d={nome:document.getElementById('dec-nome').value.trim(),qualidade:document.getElementById('dec-qualidade').value.trim(),morada:document.getElementById('dec-morada').value.trim(),nif:document.getElementById('dec-nif').value.trim(),equipamento:document.getElementById('dec-equipamento').value.trim()};
-  try{localStorage.setItem(lsKey('rv_declarante'),JSON.stringify(d));localStorage.setItem(lsKey('rv_termo_tpl'),document.getElementById('doc-termo-tpl').value);}catch(e){}
+  const d={nome:document.getElementById('dec-nome').value.trim(),qualidade:document.getElementById('dec-qualidade').value.trim(),morada:document.getElementById('dec-morada').value.trim(),nif:document.getElementById('dec-nif').value.trim(),equipamento:document.getElementById('dec-equipamento').value.trim(),ts:Date.now()};
+  try{localStorage.setItem(lsKey('rv_declarante'),JSON.stringify(d));localStorage.setItem(lsKey('rv_termo_tpl'),document.getElementById('doc-termo-tpl').value);localStorage.setItem(lsKey('rv_termo_tpl_ts'),String(Date.now()));}catch(e){}
   showSyncStatus('Dados do termo guardados!',true);
+  enviarDefinicoesTermoDrive();
 }
 function reporTermoTpl(){document.getElementById('doc-termo-tpl').value=TERMO_TPL_DEF;showSyncStatus('Texto original reposto (carrega em Guardar para fixar)',true);}
 /* Assinatura "manual" (imagem carregada uma vez, ex.: foto da assinatura em papel):
@@ -4292,11 +4307,15 @@ function assinaturaSelecionada(e){
       try{localStorage.setItem(lsKey('rv_assinatura'),dataUrl);}catch(err){showSyncStatus('Imagem demasiado grande para guardar',false);return;}
       refreshAssinaturaUI();
       showSyncStatus('Assinatura guardada sem fundo — entra automaticamente no termo!',true);
-      // envia também para a Drive, para ficar disponível no PC e no telemóvel
-      if(gdriveToken){
+      // envia também para a Drive, para ficar disponível no PC e no telemóvel.
+      // Se a Drive não estiver ligada NESTE aparelho, avisa claramente (antes falhava em
+      // silêncio e parecia que tinha subido — depois "não havia nada" nos outros aparelhos).
+      if(gdriveValid()){
         uploadToGDriveReplace(dataUrl,'assinatura.png','image/png','Assinatura')
           .then(()=>showSyncStatus('Assinatura também guardada no Google Drive! ✓',true))
-          .catch(()=>{});
+          .catch(()=>showSyncStatus('Assinatura guardada SÓ neste aparelho — falhou o envio à Drive',false));
+      }else{
+        setTimeout(()=>showSyncStatus('Assinatura guardada SÓ neste aparelho — liga o Google Drive (ícone ▲) e volta a carregá-la para ficar disponível nos outros',false),1600);
       }
     };
     im.src=rd.result;
@@ -4321,6 +4340,80 @@ function removerAssinatura(){
   }
   showSyncStatus('Assinatura removida.',true);
 }
+/* ---- Sincronização das definições do termo (contactos das feiras, dados do declarante
+   e texto do termo) via Google Drive: GestaoNegocio/Definicoes/definicoes_termo.json.
+   O armazenamento local é próprio de cada aparelho — sem isto, os emails/telemóveis
+   preenchidos no telemóvel não apareciam no PC. Na fusão, vence o mais recente. ---- */
+function defsTermoLocais(){
+  let tplTs=0;try{tplTs=parseInt(localStorage.getItem(lsKey('rv_termo_tpl_ts'))||'0');}catch(e){}
+  return{contactos:docContactosFeira(),declarante:getDeclarante(),termoTpl:{txt:getTermoTpl(),ts:tplTs}};
+}
+function mesclarDefsTermo(loc,nuv){
+  const m={...(nuv.contactos||{})};
+  const lc=loc.contactos||{};
+  Object.keys(lc).forEach(k=>{const a=lc[k]||{},b=m[k];if(!b||((a.ts||0)>=(b.ts||0)))m[k]=a;});
+  const dec=(((loc.declarante||{}).ts||0)>=(((nuv.declarante||{}).ts)||0))?loc.declarante:nuv.declarante;
+  const tpl=(((loc.termoTpl||{}).ts||0)>=(((nuv.termoTpl||{}).ts)||0))?loc.termoTpl:nuv.termoTpl;
+  return{contactos:m,declarante:dec||{},termoTpl:tpl||{txt:TERMO_TPL_DEF,ts:0}};
+}
+function aplicarDefsTermo(defs){
+  saveDocContactosFeira(defs.contactos||{});
+  try{
+    if(defs.declarante&&defs.declarante.nome!==undefined)localStorage.setItem(lsKey('rv_declarante'),JSON.stringify(defs.declarante));
+    if(defs.termoTpl&&defs.termoTpl.txt){localStorage.setItem(lsKey('rv_termo_tpl'),defs.termoTpl.txt);localStorage.setItem(lsKey('rv_termo_tpl_ts'),String(defs.termoTpl.ts||0));}
+  }catch(e){}
+  // se a página do termo estiver aberta, atualiza os campos à vista
+  if(document.getElementById('page-documentos')&&document.getElementById('page-documentos').classList.contains('active')){
+    const d=defs.declarante||{};
+    const põe=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
+    põe('dec-nome',d.nome);põe('dec-qualidade',d.qualidade);põe('dec-morada',d.morada);põe('dec-nif',d.nif);põe('dec-equipamento',d.equipamento);
+    if(defs.termoTpl&&defs.termoTpl.txt)põe('doc-termo-tpl',defs.termoTpl.txt);
+    renderContactos();
+  }
+}
+let enviandoDefs=false;
+function enviarDefinicoesTermoDrive(){
+  if(!gdriveValid()||enviandoDefs)return;
+  enviandoDefs=true;
+  const json=JSON.stringify(defsTermoLocais());
+  const dataUrl='data:application/json;base64,'+btoa(unescape(encodeURIComponent(json)));
+  uploadToGDriveReplace(dataUrl,'definicoes_termo.json','application/json','Definicoes')
+    .catch(()=>{}).finally?.(()=>{enviandoDefs=false;});
+  setTimeout(()=>{enviandoDefs=false;},4000);
+}
+async function obterDefinicoesTermoDrive(){
+  return new Promise((resolve)=>{
+    gdriveAuth(async()=>{
+      try{
+        const folderId=await gdriveGetSubfolder('Definicoes');
+        const q=encodeURIComponent(`name='definicoes_termo.json' and '${folderId}' in parents and trashed=false`);
+        const res=await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}`,{headers:{'Authorization':'Bearer '+gdriveToken}});
+        const data=await res.json();
+        if(data.files&&data.files.length){
+          const durl=await gdriveDownloadFile(data.files[0].id);
+          const json=decodeURIComponent(escape(atob(durl.split(',')[1])));
+          resolve(JSON.parse(json));
+        }else resolve(null);
+      }catch(e){resolve(null);}
+    });
+  });
+}
+function sincronizarDefsTermo(avisar){
+  obterDefinicoesTermoDrive().then(nuv=>{
+    if(!nuv){
+      // ainda não há nada na Drive: envia o que este aparelho tem
+      enviarDefinicoesTermoDrive();
+      if(avisar)showSyncStatus('Definições deste aparelho enviadas para a Drive ✓',true);
+      return;
+    }
+    const fundido=mesclarDefsTermo(defsTermoLocais(),nuv);
+    aplicarDefsTermo(fundido);
+    enviarDefinicoesTermoDrive();
+    if(avisar)showSyncStatus('Contactos e dados do termo sincronizados com a Drive ✓',true);
+  });
+}
+function recuperarContactosDrive(){gdriveAuth(()=>sincronizarDefsTermo(true));}
+
 /* Procura a assinatura guardada em GestaoNegocio/Assinatura na Drive (para aparecer
    também nos outros dispositivos — o armazenamento local é próprio de cada aparelho). */
 async function gdriveFindAssinatura(){
@@ -4366,6 +4459,8 @@ function initDocumentos(){
   refreshAssinaturaUI();
   // Sem assinatura neste aparelho mas Drive já ligada? Recupera sozinha (guardada noutro aparelho).
   if(!getAssinatura()&&gdriveValid())gdriveFindAssinaturaEAplicar(false);
+  // Sincroniza contactos/dados do termo com a Drive (fusão: vence o mais recente)
+  if(gdriveValid())sincronizarDefsTermo(false);
   renderContactos();
 }
 function dataPT(s){return s&&s.length>=10?s.slice(8,10)+'/'+s.slice(5,7)+'/'+s.slice(0,4):(s||'');}
@@ -4395,7 +4490,8 @@ function renderContactos(){
       <input type="email" class="cf-email" placeholder="email da entidade" value="${escHtml(c.email||'')}" onchange="guardarContactoFeira('${enc}','email',this.value)" style="flex:1 1 170px;min-width:140px;font-size:11px;padding:5px 8px;border-radius:var(--radius);border:.5px solid var(--border2)">
       <input type="tel" class="cf-tel" placeholder="telemóvel" value="${escHtml(c.tel||'')}" onchange="guardarContactoFeira('${enc}','tel',this.value)" style="flex:0 1 110px;min-width:90px;font-size:11px;padding:5px 8px;border-radius:var(--radius);border:.5px solid var(--border2)">
       <button class="btn btn-sm" title="Guardar email e telemóvel desta feira" onclick="guardarContactoLinha('${enc}',this)" style="color:var(--accent);background:var(--accent-l);border-color:var(--accent-l)"><i class="ti ti-device-floppy" style="font-size:12px"></i> Guardar</button>
-      <button class="btn btn-sm btn-icon" title="Escrever email" onclick="emailContactoFeira('${enc}')" style="color:var(--teal);background:var(--teal-l);border-color:var(--teal-l)"><i class="ti ti-mail-forward" style="font-size:12px"></i></button>
+      <button class="btn btn-sm" title="Descarregar o termo em PDF e abrir o email já endereçado — só falta anexar" onclick="emailContactoComTermo('${enc}')" style="color:var(--amber);background:var(--amber-l);border-color:var(--amber-l)"><i class="ti ti-paperclip" style="font-size:12px"></i> + Termo</button>
+      <button class="btn btn-sm btn-icon" title="Escrever email (sem anexo)" onclick="emailContactoFeira('${enc}')" style="color:var(--teal);background:var(--teal-l);border-color:var(--teal-l)"><i class="ti ti-mail-forward" style="font-size:12px"></i></button>
     </div>`;
   }).join('');
 }
@@ -4404,8 +4500,10 @@ function guardarContactoFeira(nomeEnc,campo,valor){
   const m=docContactosFeira();
   m[nome]=m[nome]||{};
   m[nome][campo]=String(valor||'').trim();
+  m[nome].ts=Date.now();
   saveDocContactosFeira(m);
   showSyncStatus('Contacto de "'+nome+'" guardado!',true);
+  enviarDefinicoesTermoDrive();
 }
 /* Botão "Guardar" da linha: grava o email E o telemóvel de uma vez (além do guardar
    automático ao sair de cada campo, que se mantém) — dá a confirmação clara que faltava. */
@@ -4416,8 +4514,10 @@ function guardarContactoLinha(nomeEnc,btn){
   m[nome]=m[nome]||{};
   m[nome].email=(linha.querySelector('.cf-email').value||'').trim();
   m[nome].tel=(linha.querySelector('.cf-tel').value||'').trim();
+  m[nome].ts=Date.now();
   saveDocContactosFeira(m);
   showSyncStatus('Contacto de "'+nome+'" guardado! ✓',true);
+  enviarDefinicoesTermoDrive();
 }
 function emailContactoFeira(nomeEnc){
   const nome=decodeURIComponent(nomeEnc);
@@ -4484,6 +4584,79 @@ function gerarTermo(){
   </style></head><body>${cab}<div class="conteudo">${linhas}</div>${rod}</body></html>`);
   w.document.close();w.focus();
   setTimeout(()=>{try{w.print();}catch(e){}},400);
+}
+
+/* Gera o termo como ficheiro PDF pronto a anexar (sem passar pela janela de imprimir). */
+function gerarTermoPDF(){
+  const f=fairs.find(x=>x.id===docFeiraSel);
+  if(!f){alert('Escolhe primeiro a feira/evento (em cima).');return null;}
+  const d=getDeclarante();
+  if(!d.nome){alert('Preenche primeiro "Os meus dados" e carrega em Guardar.');const c=document.getElementById('doc-declarante-body');if(c)c.style.display='block';return null;}
+  if(!(window.jspdf&&window.jspdf.jsPDF)){alert('O gerador de PDF não carregou — verifica a ligação à internet e recarrega a página.');return null;}
+  const tpl=document.getElementById('doc-termo-tpl').value||TERMO_TPL_DEF;
+  const texto=tpl
+    .replaceAll('{NOME}',d.nome||'').replaceAll('{QUALIDADE}',d.qualidade||'').replaceAll('{MORADA}',d.morada||'')
+    .replaceAll('{NIF}',d.nif||'').replaceAll('{EQUIPAMENTO}',d.equipamento||'')
+    .replaceAll('{FEIRA}',f.nome).replaceAll('{INICIO}',dataPT(f.inicio)).replaceAll('{FIM}',dataPT(f.fim))
+    .replaceAll('{DATA}',new Date().toLocaleDateString('pt-PT'));
+  const doc=new window.jspdf.jsPDF({unit:'pt',format:'a4'});
+  const W=595,M=56,L=W-2*M;
+  let y=M;
+  const logo=getLogoSrc();
+  const nomeNeg=(document.getElementById('sidebarTitle')?.textContent)||'Gestão de Negócio';
+  if(logo){try{const pr=doc.getImageProperties(logo);const esc=Math.min(96/pr.width,38/pr.height);doc.addImage(logo,pr.fileType||'PNG',M,y-6,pr.width*esc,pr.height*esc,undefined,'FAST');}catch(e){}}
+  doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(20);
+  doc.text(nomeNeg,logo?M+108:M,y+10);
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(100);
+  doc.text((d.nome||'')+(d.nif?' · NIF '+d.nif:''),logo?M+108:M,y+24);
+  y+=44;doc.setDrawColor(45);doc.setLineWidth(1.4);doc.line(M,y,W-M,y);y+=34;
+  doc.setTextColor(17);
+  const arr=texto.split('\n');
+  const iAss=arr.findIndex(l=>/^_{8,}$/.test(l.trim()));
+  arr.forEach((l,i)=>{
+    const t=l.trim();
+    if(i===0){doc.setFont('helvetica','bold');doc.setFontSize(15);doc.text(t,W/2,y,{align:'center'});doc.setFont('helvetica','normal');doc.setFontSize(11);y+=32;return;}
+    if(t===''){y+=9;return;}
+    if(i===iAss){
+      const yLinha=y+44;
+      const ass=getAssinatura();
+      if(ass){try{
+        const pr=doc.getImageProperties(ass);
+        const esc=Math.min(190/pr.width,56/pr.height);
+        const aw=pr.width*esc,ah=pr.height*esc;
+        // pousada NA linha: a linha atravessa a parte de baixo do traço
+        doc.addImage(ass,'PNG',W/2-aw/2,yLinha-ah+12,aw,ah,undefined,'FAST');
+      }catch(e){}}
+      doc.setDrawColor(70);doc.setLineWidth(0.9);
+      doc.line(W/2-115,yLinha,W/2+115,yLinha);
+      y=yLinha;return;
+    }
+    if(iAss>=0&&i===iAss+1){doc.setFont('helvetica','bold');doc.text(t,W/2,y+17,{align:'center'});doc.setFont('helvetica','normal');y+=17;return;}
+    const linhas=doc.splitTextToSize(l,L);
+    doc.text(linhas,M,y);
+    y+=linhas.length*15+2;
+  });
+  doc.setFontSize(7.5);doc.setTextColor(125);
+  doc.text((d.nome||'')+(d.morada?' · '+d.morada:'')+(d.nif?' · NIF '+d.nif:''),W/2,798,{align:'center'});
+  doc.text('Documento gerado em '+new Date().toLocaleDateString('pt-PT')+' · gerirmais.com',W/2,809,{align:'center'});
+  const nomeFicheiro='Termo_Responsabilidade_'+f.nome.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9 -]/g,'').trim().replace(/\s+/g,'_')+'.pdf';
+  return{doc,nomeFicheiro};
+}
+function descarregarTermoPDF(){
+  const r=gerarTermoPDF();if(!r)return;
+  r.doc.save(r.nomeFicheiro);
+  showSyncStatus('PDF do termo descarregado — vê a pasta Transferências',true);
+}
+/* Botão junto ao contacto: descarrega o termo em PDF e abre o email já endereçado —
+   só falta anexar o ficheiro acabado de descarregar (nenhum site pode anexar por ti). */
+function emailContactoComTermo(nomeEnc){
+  const nome=decodeURIComponent(nomeEnc);
+  const c=docContactosFeira()[nome];
+  if(!c||!c.email){alert('Preenche primeiro o email desta feira (fica logo guardado).');return;}
+  const r=gerarTermoPDF();if(!r)return;
+  r.doc.save(r.nomeFicheiro);
+  showSyncStatus('PDF do termo descarregado ("'+r.nomeFicheiro+'") — anexa-o no email que se vai abrir',true);
+  setTimeout(()=>{location.href='mailto:'+encodeURIComponent(c.email)+'?subject='+encodeURIComponent('Documentação — '+nome);},900);
 }
 
 
