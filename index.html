@@ -407,7 +407,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
   .nav-item[data-page="comparar"]{--ac:#E8705F!important}
   .nav-item[data-page="documentos"]{--ac:#C98F4E!important}
   .nav-item[data-page="configuracoes"]{--ac:#7F8C99!important}
-  .nav-item{height:34px!important;border:none!important;background:var(--ac,var(--accent))!important;border-radius:999px!important;font-size:10.5px!important;text-transform:uppercase;letter-spacing:.05em;padding:5px 14px 5px 5px!important;gap:10px!important;color:#1F1C18!important;font-weight:800!important;box-shadow:0 1px 2px rgba(28,25,23,.08)!important;transition:all .18s cubic-bezier(.4,0,.2,1)!important}
+  .nav-item{height:34px!important;border:none!important;background:var(--ac,var(--accent))!important;border-radius:999px!important;font-size:10.5px!important;text-transform:uppercase;letter-spacing:.05em;padding:5px 14px 5px 5px!important;gap:10px!important;color:#1F1C18!important;font-weight:500!important;box-shadow:0 1px 2px rgba(28,25,23,.08)!important;transition:all .18s cubic-bezier(.4,0,.2,1)!important}
   .nav-item:hover{box-shadow:0 3px 8px -2px var(--ac,rgba(28,25,23,.3))!important;transform:translateX(3px)}
   .nav-item i{width:28px!important;height:28px!important;font-size:14px!important;border-radius:50%!important;background:#fff!important;color:var(--ac,var(--nav-ic))!important;box-shadow:none}
   /* Selecionado: linha fina e escura à volta */
@@ -3175,9 +3175,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.65';
+const APP_VERSION='3.66';
 const APP_UPDATE_DATE='2026-08-31'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.66',data:'2026-08-31',notas:[
+    'Texto dos botões do menu sem negrito — peso normal, mais leve e elegante.',
+  ]},
   {v:'3.65',data:'2026-08-31',notas:[
     'Texto dos botões do menu em cor escura (quase preto), em vez de branco — melhor leitura sobre as cores dos botões.',
   ]},
