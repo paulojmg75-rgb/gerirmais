@@ -937,6 +937,14 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
       <div class="form-group" style="margin:0 0 10px"><label class="form-label">Texto do termo (personalizável — as etiquetas {NOME}, {QUALIDADE}, {MORADA}, {NIF}, {EQUIPAMENTO}, {FEIRA}, {INICIO}, {FIM} e {DATA} são substituídas automaticamente)</label>
         <textarea id="doc-termo-tpl" rows="8" style="width:100%;font-size:12px;font-family:inherit;padding:8px;border-radius:var(--radius);border:.5px solid var(--border2);resize:vertical"></textarea>
       </div>
+      <div style="display:flex;align-items:center;gap:10px;margin:0 0 10px;flex-wrap:wrap;padding:8px 10px;background:var(--bg);border:.5px dashed var(--border2);border-radius:var(--radius)">
+        <span style="font-size:11px;font-weight:700;color:var(--text2)"><i class="ti ti-signature"></i> Assinatura:</span>
+        <img id="assinaturaPreview" alt="Assinatura" style="max-height:44px;max-width:150px;display:none;background:#fff;border:.5px solid var(--border2);border-radius:6px;padding:2px">
+        <button class="btn btn-sm" onclick="document.getElementById('assinaturaInput').click()"><i class="ti ti-upload"></i> Carregar assinatura</button>
+        <button class="btn btn-sm btn-icon btn-del" id="assinaturaRemover" style="display:none" onclick="removerAssinatura()" title="Remover assinatura"><i class="ti ti-trash"></i></button>
+        <input type="file" id="assinaturaInput" accept="image/*" style="display:none" onchange="assinaturaSelecionada(event)">
+        <span style="font-size:9px;color:var(--text3);flex:1;min-width:160px">Assina numa folha branca, tira foto/digitaliza e carrega aqui — entra automaticamente no termo, pousada na linha por cima do nome.</span>
+      </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
         <button class="btn btn-sm" onclick="guardarDeclarante()"><i class="ti ti-device-floppy"></i> Guardar dados e texto</button>
         <button class="btn btn-sm" onclick="reporTermoTpl()" title="Volta ao texto original do termo"><i class="ti ti-restore"></i> Repor texto original</button>
@@ -3167,9 +3175,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.61';
+const APP_VERSION='3.62';
 const APP_UPDATE_DATE='2026-08-31'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.62',data:'2026-08-31',notas:[
+    'Assinatura automática no termo: em "Os meus dados" há agora um campo para carregar uma imagem da tua assinatura (assina numa folha, tira foto e carrega uma vez) — ao gerar o termo, a assinatura aparece automaticamente pousada na linha, por cima do nome, pronta para guardar em PDF e enviar. A linha de assinatura e o nome passaram a sair centrados no documento.',
+  ]},
   {v:'3.61',data:'2026-08-31',notas:[
     'O botão "Termo / Contactos" entrou também no menu lateral (8.º botão, tom bronze) — no PC sai do cabeçalho do Dashboard, que fica só com o Ano; no telemóvel mantém-se no cabeçalho. O bloco de botões do menu ficou centrado na vertical e na horizontal da coluna. Tudo continua sem barra de rolagem.',
   ]},
@@ -4203,6 +4214,36 @@ function guardarDeclarante(){
   showSyncStatus('Dados do termo guardados!',true);
 }
 function reporTermoTpl(){document.getElementById('doc-termo-tpl').value=TERMO_TPL_DEF;showSyncStatus('Texto original reposto (carrega em Guardar para fixar)',true);}
+/* Assinatura "manual" (imagem carregada uma vez, ex.: foto da assinatura em papel):
+   fica guardada e entra automaticamente no termo, pousada sobre a linha, por cima do nome. */
+function getAssinatura(){try{return localStorage.getItem(lsKey('rv_assinatura'))||'';}catch(e){return'';}}
+function refreshAssinaturaUI(){
+  const img=document.getElementById('assinaturaPreview'),btn=document.getElementById('assinaturaRemover');
+  if(!img)return;
+  const a=getAssinatura();
+  if(a){img.src=a;img.style.display='inline-block';if(btn)btn.style.display='inline-flex';}
+  else{img.style.display='none';if(btn)btn.style.display='none';}
+}
+function assinaturaSelecionada(e){
+  const f=e.target.files[0];if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    const im=new Image();
+    im.onload=()=>{
+      const esc=Math.min(1,600/im.width);
+      const c=document.createElement('canvas');
+      c.width=Math.round(im.width*esc);c.height=Math.round(im.height*esc);
+      c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+      try{localStorage.setItem(lsKey('rv_assinatura'),c.toDataURL('image/png'));}catch(err){showSyncStatus('Imagem demasiado grande para guardar',false);return;}
+      refreshAssinaturaUI();
+      showSyncStatus('Assinatura guardada — entra automaticamente no termo!',true);
+    };
+    im.src=rd.result;
+  };
+  rd.readAsDataURL(f);
+  e.target.value='';
+}
+function removerAssinatura(){try{localStorage.removeItem(lsKey('rv_assinatura'));}catch(e){}refreshAssinaturaUI();showSyncStatus('Assinatura removida.',true);}
 function abrirDocumentos(fid){docFeiraSel=fid||docFeiraSel;navTo('documentos');}
 function initDocumentos(){
   const sel=document.getElementById('doc-feira');
@@ -4215,6 +4256,7 @@ function initDocumentos(){
   document.getElementById('dec-nif').value=d.nif||'';
   document.getElementById('dec-equipamento').value=d.equipamento||'';
   document.getElementById('doc-termo-tpl').value=getTermoTpl();
+  refreshAssinaturaUI();
   renderContactos();
 }
 function dataPT(s){return s&&s.length>=10?s.slice(8,10)+'/'+s.slice(5,7)+'/'+s.slice(0,4):(s||'');}
@@ -4290,7 +4332,19 @@ function gerarTermo(){
   if(!w){alert('O browser bloqueou a janela — permite pop-ups para este site.');return;}
   // O nome da feira aparece sublinhado (e a negrito leve) no termo, para se destacar.
   const nomeEsc=escHtml(f.nome);
-  const linhas=texto.split('\n').map(l=>{
+  const ass=getAssinatura();
+  const arr=texto.split('\n');
+  // A linha de "______" é onde pousa a assinatura; ela e o nome por baixo ficam centrados.
+  const iAss=arr.findIndex(l=>/^_{8,}$/.test(l.trim()));
+  const linhas=arr.map((l,i)=>{
+    if(i===iAss){
+      return`<div class="ass-bloco">${ass?`<img class="ass-img" src="${ass}" alt="Assinatura">`:''}<div class="ass-linha">${escHtml(l.trim())}</div></div>`;
+    }
+    if(iAss>=0&&i===iAss+1&&l.trim()!==''){
+      let h=escHtml(l);
+      if(nomeEsc)h=h.split(nomeEsc).join('<u style="font-weight:600">'+nomeEsc+'</u>');
+      return`<p style="text-align:center;font-weight:600">${h}</p>`;
+    }
     if(l.trim()==='')return'<div style="height:12px"></div>';
     let h=escHtml(l);
     if(nomeEsc)h=h.split(nomeEsc).join('<u style="font-weight:600">'+nomeEsc+'</u>');
@@ -4311,6 +4365,9 @@ function gerarTermo(){
     .cab-n{font-size:15px;font-weight:700;letter-spacing:.02em}
     .cab-s{font-size:10px;color:#555;margin-top:2px}
     .rod{position:absolute;bottom:0;left:0;right:0;border-top:1px solid #999;padding-top:6px;font-size:9px;color:#666;text-align:center;line-height:1.5}
+    .ass-bloco{text-align:center;margin-top:30px}
+    .ass-img{max-height:72px;max-width:220px;display:block;margin:0 auto -14px}
+    .ass-linha{letter-spacing:1px}
     @media print{
       body{margin:14mm;padding-bottom:0;min-height:auto}
       .rod{position:fixed;bottom:6mm;left:14mm;right:14mm}
