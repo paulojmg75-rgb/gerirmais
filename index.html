@@ -937,6 +937,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
         <div class="form-group" style="margin:0"><label class="form-label">Sede/Morada</label><input type="text" id="dec-morada"></div>
         <div class="form-group" style="margin:0"><label class="form-label">NIF</label><input type="text" id="dec-nif"></div>
         <div class="form-group" style="margin:0"><label class="form-label">Equipamento de diversão</label><input type="text" id="dec-equipamento" placeholder="SIMULADOR REALIDADE VIRTUAL 9D"></div>
+        <div class="form-group" style="margin:0"><label class="form-label">O meu email profissional</label><input type="email" id="dec-email" placeholder="o email que usas p/ as câmaras e festeiros" title="Quando abres um email pelos botões ✉ ou 📎 + Termo, este email vai em cópia (CC) — fica sempre com registo da troca de informação"></div>
       </div>
       <div class="form-group" style="margin:0 0 10px"><label class="form-label">Texto do termo (personalizável — as etiquetas {NOME}, {QUALIDADE}, {MORADA}, {NIF}, {EQUIPAMENTO}, {FEIRA}, {INICIO}, {FIM} e {DATA} são substituídas automaticamente)</label>
         <textarea id="doc-termo-tpl" rows="8" style="width:100%;font-size:12px;font-family:inherit;padding:8px;border-radius:var(--radius);border:.5px solid var(--border2);resize:vertical"></textarea>
@@ -3183,9 +3184,15 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.70';
+const APP_VERSION='3.72';
 const APP_UPDATE_DATE='2026-08-31'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.72',data:'2026-08-31',notas:[
+    'Em vez de um campo por feira, há agora UM só campo "O meu email profissional" em "Os meus dados" — o email que usas para a troca de informação com as câmaras e festeiros. Ao abrir um email pelos botões ✉ ou "📎 + Termo", o destinatário é o da câmara/festeiro e o teu email profissional segue em cópia (CC), ficando essa caixa sempre com registo da conversa. Sincroniza entre aparelhos pela Drive, como os restantes dados do termo. (Nota: o remetente é sempre a conta configurada na app de email do aparelho — nenhum site o pode escolher.)',
+  ]},
+  {v:'3.71',data:'2026-08-31',notas:[
+    'Os botões "📎 + Termo" e ✉ passam a usar o email tal como está VISÍVEL na linha nesse momento (o que escreveste ou vês no campo), mesmo que ainda não tenhas carregado em Guardar — e de caminho guardam-no.',
+  ]},
   {v:'3.70',data:'2026-08-31',notas:[
     'O botão "📎 + Termo" de cada contacto já não precisa que escolhas a feira em cima: usa automaticamente a feira dessa linha (a edição mais recente, se existir em vários anos) para gerar o PDF do termo e abrir o email.',
   ]},
@@ -4243,7 +4250,7 @@ const TERMO_TPL_DEF='TERMO DE RESPONSABILIDADE\n\nNome: {NOME}\nNa qualidade de:
 function getDeclarante(){try{return JSON.parse(localStorage.getItem(lsKey('rv_declarante'))||'{}')||{};}catch(e){return{};}}
 function getTermoTpl(){try{return localStorage.getItem(lsKey('rv_termo_tpl'))||TERMO_TPL_DEF;}catch(e){return TERMO_TPL_DEF;}}
 function guardarDeclarante(){
-  const d={nome:document.getElementById('dec-nome').value.trim(),qualidade:document.getElementById('dec-qualidade').value.trim(),morada:document.getElementById('dec-morada').value.trim(),nif:document.getElementById('dec-nif').value.trim(),equipamento:document.getElementById('dec-equipamento').value.trim(),ts:Date.now()};
+  const d={nome:document.getElementById('dec-nome').value.trim(),qualidade:document.getElementById('dec-qualidade').value.trim(),morada:document.getElementById('dec-morada').value.trim(),nif:document.getElementById('dec-nif').value.trim(),equipamento:document.getElementById('dec-equipamento').value.trim(),email:(document.getElementById('dec-email')?.value||'').trim(),ts:Date.now()};
   try{localStorage.setItem(lsKey('rv_declarante'),JSON.stringify(d));localStorage.setItem(lsKey('rv_termo_tpl'),document.getElementById('doc-termo-tpl').value);localStorage.setItem(lsKey('rv_termo_tpl_ts'),String(Date.now()));}catch(e){}
   showSyncStatus('Dados do termo guardados!',true);
   enviarDefinicoesTermoDrive();
@@ -4369,7 +4376,7 @@ function aplicarDefsTermo(defs){
   if(document.getElementById('page-documentos')&&document.getElementById('page-documentos').classList.contains('active')){
     const d=defs.declarante||{};
     const põe=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
-    põe('dec-nome',d.nome);põe('dec-qualidade',d.qualidade);põe('dec-morada',d.morada);põe('dec-nif',d.nif);põe('dec-equipamento',d.equipamento);
+    põe('dec-nome',d.nome);põe('dec-qualidade',d.qualidade);põe('dec-morada',d.morada);põe('dec-nif',d.nif);põe('dec-equipamento',d.equipamento);põe('dec-email',d.email);
     if(defs.termoTpl&&defs.termoTpl.txt)põe('doc-termo-tpl',defs.termoTpl.txt);
     renderContactos();
   }
@@ -4458,6 +4465,7 @@ function initDocumentos(){
   document.getElementById('dec-morada').value=d.morada||'';
   document.getElementById('dec-nif').value=d.nif||'';
   document.getElementById('dec-equipamento').value=d.equipamento||'';
+  const decEmail=document.getElementById('dec-email');if(decEmail)decEmail.value=d.email||'';
   document.getElementById('doc-termo-tpl').value=getTermoTpl();
   refreshAssinaturaUI();
   // Sem assinatura neste aparelho mas Drive já ligada? Recupera sozinha (guardada noutro aparelho).
@@ -4487,12 +4495,12 @@ function renderContactos(){
   area.innerHTML=nomes.map(nome=>{
     const c=m[nome]||{};
     const enc=encodeURIComponent(nome);
-    return`<div class="contacto-feira-linha" style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius);margin-bottom:6px;flex-wrap:wrap">
+    return`<div class="contacto-feira-linha" data-enc="${enc}" style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius);margin-bottom:6px;flex-wrap:wrap">
       <i class="ti ti-building-carousel" style="color:var(--text3)"></i>
       <div style="flex:1 1 150px;min-width:120px;font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(nome)}">${escHtml(nome)}</div>
       <input type="email" class="cf-email" placeholder="email da entidade" value="${escHtml(c.email||'')}" onchange="guardarContactoFeira('${enc}','email',this.value)" style="flex:1 1 170px;min-width:140px;font-size:11px;padding:5px 8px;border-radius:var(--radius);border:.5px solid var(--border2)">
       <input type="tel" class="cf-tel" placeholder="telemóvel" value="${escHtml(c.tel||'')}" onchange="guardarContactoFeira('${enc}','tel',this.value)" style="flex:0 1 110px;min-width:90px;font-size:11px;padding:5px 8px;border-radius:var(--radius);border:.5px solid var(--border2)">
-      <button class="btn btn-sm" title="Guardar email e telemóvel desta feira" onclick="guardarContactoLinha('${enc}',this)" style="color:var(--accent);background:var(--accent-l);border-color:var(--accent-l)"><i class="ti ti-device-floppy" style="font-size:12px"></i> Guardar</button>
+      <button class="btn btn-sm" title="Guardar os emails e o telemóvel desta feira" onclick="guardarContactoLinha('${enc}',this)" style="color:var(--accent);background:var(--accent-l);border-color:var(--accent-l)"><i class="ti ti-device-floppy" style="font-size:12px"></i> Guardar</button>
       <button class="btn btn-sm" title="Descarregar o termo em PDF e abrir o email já endereçado — só falta anexar" onclick="emailContactoComTermo('${enc}')" style="color:var(--amber);background:var(--amber-l);border-color:var(--amber-l)"><i class="ti ti-paperclip" style="font-size:12px"></i> + Termo</button>
       <button class="btn btn-sm btn-icon" title="Escrever email (sem anexo)" onclick="emailContactoFeira('${enc}')" style="color:var(--teal);background:var(--teal-l);border-color:var(--teal-l)"><i class="ti ti-mail-forward" style="font-size:12px"></i></button>
     </div>`;
@@ -4522,11 +4530,31 @@ function guardarContactoLinha(nomeEnc,btn){
   showSyncStatus('Contacto de "'+nome+'" guardado! ✓',true);
   enviarDefinicoesTermoDrive();
 }
+/* Devolve o email da entidade tal como está VISÍVEL na linha nesse momento (o que o
+   utilizador vê/escreveu), guardando-o se mudou; recorre ao guardado se a linha não existir. */
+function emailVisivelContacto(nomeEnc){
+  const nome=decodeURIComponent(nomeEnc);
+  let vis='';
+  const linha=document.querySelector('.contacto-feira-linha[data-enc="'+nomeEnc+'"]');
+  if(linha){const inp=linha.querySelector('.cf-email');if(inp)vis=(inp.value||'').trim();}
+  const c=docContactosFeira()[nome]||{};
+  if(vis&&vis!==(c.email||''))guardarContactoFeira(nomeEnc,'email',vis);
+  return vis||(c.email||'').trim();
+}
+/* Liga o mailto: destinatário = câmara/festeiro; CC = o teu email profissional (definido
+   em "Os meus dados"), para essa caixa ficar sempre com cópia da troca de informação.
+   (O remetente é sempre a conta configurada na app de email do aparelho — nenhum site o pode escolher.) */
+function abrirEmailPara(email,assunto){
+  const meu=(getDeclarante().email||'').trim();
+  let url='mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent(assunto);
+  if(meu&&meu.toLowerCase()!==email.toLowerCase())url+='&cc='+encodeURIComponent(meu);
+  location.href=url;
+}
 function emailContactoFeira(nomeEnc){
   const nome=decodeURIComponent(nomeEnc);
-  const c=docContactosFeira()[nome];
-  if(!c||!c.email){alert('Preenche primeiro o email desta feira (fica logo guardado).');return;}
-  location.href='mailto:'+encodeURIComponent(c.email)+'?subject='+encodeURIComponent('Documentação — '+nome);
+  const email=emailVisivelContacto(nomeEnc);
+  if(!email){alert('Preenche primeiro o email desta feira (fica logo guardado).');return;}
+  abrirEmailPara(email,'Documentação — '+nome);
 }
 
 function gerarTermo(){
@@ -4654,15 +4682,15 @@ function descarregarTermoPDF(){
    só falta anexar o ficheiro acabado de descarregar (nenhum site pode anexar por ti). */
 function emailContactoComTermo(nomeEnc){
   const nome=decodeURIComponent(nomeEnc);
-  const c=docContactosFeira()[nome];
-  if(!c||!c.email){alert('Preenche primeiro o email desta feira (fica logo guardado).');return;}
+  const email=emailVisivelContacto(nomeEnc);
+  if(!email){alert('Preenche primeiro o email desta feira (fica logo guardado).');return;}
   // usa a feira desta linha (a edição mais recente) — não é preciso escolher em cima
   const fLinha=fairs.filter(x=>x.nome&&x.nome.trim()===nome)
     .sort((a,b)=>String(b.ano||'').localeCompare(String(a.ano||''))||String(b.inicio||'').localeCompare(String(a.inicio||'')))[0];
   const r=gerarTermoPDF(fLinha);if(!r)return;
   r.doc.save(r.nomeFicheiro);
   showSyncStatus('PDF do termo descarregado ("'+r.nomeFicheiro+'") — anexa-o no email que se vai abrir',true);
-  setTimeout(()=>{location.href='mailto:'+encodeURIComponent(c.email)+'?subject='+encodeURIComponent('Documentação — '+nome);},900);
+  setTimeout(()=>{abrirEmailPara(email,'Documentação — '+nome);},900);
 }
 
 
