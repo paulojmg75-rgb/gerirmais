@@ -376,6 +376,61 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
   .mobile-header-title .logo-title{font-size:12px}
   .gn-logo-badge{bottom:70px;width:26px;height:26px;font-size:9px}
 }
+
+/* ===================== REDESIGN (só PC, ≥769px): menu lateral vertical =====================
+   Puramente visual (CSS): a lógica, os IDs e a estrutura HTML não mudam. O telemóvel
+   mantém o layout próprio (cabeçalho + menu inferior). Para reverter, basta apagar
+   este bloco inteiro até ao comentário de fecho. */
+@media(min-width:769px){
+  .app{flex-direction:row!important}
+  .sidebar{flex-direction:column!important;flex-wrap:nowrap!important;align-items:stretch!important;width:224px!important;min-width:224px!important;max-width:224px!important;height:100%!important;border-right:1px solid var(--side-line)!important;border-bottom:none!important;padding:6px 12px!important;gap:0!important;overflow-y:auto!important;scrollbar-width:thin}
+  .logo-area{flex-shrink:0}
+  .nav-rows{flex-shrink:0!important}
+  .topbar-actions-wrap{flex-shrink:0!important}
+  .logo-area{flex-direction:column!important;padding:0 0 4px!important;border-bottom:1px solid var(--side-line)!important;margin-bottom:6px}
+  .logo-sub{display:none!important}
+  .hdr-cfg{display:none!important}
+  .hdr-termo{display:none!important}
+  .logo-img-wrap{width:100px!important;height:38px!important}
+  .nav-section{display:none!important}
+  .nav-rows{flex-direction:column!important;min-width:0!important;flex:0 0 auto!important;gap:12px!important;margin:auto!important;width:94%}
+  .nav-row{flex-direction:column!important;align-items:stretch!important;gap:12px!important}
+  .nav-row .nav-item{justify-content:flex-start!important}
+  /* Botões coloridos: cada item mantém a sua cor (--ac/--ac-l), com contorno e fundo tintado */
+  /* Botões "pílula" totalmente preenchidos (estilo da imagem de referência): cor viva
+     própria, círculo branco com o ícone à esquerda, texto branco em maiúsculas */
+  .nav-item[data-page="dashboard"]{--ac:#7A9E7E!important}
+  .nav-item[data-page="lancamentos"]{--ac:#7BA8A0!important}
+  .nav-item[data-page="feiras"]{--ac:#7E97B8!important}
+  .nav-item[data-page="filtros"]{--ac:#C4A272!important}
+  .nav-item[data-page="relatorio"]{--ac:#A08CB8!important}
+  .nav-item[data-page="comparar"]{--ac:#C08B84!important}
+  .nav-item[data-page="documentos"]{--ac:#B08E6E!important}
+  .nav-item[data-page="configuracoes"]{--ac:#9A8C7B!important}
+  .nav-item{height:34px!important;border:none!important;background:var(--ac,var(--accent))!important;border-radius:999px!important;font-size:10.5px!important;text-transform:uppercase;letter-spacing:.05em;padding:5px 14px 5px 5px!important;gap:10px!important;color:#fff!important;font-weight:800!important;box-shadow:0 1px 2px rgba(28,25,23,.08)!important;transition:all .18s cubic-bezier(.4,0,.2,1)!important}
+  .nav-item:hover{box-shadow:0 3px 8px -2px var(--ac,rgba(28,25,23,.3))!important;transform:translateX(3px)}
+  .nav-item i{width:28px!important;height:28px!important;font-size:14px!important;border-radius:50%!important;background:#fff!important;color:var(--ac,var(--nav-ic))!important;box-shadow:none}
+  /* Selecionado: linha fina e escura à volta */
+  .nav-item.active{box-shadow:0 0 0 2px var(--side),0 0 0 3px #3E362C,0 2px 5px -2px rgba(28,25,23,.3)!important}
+  .topbar-actions-wrap{margin:auto 0 0!important;border-left:none!important;border-top:1px solid var(--side-line)!important;padding:6px 0 0!important;height:auto!important;align-items:stretch!important;gap:2px!important}
+  .topbar-actions{justify-content:center;width:100%;gap:6px!important}
+  .topbar-actions .btn{padding:5px 0!important;border-radius:9px!important}
+  .topbar-actions-wrap .nav-sync-label{white-space:normal!important;overflow-wrap:anywhere;line-height:1.3;font-size:8.5px!important;max-width:100%}
+  .nav-sync-label{text-align:center!important}
+  /* Conteúdo: título grande, cartões flutuantes, números fortes */
+  .main{width:auto!important}
+  .page{padding:1.4rem 1.9rem!important}
+  .page-header h1{font-size:23px!important;letter-spacing:-.02em}
+  .page-header p{font-size:12.5px!important;color:var(--text3)!important}
+  .metric{border:none!important;border-top:none!important;border-radius:16px!important;padding:1rem 1.2rem!important;box-shadow:0 1px 2px rgba(28,25,23,.04),0 8px 24px -12px rgba(28,25,23,.12)!important;position:relative;overflow:hidden}
+  .metric::after{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent)}
+  .metric-label{font-size:10px!important;text-transform:uppercase;letter-spacing:.09em;color:var(--text3)!important;font-weight:700}
+  .metric-value{font-size:24px!important;font-weight:800!important;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+  .card{border:none!important;border-radius:16px!important;box-shadow:0 1px 2px rgba(28,25,23,.04),0 8px 24px -12px rgba(28,25,23,.12)!important}
+  .card-title i{color:var(--accent)}
+  .pill{border-radius:999px!important;font-weight:700}
+}
+/* =========================== fim do bloco do redesign (PC) =========================== */
 </style>
 </head>
 
@@ -476,6 +531,8 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
       <div class="nav-item" data-page="filtros" style="--ac:var(--n8);--ac-l:var(--n8-l)"><i class="ti ti-filter"></i> Filtros</div>
       <div class="nav-item" data-page="relatorio" style="--ac:var(--n10);--ac-l:var(--n10-l)"><i class="ti ti-chart-bar"></i> Relatório</div>
       <div class="nav-item" data-page="comparar" style="--ac:var(--n3);--ac-l:var(--n3-l)"><i class="ti ti-arrows-left-right"></i> Comparar</div>
+      <div class="nav-item" data-page="documentos" style="--ac:var(--amber);--ac-l:var(--amber-l)"><i class="ti ti-file-text"></i> Termo / Contactos</div>
+      <div class="nav-item nav-item-cfg-menu" data-page="configuracoes" style="--ac:var(--accent);--ac-l:var(--accent-l)"><i class="ti ti-settings"></i> Configurações</div>
     </div>
   </div>
   <div class="topbar-actions-wrap">
@@ -540,8 +597,8 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
            iguais (definidas pelo conteúdo mais largo), no PC e no telemóvel -->
       <div class="hdr-trio">
         <select id="dashYear" onchange="renderDashboard()" title="Ano" class="hdr-btn" style="font-weight:600;border-radius:var(--radius);border:.5px solid var(--border2);background:var(--bg2);color:var(--text);text-align:center"></select>
-        <button class="btn hdr-btn" onclick="abrirDocumentos(null)" title="Termo de Responsabilidade / Contactos das Feiras" style="font-weight:600;white-space:nowrap;justify-content:center;color:var(--amber);border-color:var(--amber-l);background:linear-gradient(135deg,var(--amber-l),#fff)"><i class="ti ti-file-text"></i> Termo / Contactos</button>
-        <button class="btn hdr-btn" onclick="navTo('configuracoes')" title="Configurações" style="font-weight:600;white-space:nowrap;justify-content:center;color:#fff;border-color:#9C5F1F;background:linear-gradient(135deg,#C68A42,#9C5F1F)"><i class="ti ti-settings" style="color:#fff"></i> Configurações</button>
+        <button class="btn hdr-btn hdr-termo" onclick="abrirDocumentos(null)" title="Termo de Responsabilidade / Contactos das Feiras" style="font-weight:600;white-space:nowrap;justify-content:center;color:var(--amber);border-color:var(--amber-l);background:linear-gradient(135deg,var(--amber-l),#fff)"><i class="ti ti-file-text"></i> Termo / Contactos</button>
+        <button class="btn hdr-btn hdr-cfg" onclick="navTo('configuracoes')" title="Configurações" style="font-weight:600;white-space:nowrap;justify-content:center;color:#fff;border-color:#9C5F1F;background:linear-gradient(135deg,#C68A42,#9C5F1F)"><i class="ti ti-settings" style="color:#fff"></i> Configurações</button>
       </div>
       <div id="dash-result-mobile" class="only-mobile"></div>
     </div>
@@ -3110,9 +3167,40 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.51';
-const APP_UPDATE_DATE='2026-08-30'; // formato AAAA-MM-DD
+const APP_VERSION='3.61';
+const APP_UPDATE_DATE='2026-08-31'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.61',data:'2026-08-31',notas:[
+    'O botão "Termo / Contactos" entrou também no menu lateral (8.º botão, tom bronze) — no PC sai do cabeçalho do Dashboard, que fica só com o Ano; no telemóvel mantém-se no cabeçalho. O bloco de botões do menu ficou centrado na vertical e na horizontal da coluna. Tudo continua sem barra de rolagem.',
+  ]},
+  {v:'3.60',data:'2026-08-31',notas:[
+    'Configurações entrou no menu lateral como 7.º botão (tom taupe neutro) — no PC deixa de aparecer no cabeçalho do Dashboard (no telemóvel mantém-se lá, que é o acesso). O contorno do botão selecionado ficou mais fino e em cor escura. Tudo continua a caber sem barra de rolagem.',
+  ]},
+  {v:'3.59',data:'2026-08-31',notas:[
+    'Botão selecionado do menu marcado com um contorno fininho à volta (em vez do sublinhado), e sombras dos botões bastante reduzidas — ficam com cor limpa em vez do ar "baço".',
+  ]},
+  {v:'3.58',data:'2026-08-31',notas:[
+    'Ainda mais espaço entre os botões do menu lateral, e o botão selecionado passou a marcar-se apenas com um sublinhado discreto no texto (em vez do anel grande à volta). Continua tudo a caber sem barra de rolagem.',
+  ]},
+  {v:'3.57',data:'2026-08-31',notas:[
+    'Mais espaço vertical entre os botões do menu lateral (estavam muito colados) — compensado com o logo e o bloco de ações ligeiramente mais compactos, para continuar tudo a caber sem barra de rolagem.',
+  ]},
+  {v:'3.56',data:'2026-08-31',notas:[
+    'Botões do menu com cores mais neutras (tons suaves em vez de cores vivas) e mais compactos — a coluna do menu passa a caber inteira em ecrãs baixos, sem barra de rolagem.',
+  ]},
+  {v:'3.55',data:'2026-08-31',notas:[
+    'Corrigido: em ecrãs mais baixos, os botões da Drive/ações saltavam para uma segunda coluna espremida ao lado do menu lateral (com os textos cortados). A coluna do menu deixou de quebrar — se faltar altura, rola por dentro — e ficou ligeiramente mais compacta para caber tudo confortavelmente.',
+    'Botões do menu ao estilo "pílula" (como a imagem de referência): totalmente preenchidos com cores vivas, círculo branco com o ícone à esquerda e texto branco em maiúsculas. O selecionado ganha um anel à volta, cor mais funda e fica deslocado — inconfundível.',
+  ]},
+  {v:'3.54',data:'2026-08-31',notas:[
+    'Cada botão do menu lateral passou a ter a sua cor bem visível (fundo tintado sólido, ícone em chip branco). Os botões de Drive/cloud/Sincronizar/Exportar/Importar/sessão no fundo da coluna foram arrumados em filas certas a toda a largura, e a hora de sincronização, a conta e a versão deixaram de aparecer cortadas.',
+  ]},
+  {v:'3.53',data:'2026-08-31',notas:[
+    'Menu lateral polido: saiu o rótulo "PRINCIPAL", e os botões ficaram maiores e mais bonitos — chip de ícone colorido em cada um, sombras coloridas ao passar o rato, e o selecionado com brilho no topo e sombra da própria cor. Bloco de ações do fundo arrumado a toda a largura.',
+  ]},
+  {v:'3.52',data:'2026-08-30',notas:[
+    'Visual renovado no PC: o menu passou para uma coluna lateral à esquerda, com botões coloridos (cada área mantém a sua cor) — o selecionado fica preenchido com a cor e texto branco, bem destacado. Título de página maior, cartões "flutuantes" com cantos redondos e sombras suaves, números das métricas grandes e fortes. Alteração puramente visual: toda a lógica e o telemóvel ficam exatamente como estavam.',
+  ]},
   {v:'3.51',data:'2026-08-30',notas:[
     'A página do termo passou a chamar-se "Termo de Responsabilidade / Contactos das Feiras" e o botão do Dashboard "Termo / Contactos" (PC e telemóvel). Nos contactos das feiras, cada linha ganhou um botão "Guardar" que grava o email e o telemóvel de uma vez, com confirmação clara — o guardar automático ao sair do campo também se mantém.',
   ]},
