@@ -3183,9 +3183,12 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.69';
+const APP_VERSION='3.70';
 const APP_UPDATE_DATE='2026-08-31'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.70',data:'2026-08-31',notas:[
+    'O botão "📎 + Termo" de cada contacto já não precisa que escolhas a feira em cima: usa automaticamente a feira dessa linha (a edição mais recente, se existir em vários anos) para gerar o PDF do termo e abrir o email.',
+  ]},
   {v:'3.69',data:'2026-08-31',notas:[
     'O termo passa a poder sair diretamente em ficheiro PDF, sem passar pela janela de imprimir: novo botão "Descarregar PDF" no cartão do termo, e em cada contacto um botão "📎 + Termo" que descarrega o PDF do termo (da feira escolhida) e abre logo o email endereçado a essa entidade — fica só o gesto de anexar o ficheiro da pasta Transferências (nenhum site consegue anexar ficheiros ao email por ti; é uma proteção dos browsers).',
     'Os contactos das feiras (emails e telemóveis), os teus dados do termo e o modelo do texto passam a sincronizar entre aparelhos através do Google Drive (ficheiro GestaoNegocio/Definicoes/definicoes_termo.json) — era por isso que os emails guardados no telemóvel não apareciam no PC (ficavam só nesse aparelho). Agora, ao abrir a página do termo com a Drive ligada, tudo sincroniza sozinho; há também um botão "Sincronizar contactos". Em caso de diferença entre aparelhos, vale a alteração mais recente. Nota: a Drive tem de estar ligada com a MESMA conta Google nos dois aparelhos.',
@@ -4587,8 +4590,8 @@ function gerarTermo(){
 }
 
 /* Gera o termo como ficheiro PDF pronto a anexar (sem passar pela janela de imprimir). */
-function gerarTermoPDF(){
-  const f=fairs.find(x=>x.id===docFeiraSel);
+function gerarTermoPDF(fEscolhida){
+  const f=fEscolhida||fairs.find(x=>x.id===docFeiraSel);
   if(!f){alert('Escolhe primeiro a feira/evento (em cima).');return null;}
   const d=getDeclarante();
   if(!d.nome){alert('Preenche primeiro "Os meus dados" e carrega em Guardar.');const c=document.getElementById('doc-declarante-body');if(c)c.style.display='block';return null;}
@@ -4653,7 +4656,10 @@ function emailContactoComTermo(nomeEnc){
   const nome=decodeURIComponent(nomeEnc);
   const c=docContactosFeira()[nome];
   if(!c||!c.email){alert('Preenche primeiro o email desta feira (fica logo guardado).');return;}
-  const r=gerarTermoPDF();if(!r)return;
+  // usa a feira desta linha (a edição mais recente) — não é preciso escolher em cima
+  const fLinha=fairs.filter(x=>x.nome&&x.nome.trim()===nome)
+    .sort((a,b)=>String(b.ano||'').localeCompare(String(a.ano||''))||String(b.inicio||'').localeCompare(String(a.inicio||'')))[0];
+  const r=gerarTermoPDF(fLinha);if(!r)return;
   r.doc.save(r.nomeFicheiro);
   showSyncStatus('PDF do termo descarregado ("'+r.nomeFicheiro+'") — anexa-o no email que se vai abrir',true);
   setTimeout(()=>{location.href='mailto:'+encodeURIComponent(c.email)+'?subject='+encodeURIComponent('Documentação — '+nome);},900);
