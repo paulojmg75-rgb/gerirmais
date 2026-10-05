@@ -657,9 +657,10 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 <div class="page" id="page-feiras">
   <div class="page-header">
     <div><h1>Calendário de Feiras e Eventos</h1><p>Feiras (religiosas/recorrentes) e Eventos (organizados) — as datas aparecem no calendário</p></div>
-    <div style="display:flex;gap:8px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn btn-blue" onclick="openFairModal('feira')"><i class="ti ti-plus"></i> Nova feira</button>
       <button class="btn" onclick="openEventoModal()" style="color:var(--blue);border-color:var(--blue-l);background:var(--blue-l)"><i class="ti ti-plus"></i> Novo evento</button>
+      <button class="btn" onclick="openFairModal('outro')" title="Outro negócio além das feiras (ex.: Alojamento Local) — para separar receitas e despesas" style="color:var(--purple);border-color:var(--purple-l);background:var(--purple-l)"><i class="ti ti-plus"></i> <span id="btnOutroLbl">Outro</span></button>
     </div>
   </div>
   <div class="grid2">
@@ -780,6 +781,26 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
         <div id="cfg-cats-desp"></div>
       </div>
     </div>
+  </div>
+  <div class="card" id="cfgOutroCard" style="margin-top:.75rem">
+    <div class="card-title"><span><i class="ti ti-building-store"></i> <span id="cfgOutroTitulo">Categorias — Outro</span></span></div>
+    <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:.875rem">
+      <div class="form-group" style="margin:0;flex:1;min-width:200px"><label class="form-label">Nome do negócio (usado no botão, nas etiquetas e nos títulos)</label><input type="text" id="cfgOutroNome" placeholder="Ex: Alojamento Local"></div>
+      <button class="btn btn-sm btn-primary" onclick="guardarNomeOutro()"><i class="ti ti-check"></i> Guardar nome</button>
+    </div>
+    <div style="display:flex;gap:.875rem;flex-wrap:wrap">
+      <div style="flex:1;min-width:240px">
+        <div class="form-label" style="margin-bottom:6px">Tipos de receita</div>
+        <div id="cfgOutroRec"></div>
+        <div style="display:flex;gap:6px;margin-top:6px"><input type="text" id="cfgOutroRecNovo" placeholder="Novo tipo de receita" onkeydown="if(event.key==='Enter')addOutroCat('rec')"><button class="btn btn-sm btn-primary" onclick="addOutroCat('rec')"><i class="ti ti-plus"></i></button></div>
+      </div>
+      <div style="flex:1;min-width:240px">
+        <div class="form-label" style="margin-bottom:6px">Categorias de despesa</div>
+        <div id="cfgOutroDesp"></div>
+        <div style="display:flex;gap:6px;margin-top:6px"><input type="text" id="cfgOutroDespNovo" placeholder="Nova categoria de despesa" onkeydown="if(event.key==='Enter')addOutroCat('desp')"><button class="btn btn-sm btn-primary" onclick="addOutroCat('desp')"><i class="ti ti-plus"></i></button></div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:.75rem">Estas categorias só aparecem ao lançar numa feira deste tipo; nas feiras e eventos continuam as de sempre.</div>
   </div>
   <div class="card" style="margin-top:.75rem;padding:.625rem 1rem">
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
@@ -1140,7 +1161,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
   </div>
   <div class="form-group">
     <label class="form-label">Conta / Local <span style="font-weight:400;color:var(--text3);font-size:10px">(a feira/evento é o local)</span></label>
-    <select id="f-conta"></select>
+    <select id="f-conta" onchange="onContaChange()"></select>
   </div>
   <div class="form-row">
     <div class="form-group">
@@ -1214,8 +1235,9 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 <div class="overlay" id="fairModal">
 <div class="modal" style="width:420px">
   <div class="modal-header"><h2 id="fairModalTitle">Nova feira</h2><button class="close-btn" onclick="closeFairModal()"><i class="ti ti-x"></i></button></div>
-  <div class="form-group"><label class="form-label">Tipo</label><select id="ff-tipo"><option value="feira">Feira (religiosa / recorrente)</option><option value="evento">Evento (organizado / diversão)</option></select></div>
-  <div class="form-group"><label class="form-label">Nome / Local da feira</label><input type="text" id="ff-nome" placeholder="Ex: Barcelos — Feira das Cruzes"></div>
+  <div class="form-group"><label class="form-label">Tipo</label><select id="ff-tipo" onchange="toggleOutroCampos()"><option value="feira">Feira (religiosa / recorrente)</option><option value="evento">Evento (organizado / diversão)</option><option value="outro">Outro negócio (nome à tua escolha)</option></select></div>
+  <div class="form-group" id="ff-outro-wrap" style="display:none"><label class="form-label">Nome do negócio (vale para o botão, as etiquetas e os títulos)</label><input type="text" id="ff-tipo-nome" placeholder="Ex: Alojamento Local"></div>
+  <div class="form-group"><label class="form-label" id="ff-nome-label">Nome / Local da feira</label><input type="text" id="ff-nome" placeholder="Ex: Barcelos — Feira das Cruzes"></div>
   <div class="form-row">
     <div class="form-group"><label class="form-label">Data de início</label><input type="date" id="ff-inicio"></div>
     <div class="form-group"><label class="form-label">Data de fim</label><input type="date" id="ff-fim"></div>
@@ -1616,7 +1638,7 @@ function renderDashboard(){
     <div class="metric" style="border-top:2.5px solid var(--teal)"><div class="metric-label">Receita total</div><div class="metric-value">${fmt(rec)}</div><div class="metric-sub" style="color:var(--teal)">↑ ${filtered.filter(t=>t.tipo==='Receita').length} registos</div></div>
     <div class="metric" style="border-top:2.5px solid var(--red)"><div class="metric-label">Despesas totais</div><div class="metric-value">${fmt(desp)}</div><div class="metric-sub" style="color:var(--red)">↓ ${filtered.filter(t=>t.tipo==='Despesa').length} registos</div></div>`
     +cartaoFundo+`
-    <div class="metric" style="border-top:2.5px solid var(--amber)"><div class="metric-label">Feiras / Eventos</div><div class="metric-value">${fairs.filter(f=>(anoSel==='Todos'||String(f.ano)===String(anoSel))&&f.tipo!=='evento').length} / ${fairs.filter(f=>(anoSel==='Todos'||String(f.ano)===String(anoSel))&&f.tipo==='evento').length}</div><div class="metric-sub" style="color:var(--text2)">feiras / eventos · ${[...new Set(filtered.map(t=>t.mes))].length} meses ativos</div></div>`;
+    <div class="metric" style="border-top:2.5px solid var(--amber)"><div class="metric-label">Feiras / Eventos</div><div class="metric-value">${fairs.filter(f=>(anoSel==='Todos'||String(f.ano)===String(anoSel))&&tipoFeira(f)==='feira').length} / ${fairs.filter(f=>(anoSel==='Todos'||String(f.ano)===String(anoSel))&&f.tipo==='evento').length}</div><div class="metric-sub" style="color:var(--text2)">feiras / eventos · ${[...new Set(filtered.map(t=>t.mes))].length} meses ativos</div></div>`;
   const rmEl=document.getElementById('dash-result-mobile');
   if(rmEl)rmEl.innerHTML=cartaoResultado+cartaoFundo;
   // Receita por local — TODAS as feiras/locais (sem limite)
@@ -1781,7 +1803,7 @@ function editTx(id){
   document.getElementById('f-notas').value=t.notas||'';
   document.getElementById('f-meio').value=t.meio||'Dinheiro';
   document.getElementById('f-empregado').innerHTML='<option value="">— Nenhum —</option>'+emps.map(e=>`<option value="${e.nome}"${e.nome===t.empregado?' selected':''}>${e.nome}</option>`).join('');
-  refreshCatSelect(t.cat);refreshContaSelect(t.feiraId?('fid:'+t.feiraId):(t.conta||''));
+  refreshCatSelect(t.cat);refreshContaSelect(t.feiraId?('fid:'+t.feiraId):(t.conta||''));refreshCatSelect(t.cat);
   if(t.viatura)document.getElementById('f-viat').value=t.viatura;
   // Restaurar documento se existir
   const existingDoc=loadDocLocal(id);
@@ -1803,7 +1825,7 @@ function editTx(id){
   document.getElementById('txModal').style.display='flex';
 }
 function closeTxModal(){document.getElementById('txModal').style.display='none';editTxId=null;setSplitOff();splitEnabled=false;resetDocUpload();}
-function getCatList(){return document.getElementById('f-tipo').value==='Receita'?catsRec:catsDesp;}
+function getCatList(){return listaCats(document.getElementById('f-tipo').value);}
 function refreshCatSelect(sel){
   const tipo=document.getElementById('f-tipo').value;
   const splitBox=document.getElementById('split-box');
@@ -1817,7 +1839,7 @@ function refreshCatSelect(sel){
     if(s)s.innerHTML='<option value="Fundo de Caixa">Fundo de Caixa</option>';
     return;
   }
-  const list=tipo==='Receita'?catsRec:catsDesp;
+  const list=listaCats(tipo);
   const label=document.getElementById('cat-label-text');
   const addBtn=document.getElementById('new-cat-link');
   if(label)label.textContent=tipo==='Receita'?'Tipo de receita':'Categoria de despesa';
@@ -1895,7 +1917,7 @@ function refreshContaSelect(sel){
   const valoresDesteAno=new Set(lista.map(f=>'fid:'+f.id));
   if(lista.length){
     html+='<optgroup label="🎪 Feiras / Eventos de '+ano+'">';
-    html+=lista.map(f=>{const val='fid:'+f.id;return `<option value="${val}"${sel===val?' selected':''}>${f.nome}</option>`;}).join('');
+    html+=lista.map(f=>{const val='fid:'+f.id;const sufixo=ehOutro(f)?' · '+outroNome():'';return `<option value="${val}"${sel===val?' selected':''}>${f.nome}${sufixo}</option>`;}).join('');
     html+='</optgroup>';
   }
   // Mantém a seleção de um lançamento antigo, mesmo que a feira ligada a ele não seja deste
@@ -2033,7 +2055,7 @@ function updateSplitPreview(){
 }
 function openCatModal(){
   const tipo=document.getElementById('f-tipo').value;
-  document.getElementById('catModalTitle').textContent=tipo==='Receita'?'Gerir tipos de receita':'Gerir categorias de despesa';
+  document.getElementById('catModalTitle').textContent=(tipo==='Receita'?'Gerir tipos de receita':'Gerir categorias de despesa')+(contaEhOutro()?' — '+outroNome():'');
   document.getElementById('new-cat-name').value='';
   renderCatList();
   document.getElementById('catModal').style.display='flex';
@@ -2042,7 +2064,7 @@ function openCatModal(){
 function closeCatModal(){document.getElementById('catModal').style.display='none';}
 function renderCatList(){
   const tipo=document.getElementById('f-tipo').value;
-  const list=tipo==='Receita'?catsRec:catsDesp;
+  const list=listaCats(tipo);
   const el=document.getElementById('catList');
   el.innerHTML=list.length?list.map((c,i)=>`
     <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg);border-radius:var(--radius);margin-bottom:6px;border:.5px solid var(--border)">
@@ -2052,19 +2074,20 @@ function renderCatList(){
 }
 function deleteCat(i){
   const tipo=document.getElementById('f-tipo').value;
-  const list=tipo==='Receita'?catsRec:catsDesp;
+  const list=listaCats(tipo);
   const nome=list[i];
   if(!confirm(`Eliminar a categoria "${nome}"?`))return;
-  if(tipo==='Receita')catsRec.splice(i,1);
-  else catsDesp.splice(i,1);
+  list.splice(i,1);
+  if(contaEhOutro())guardarOutroCfg();
   renderCatList();
   refreshCatSelect();
 }
 function saveNewCat(){
   const n=document.getElementById('new-cat-name').value.trim();if(!n)return;
   const tipo=document.getElementById('f-tipo').value;
-  if(tipo==='Receita'){if(!catsRec.includes(n))catsRec.push(n);}
-  else{if(!catsDesp.includes(n))catsDesp.push(n);}
+  const _l=listaCats(tipo);
+  if(!_l.includes(n))_l.push(n);
+  if(contaEhOutro())guardarOutroCfg();
   document.getElementById('new-cat-name').value='';
   renderCatList();
   refreshCatSelect(n);
@@ -2104,7 +2127,7 @@ function renderCalendar(){
   for(let d=1;d<=last;d++){
     const ds=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const isTd=today.getFullYear()===calYear&&today.getMonth()===calMonth&&today.getDate()===d;
-    const inF=fairs.filter(f=>ds>=f.inicio&&ds<=f.fim);
+    const inF=fairs.filter(f=>!ehOutro(f)&&ds>=f.inicio&&ds<=f.fim);
     const hasFair=inF.length>0;
     html+=`<div class="cal-d${isTd?' today':''}${hasFair?' fair-day':''}" ${hasFair?`style="background:${hbg(inF[0].cor)};color:${inF[0].cor}"`:''} title="${hasFair?inF[0].nome:''}">${d}${hasFair?`<span class="fdot" style="background:${inF[0].cor}"></span>`:''}</div>`;
   }
@@ -2154,7 +2177,7 @@ function buildYcalMonthsHTML(y){
     for(let d=1;d<=last;d++){
       const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
       const isTd=today.getFullYear()===y&&today.getMonth()===m&&today.getDate()===d;
-      const inF=fairs.filter(f=>ds>=f.inicio&&ds<=f.fim);
+      const inF=fairs.filter(f=>!ehOutro(f)&&ds>=f.inicio&&ds<=f.fim);
       const hasFair=inF.length>0;
       days+=`<div class="ycal-d${isTd?' today':''}" ${hasFair?`style="background:${hbg(inF[0].cor)};color:${inF[0].cor};font-weight:700"`:''} title="${hasFair?inF[0].nome:''}">${d}</div>`;
     }
@@ -2164,7 +2187,8 @@ function buildYcalMonthsHTML(y){
 }
 function getYearFairs(y){
   const yStart=`${y}-01-01`,yEnd=`${y}-12-31`;
-  return fairs.filter(f=>f.inicio<=yEnd&&f.fim>=yStart).sort((a,b)=>a.inicio.localeCompare(b.inicio));
+  // "Outro" (negócio contínuo, ex.: Alojamento Local) fica fora do calendário e da legenda
+  return fairs.filter(f=>!ehOutro(f)&&f.inicio<=yEnd&&f.fim>=yStart).sort((a,b)=>a.inicio.localeCompare(b.inicio));
 }
 function renderAnnualCalendar(){
   const grid=document.getElementById('ycalGrid');
@@ -2239,20 +2263,151 @@ function renderFairList(){
   const fl=fairs.filter(f=>!yr||String(f.ano)===String(yr)).sort((a,b)=>a.inicio.localeCompare(b.inicio));
   document.getElementById('fairList').innerHTML=fl.length?fl.map(f=>{
     const dias=Math.round((new Date(f.fim)-new Date(f.inicio))/864e5)+1;
+    const tf=tipoFeira(f);
+    const badge=tf==='evento'
+      ?`<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;background:var(--blue-l);color:var(--blue)">EVENTO</span>`
+      :tf==='outro'
+      ?`<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;background:var(--purple-l);color:var(--purple)">${escHtml(outroNome().toUpperCase())}</span>`
+      :`<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;background:var(--amber-l);color:var(--amber)">FEIRA</span>`;
     return`<div class="fair-item">
       <div class="fair-dot" style="background:${f.cor}"></div>
-      <div class="fair-info"><div class="fair-name">${f.nome} <span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;background:${f.tipo==='evento'?'var(--blue-l)':'var(--amber-l)'};color:${f.tipo==='evento'?'var(--blue)':'var(--amber)'}">${f.tipo==='evento'?'EVENTO':'FEIRA'}</span></div><div class="fair-dates">${f.inicio} → ${f.fim}</div></div>
+      <div class="fair-info"><div class="fair-name">${f.nome} ${badge}</div><div class="fair-dates">${f.inicio} → ${f.fim}</div></div>
       <span class="fair-days">${dias}d</span>
-      <button class="btn btn-sm btn-icon" onclick="abrirDocumentos(${f.id})" title="Gerar o Termo de Responsabilidade desta feira" style="color:var(--amber);background:var(--amber-l);border-color:var(--amber-l)"><i class="ti ti-file-text" style="font-size:12px"></i></button>
+      ${tf==='outro'?'':`<button class="btn btn-sm btn-icon" onclick="abrirDocumentos(${f.id})" title="Gerar o Termo de Responsabilidade desta feira" style="color:var(--amber);background:var(--amber-l);border-color:var(--amber-l)"><i class="ti ti-file-text" style="font-size:12px"></i></button>`}
       <button class="btn btn-sm btn-icon" onclick="duplicateFair(${f.id})" title="Repetir esta feira/evento noutro ano (o ano vem sugerido, mas podes escolher qualquer um)" style="color:var(--teal);background:var(--teal-l);border-color:var(--teal-l)"><i class="ti ti-copy" style="font-size:12px"></i></button>
       <button class="btn btn-sm btn-icon btn-edit" onclick="editFair(${f.id})" title="Editar feira"><i class="ti ti-pencil" style="font-size:12px"></i></button>
       <button class="btn btn-sm btn-icon btn-del" onclick="deleteFair(${f.id})" title="Remover feira"><i class="ti ti-trash" style="font-size:12px"></i></button>
     </div>`;}).join(''):`<div class="empty"><i class="ti ti-calendar-off"></i>Sem feiras nem eventos${yr?' para '+yr:''}</div>`;
 }
-function openFairModal(tipo){editFairId=null;const tp=tipo||'feira';document.getElementById('ff-tipo').value=tp;document.getElementById('fairModalTitle').textContent=tp==='evento'?'Novo evento':'Nova feira';['ff-nome','ff-inicio','ff-fim'].forEach(id=>document.getElementById(id).value='');document.getElementById('ff-cor').value=nextFairColor();document.getElementById('ff-ano').value=String(new Date().getFullYear());document.getElementById('fairModal').style.display='flex';}
+/* ---- Tipo "Outro" (ex.: Alojamento Local) ----
+   Para não mexer no esquema da cloud, o nome editável vive DENTRO da coluna "tipo" já
+   existente, no formato "outro:Nome" (ex.: "outro:Alojamento Local"). Estas funções
+   leem isso em segurança; 'feira' e 'evento' continuam tal como sempre foram. */
+function tipoFeira(f){const t=String((f&&f.tipo)||'feira');return t.indexOf('outro')===0?'outro':t;}
+function tipoOutroNome(f){const t=String((f&&f.tipo)||'');if(t.indexOf('outro')!==0)return'';const i=t.indexOf(':');return i>=0?t.slice(i+1).trim():'';}
+function ehOutro(f){return tipoFeira(f)==='outro';}
+/* Negócio "Outro": UM nome para o botão/etiquetas/títulos + categorias PRÓPRIAS (receita e despesa).
+   Guarda-se localmente (por conta) e na cloud em user_metadata do próprio login (sem tabelas novas),
+   para aparecer igual no telemóvel e no PC — vale a alteração mais recente. */
+let outroCfg={nome:'',catsRec:[],catsDesp:[],ts:0};
+let _outroPuxadoEm=0;
+function lerOutroCfg(){
+  try{const c=JSON.parse(localStorage.getItem(lsKey('rv_outro_cfg'))||'null');
+    if(c&&typeof c==='object')outroCfg={nome:String(c.nome||''),catsRec:Array.isArray(c.catsRec)?c.catsRec:[],catsDesp:Array.isArray(c.catsDesp)?c.catsDesp:[],ts:+c.ts||0};}catch(e){}
+}
+function salvarOutroLocal(){try{localStorage.setItem(lsKey('rv_outro_cfg'),JSON.stringify(outroCfg));}catch(e){}}
+function outroNome(){
+  if(outroCfg.nome)return outroCfg.nome;
+  const f=fairs.find(ehOutro);
+  return(f&&tipoOutroNome(f))||'Outro';
+}
+async function enviarOutroCfgCloud(){
+  try{await supaClient.auth.updateUser({data:{gn_outro:outroCfg}});}catch(e){console.error('Outro: envio à cloud falhou',e);}
+}
+function guardarOutroCfg(){
+  outroCfg.ts=Date.now();salvarOutroLocal();enviarOutroCfgCloud();aplicarNomeOutro();
+}
+async function puxarOutroCfg(forcar){
+  if(!forcar&&Date.now()-_outroPuxadoEm<120000)return;
+  _outroPuxadoEm=Date.now();
+  try{
+    const{data}=await supaClient.auth.getUser();
+    const c=data&&data.user&&data.user.user_metadata&&data.user.user_metadata.gn_outro;
+    if(c&&(+c.ts||0)>outroCfg.ts){
+      outroCfg={nome:String(c.nome||''),catsRec:Array.isArray(c.catsRec)?c.catsRec:[],catsDesp:Array.isArray(c.catsDesp)?c.catsDesp:[],ts:+c.ts||0};
+      salvarOutroLocal();aplicarNomeOutro();
+    }else if(outroCfg.ts>0&&(!c||outroCfg.ts>(+c.ts||0))){enviarOutroCfgCloud();}
+  }catch(e){}
+}
+/* aplica o nome do negócio ao botão, ao seletor de tipo, aos títulos e à lista */
+function aplicarNomeOutro(){
+  const n=outroNome();
+  const b=document.getElementById('btnOutroLbl');if(b)b.textContent=n;
+  const o=document.querySelector('#ff-tipo option[value="outro"]');if(o)o.textContent=n+' (outro negócio)';
+  const t=document.getElementById('cfgOutroTitulo');if(t)t.textContent='Categorias — '+n;
+  try{toggleOutroCampos();}catch(e){}
+  try{renderFairList();}catch(e){}
+  try{if(document.getElementById('cfgOutroRec'))renderOutroCfg();}catch(e){}
+}
+/* a conta/local escolhido no lançamento é uma feira do tipo "Outro"? */
+function contaEhOutro(){
+  const el=document.getElementById('f-conta');const v=el?el.value:'';
+  if(!v||v.indexOf('fid:')!==0)return false;
+  const f=fairs.find(x=>x.id===parseInt(v.slice(4)));
+  return !!f&&ehOutro(f);
+}
+function listaCats(tipo){
+  const outro=contaEhOutro();
+  return tipo==='Receita'?(outro?outroCfg.catsRec:catsRec):(outro?outroCfg.catsDesp:catsDesp);
+}
+function onContaChange(){
+  const tipo=document.getElementById('f-tipo').value;
+  if(tipo==='Fundo de Caixa')return;
+  const cur=document.getElementById('f-cat').value;
+  refreshCatSelect(listaCats(tipo).includes(cur)?cur:undefined);
+}
+function txEhOutro(t){
+  const f=t.feiraId?fairs.find(x=>x.id===t.feiraId):fairs.find(x=>x.nome&&x.nome===t.conta&&ehOutro(x));
+  return !!f&&ehOutro(f);
+}
+
+/* ---- Configurações: nome e categorias do negócio "Outro" ---- */
+function renderOutroCfg(){
+  const n=document.getElementById('cfgOutroNome');if(n&&document.activeElement!==n)n.value=outroCfg.nome||(outroNome()==='Outro'?'':outroNome());
+  const mk=(lista,g)=>lista.length?lista.map((c,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg);border-radius:var(--radius);margin-bottom:6px;border:.5px solid var(--border)">
+      <span style="font-size:12px;color:var(--text)">${escHtml(c)}</span>
+      <div style="display:flex;gap:4px"><button class="btn btn-sm btn-icon btn-edit" onclick="editOutroCat('${g}',${i})" title="Renomear"><i class="ti ti-pencil" style="font-size:11px"></i></button>
+      <button class="btn btn-sm btn-icon btn-del" onclick="delOutroCat('${g}',${i})" title="Eliminar"><i class="ti ti-trash" style="font-size:11px"></i></button></div></div>`).join('')
+    :`<div class="empty" style="padding:.75rem">Ainda sem categorias — acrescenta a primeira abaixo</div>`;
+  const r=document.getElementById('cfgOutroRec'),d=document.getElementById('cfgOutroDesp');
+  if(r)r.innerHTML=mk(outroCfg.catsRec,'rec');if(d)d.innerHTML=mk(outroCfg.catsDesp,'desp');
+  const t=document.getElementById('cfgOutroTitulo');if(t)t.textContent='Categorias — '+outroNome();
+}
+function guardarNomeOutro(){
+  const v=(document.getElementById('cfgOutroNome').value||'').trim();
+  if(!v){alert('Escreve o nome do negócio (ex.: Alojamento Local).');return;}
+  outroCfg.nome=v;guardarOutroCfg();showSyncStatus('Nome guardado: '+v,true);
+}
+function addOutroCat(g){
+  const el=document.getElementById(g==='rec'?'cfgOutroRecNovo':'cfgOutroDespNovo');const n=(el.value||'').trim();if(!n)return;
+  const l=g==='rec'?outroCfg.catsRec:outroCfg.catsDesp;
+  if(l.includes(n)){alert('Essa categoria já existe.');return;}
+  l.push(n);el.value='';guardarOutroCfg();
+}
+function editOutroCat(g,i){
+  const l=g==='rec'?outroCfg.catsRec:outroCfg.catsDesp,antigo=l[i];
+  const novo=(prompt('Novo nome da categoria:',antigo)||'').trim();
+  if(!novo||novo===antigo)return;
+  if(l.includes(novo)){alert('Já existe uma categoria com esse nome.');return;}
+  l[i]=novo;
+  const tipoTx=g==='rec'?'Receita':'Despesa';
+  const afetados=txList.filter(t=>t.tipo===tipoTx&&t.cat===antigo&&txEhOutro(t));
+  afetados.forEach(t=>{t.cat=novo;});
+  const ids=[...new Set(afetados.map(t=>t.feiraId).filter(Boolean))];
+  if(ids.length&&afetados.length){
+    saveToLocal();
+    supaFetch('lancamentos','PATCH',{cat:novo},'cat=eq.'+encodeURIComponent(antigo)+'&tipo=eq.'+encodeURIComponent(tipoTx)+'&feiraId=in.('+ids.join(',')+')').then(r=>{
+      if(r)showSyncStatus(afetados.length+' lançamento(s) atualizados para o novo nome',true);
+    });
+  }
+  guardarOutroCfg();
+}
+function delOutroCat(g,i){
+  const l=g==='rec'?outroCfg.catsRec:outroCfg.catsDesp,nome=l[i],tipoTx=g==='rec'?'Receita':'Despesa';
+  const emUso=txList.filter(t=>t.tipo===tipoTx&&t.cat===nome&&txEhOutro(t)).length;
+  if(!confirm(emUso?`Eliminar "${nome}"?\n\nEstá usada em ${emUso} lançamento(s) deste negócio — esses mantêm-na e ela volta a aparecer na lista enquanto existirem. Para a tirar de vez, renomeia-a em vez de a apagar.`:`Eliminar "${nome}"?`))return;
+  l.splice(i,1);guardarOutroCfg();
+}
+function toggleOutroCampos(){
+  const outro=document.getElementById('ff-tipo').value==='outro';
+  document.getElementById('ff-outro-wrap').style.display=outro?'block':'none';
+  document.getElementById('ff-nome-label').textContent=outro?'Nome do local / alojamento ('+outroNome()+')':'Nome / Local da feira';
+  document.getElementById('ff-nome').placeholder=outro?'Ex: Casa do Centro — Alojamento Local':'Ex: Barcelos — Feira das Cruzes';
+}
+function openFairModal(tipo){editFairId=null;const tp=tipo||'feira';document.getElementById('ff-tipo').value=tp;document.getElementById('fairModalTitle').textContent=tp==='evento'?'Novo evento':tp==='outro'?'Novo — '+outroNome():'Nova feira';['ff-nome','ff-inicio','ff-fim'].forEach(id=>document.getElementById(id).value='');document.getElementById('ff-tipo-nome').value=outroCfg.nome||(outroNome()==='Outro'?'':outroNome());document.getElementById('ff-cor').value=nextFairColor();document.getElementById('ff-ano').value=String(new Date().getFullYear());toggleOutroCampos();document.getElementById('fairModal').style.display='flex';}
 function openEventoModal(){openFairModal('evento');}
 function closeFairModal(){document.getElementById('fairModal').style.display='none';}
-function editFair(id){const f=fairs.find(x=>x.id===id);if(!f)return;editFairId=id;document.getElementById('ff-tipo').value=f.tipo||'feira';document.getElementById('fairModalTitle').textContent=(f.tipo==='evento'?'Editar evento':'Editar feira');document.getElementById('ff-nome').value=f.nome;document.getElementById('ff-inicio').value=f.inicio;document.getElementById('ff-fim').value=f.fim;document.getElementById('ff-ano').value=f.ano;document.getElementById('ff-cor').value=f.cor;document.getElementById('fairModal').style.display='flex';}
+function editFair(id){const f=fairs.find(x=>x.id===id);if(!f)return;editFairId=id;document.getElementById('ff-tipo').value=tipoFeira(f);document.getElementById('ff-tipo-nome').value=outroCfg.nome||tipoOutroNome(f);document.getElementById('fairModalTitle').textContent=(tipoFeira(f)==='evento'?'Editar evento':ehOutro(f)?'Editar — '+outroNome():'Editar feira');document.getElementById('ff-nome').value=f.nome;document.getElementById('ff-inicio').value=f.inicio;document.getElementById('ff-fim').value=f.fim;document.getElementById('ff-ano').value=f.ano;document.getElementById('ff-cor').value=f.cor;toggleOutroCampos();document.getElementById('fairModal').style.display='flex';}
 /* Troca só o ano numa data YYYY-MM-DD (mantém mês e dia) */
 function bumpYear(dateStr, novoAno){ if(!dateStr||dateStr.length<10)return ''; return novoAno+dateStr.slice(4); }
 /* Repetir uma feira/evento no ano seguinte: mesmo nome/tipo/cor, ano+1, datas sugeridas (ajustáveis).
@@ -2261,13 +2416,15 @@ function duplicateFair(id){
   const f=fairs.find(x=>x.id===id);if(!f)return;
   editFairId=null;
   const anoSeg=String((parseInt(f.ano)|| (new Date().getFullYear()))+1);
-  document.getElementById('ff-tipo').value=f.tipo||'feira';
-  document.getElementById('fairModalTitle').textContent=(f.tipo==='evento'?'Repetir evento':'Repetir feira')+' — '+anoSeg;
+  document.getElementById('ff-tipo').value=tipoFeira(f);
+  document.getElementById('ff-tipo-nome').value=outroCfg.nome||tipoOutroNome(f);
+  document.getElementById('fairModalTitle').textContent=(tipoFeira(f)==='evento'?'Repetir evento':ehOutro(f)?'Repetir — '+outroNome():'Repetir feira')+' — '+anoSeg;
   document.getElementById('ff-nome').value=f.nome;
   document.getElementById('ff-cor').value=f.cor;
   document.getElementById('ff-ano').value=anoSeg;
   document.getElementById('ff-inicio').value=bumpYear(f.inicio,anoSeg);
   document.getElementById('ff-fim').value=bumpYear(f.fim,anoSeg);
+  toggleOutroCampos();
   document.getElementById('fairModal').style.display='flex';
 }
 function deleteFair(id){if(!confirm('Remover esta feira do calendário?'))return;fairs=fairs.filter(f=>f.id!==id);saveToLocal();supaDelete('feiras',id).then(r=>{
@@ -2275,8 +2432,19 @@ function deleteFair(id){if(!confirm('Remover esta feira do calendário?'))return
   else showSyncStatus('Removida localmente, mas falhou na cloud — pode reaparecer ao sincronizar',false);
 });renderCalendar();renderFairList();renderDashboard();}
 function saveFair(){
-  const nome=document.getElementById('ff-nome').value.trim(),inicio=document.getElementById('ff-inicio').value,fim=document.getElementById('ff-fim').value,ano=document.getElementById('ff-ano').value,cor=document.getElementById('ff-cor').value;
-  const tipo=document.getElementById('ff-tipo').value||'feira';
+  const nome=document.getElementById('ff-nome').value.trim(),ano=document.getElementById('ff-ano').value,cor=document.getElementById('ff-cor').value;
+  let inicio=document.getElementById('ff-inicio').value,fim=document.getElementById('ff-fim').value;
+  let tipo=document.getElementById('ff-tipo').value||'feira';
+  if(tipo==='outro'){
+    // o nome editável do tipo vai DENTRO da coluna "tipo" (formato "outro:Nome") — a cloud não muda
+    const tn=document.getElementById('ff-tipo-nome').value.trim()||outroNome();
+    if(tn&&tn!==outroCfg.nome){outroCfg.nome=tn;guardarOutroCfg();}   // um só nome para tudo
+    tipo='outro:'+tn;
+    // num negócio contínuo (ex.: Alojamento Local) as datas são opcionais: fica o ano inteiro
+    if(!inicio)inicio=ano+'-01-01';
+    if(!fim)fim=ano+'-12-31';
+    document.getElementById('ff-inicio').value=inicio;document.getElementById('ff-fim').value=fim;
+  }
   if(!nome||!inicio||!fim){alert('Preenche o nome e as datas.');return;}
   if(editFairId){
     const i=fairs.findIndex(x=>x.id===editFairId);
@@ -3184,9 +3352,18 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.75';
-const APP_UPDATE_DATE='2026-08-31'; // formato AAAA-MM-DD
+const APP_VERSION='3.77';
+const APP_UPDATE_DATE='2026-10-05'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.77',data:'2026-10-05',notas:[
+    'O botão "Outro" passa a ter o nome do teu negócio (ex.: "Alojamento Local"): defines o nome uma vez — ao criar ou em Configurações — e ele aparece no botão, nas etiquetas, nos títulos e na lista de lançamentos, no telemóvel e no PC (guarda-se na tua conta, sem mexer em tabelas).',
+    'Categorias próprias do Outro: em Configurações há um cartão novo com os tipos de receita e as categorias de despesa só deste negócio (criar, renomear e apagar). Ao lançar numa feira deste tipo só aparecem estas; nas feiras e eventos continuam as de sempre, intocadas. Renomear uma categoria atualiza também os lançamentos antigos desse negócio.',
+  ]},
+  {v:'3.76',data:'2026-10-04',notas:[
+    'Novo tipo "Outro" nas Feiras e Eventos, com nome à tua escolha (ex.: Alojamento Local) — para quem, além das feiras, tem outro negócio e quer separar as receitas e despesas dele. Cria-se com o novo botão "Outro" (ou escolhendo o tipo "Outro negócio" ao criar), aparece na lista com a sua etiqueta própria e nos lançamentos escolhe-se como qualquer feira, ficando tudo filtrado e comparado por ele.',
+    'Num negócio contínuo as datas são opcionais: se ficarem vazias, vale o ano inteiro. Estes registos não pintam o calendário (senão o ano ficava todo colorido) e não entram na página do Termo de Responsabilidade — que é coisa de feiras.',
+    'Tudo isto sem mexer na base de dados nem no que já existe: feiras, eventos, lançamentos, sincronização e Excel continuam exatamente como estavam.',
+  ]},
   {v:'3.75',data:'2026-08-31',notas:[
     'O Gmail abria por vezes na conta "por defeito" do browser em vez do teu email profissional. Agora o caminho passa primeiro pelo seletor de contas da Google, já apontado à conta certa: se ela tiver sessão no browser entra direto nela; se não tiver, pede para entrares nessa conta (e não noutra). O email sai sempre do teu email profissional.',
   ]},
@@ -3673,11 +3850,18 @@ function initAutoPing(){
    Não impede apagar categorias: apenas repõe as que ainda estão em uso por lançamentos. */
 function garantirCategoriasDosLancamentos(){
   let mudou=false;
+  let mudouOutro=false;
   txList.forEach(t=>{
     if(!t.cat)return;
+    if(txEhOutro(t)){   // lançamentos do Outro mantêm as categorias NA lista do Outro (não poluem as das feiras)
+      if(t.tipo==='Receita'&&!outroCfg.catsRec.includes(t.cat)){outroCfg.catsRec.push(t.cat);mudouOutro=true;}
+      else if(t.tipo==='Despesa'&&!outroCfg.catsDesp.includes(t.cat)){outroCfg.catsDesp.push(t.cat);mudouOutro=true;}
+      return;
+    }
     if(t.tipo==='Receita'&&!catsRec.includes(t.cat)){catsRec.push(t.cat);mudou=true;}
     else if(t.tipo==='Despesa'&&!catsDesp.includes(t.cat)){catsDesp.push(t.cat);mudou=true;}
   });
+  if(mudouOutro)salvarOutroLocal();
   if(mudou)saveToLocal();
   return mudou;
 }
@@ -3776,6 +3960,7 @@ async function loadAllFromCloud(){
 
     // Repõe nas listas qualquer categoria em uso pelos lançamentos que ainda lá não esteja
     // (ex.: primeira sincronização num aparelho novo, onde as listas personalizadas não existiam).
+    lerOutroCfg();aplicarNomeOutro();puxarOutroCfg();
     garantirCategoriasDosLancamentos();
 
     // O backup do Excel na Drive só se refazia quando havia uma ação local (criar/editar/
@@ -3923,6 +4108,7 @@ function renderConfiguracoes(){
   document.getElementById('cfg-cats-desp').innerHTML=catsDesp.length?
     catsDesp.map((c,i)=>cfgItem(c,`editCfgCat('despesa',${i})`,`deleteCfgCat('despesa',${i})`,i,'despesa',catsDesp.length)).join('')
     :`<div class="empty" style="padding:.875rem">Sem categorias</div>`;
+  try{renderOutroCfg();}catch(e){console.error(e);}
 
   // CONTAS (removido da UI — lista de locais deixou de existir; feira/evento é o local)
   const cfgContasEl=document.getElementById('cfg-contas');
@@ -4469,7 +4655,7 @@ function gdriveFindAssinaturaEAplicar(avisar){
 function abrirDocumentos(fid){docFeiraSel=fid||docFeiraSel;navTo('documentos');}
 function initDocumentos(){
   const sel=document.getElementById('doc-feira');
-  const lista=fairs.filter(f=>f.nome).sort((a,b)=>String(b.ano).localeCompare(String(a.ano))||a.nome.localeCompare(b.nome));
+  const lista=fairs.filter(f=>f.nome&&!ehOutro(f)).sort((a,b)=>String(b.ano).localeCompare(String(a.ano))||a.nome.localeCompare(b.nome));
   sel.innerHTML='<option value="">— Escolhe a feira/evento —</option>'+lista.map(f=>`<option value="${f.id}"${docFeiraSel===f.id?' selected':''}>${f.nome} (${f.ano})</option>`).join('');
   const d=getDeclarante();
   document.getElementById('dec-nome').value=d.nome||'';
@@ -4497,7 +4683,7 @@ function saveDocContactosFeira(m){try{localStorage.setItem(lsKey('rv_doc_contact
 function renderContactos(){
   const area=document.getElementById('doc-contactos-lista');if(!area)return;
   const vistos=new Set();
-  const nomes=fairs.filter(f=>f.nome)
+  const nomes=fairs.filter(f=>f.nome&&!ehOutro(f))
     .sort((a,b)=>String(b.ano).localeCompare(String(a.ano))||a.nome.localeCompare(b.nome))
     .filter(f=>{const k=f.nome.trim();if(vistos.has(k))return false;vistos.add(k);return true;})
     .map(f=>f.nome.trim())
