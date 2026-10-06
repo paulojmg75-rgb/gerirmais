@@ -124,6 +124,15 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 .sw button.on{box-shadow:0 0 0 2px var(--ink)}
 .note{font-size:12px;color:var(--ink2);background:#F7F2E9;border-radius:11px;padding:9px 11px;margin-top:10px}
 .toast{position:fixed;left:50%;bottom:78px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-size:13px;z-index:99;max-width:90vw;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+.aj{border:1px solid var(--line);border-radius:13px;margin-top:8px;overflow:hidden}
+.aj summary{list-style:none;cursor:pointer;padding:11px 13px;font-weight:700;display:flex;gap:9px;align-items:center;background:#FFFDF9}
+.aj summary::-webkit-details-marker{display:none}
+.aj summary::after{content:"＋";margin-left:auto;color:var(--ink3);font-weight:700}
+.aj[open] summary::after{content:"－"}
+.aj ol,.aj ul{margin:0;padding:4px 14px 12px 34px;font-size:13.5px;line-height:1.6;color:var(--ink)}
+.aj li{margin-top:4px}
+.aj .n{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;display:grid;place-items:center;flex:0 0 24px}
+.dica{font-size:12px;color:var(--ink2);background:#F7F2E9;border-radius:11px;padding:8px 11px;margin-top:10px;line-height:1.5}
 @media(min-width:760px){
   :root{--lab:150px}
   .ov{align-items:center}.sheet{border-radius:22px}
@@ -175,8 +184,9 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 <!-- APP -->
 <div id="app" class="hide">
   <header>
-    <div class="t"><div class="logo" style="width:32px;height:32px;font-size:13px;border-radius:9px">AL</div> Gestão AL <span class="badge hide" id="demoBadge">EXEMPLO</span><small style="font-size:10px;color:var(--ink3);font-weight:600">v2.0</small></div>
+    <div class="t"><div class="logo" style="width:32px;height:32px;font-size:13px;border-radius:9px">AL</div> Gestão AL <span class="badge hide" id="demoBadge">EXEMPLO</span><small style="font-size:10px;color:var(--ink3);font-weight:600">v2.1</small></div>
     <a class="lnk hide" id="lnkGerirmais" href="index.html" title="Ir para a Gestão de Negócio (mesma conta)">Gerirmais ↗</a>
+    <button class="ibtn" onclick="abrirAjuda()" title="Ajuda passo a passo" style="font-weight:800;color:var(--accent-d)">?</button>
     <button class="ibtn" onclick="sair()" title="Sair">⏻</button>
   </header>
   <main id="main"></main>
@@ -239,6 +249,67 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
   </div>
 </div></div>
 
+<!-- JANELA: AJUDA -->
+<div id="mAjuda" class="ov hide" onclick="if(event.target===this)fechar('mAjuda')"><div class="sheet">
+  <h2>Ajuda — passo a passo</h2>
+  <p style="font-size:13px;color:var(--ink2);margin-top:2px">Toca num tema para ver os passos.</p>
+
+  <details class="aj" open><summary><span class="n">1</span>Começar: criar o primeiro alojamento</summary><ol>
+    <li>Carrega em <b>+ Alojamento</b> (por baixo do calendário).</li>
+    <li>Escreve o <b>nome</b> (ex.: Casa do Centro) e, se quiseres, a lotação.</li>
+    <li>Escolhe uma <b>cor</b> e carrega em <b>Guardar</b>.</li>
+    <li>O alojamento aparece como uma linha no calendário. Repete para os outros.</li>
+  </ol></details>
+
+  <details class="aj"><summary><span class="n">2</span>Editar ou remover um alojamento</summary><ol>
+    <li>No calendário, <b>toca no nome do alojamento</b> (coluna da esquerda).</li>
+    <li>Muda o que quiseres e carrega em <b>Guardar</b>.</li>
+    <li>Para apagar: carrega em <b>Remover</b> e escreve o nome do alojamento para confirmar. <b>Atenção:</b> apaga também as reservas desse alojamento e não se pode desfazer.</li>
+  </ol></details>
+
+  <details class="aj"><summary><span class="n">3</span>Nova reserva</summary><ol>
+    <li>Carrega em <b>+ Nova reserva</b> — ou toca diretamente no <b>dia</b> do alojamento no calendário (já vem preenchido).</li>
+    <li>Escolhe o alojamento, escreve o <b>nome do hóspede</b> e as datas de <b>check-in</b> e <b>check-out</b>.</li>
+    <li>Escolhe a <b>origem</b> (Airbnb, Booking, Direta, Outra) e o <b>estado</b>.</li>
+    <li>Opcional: nº de hóspedes, valor e notas. Carrega em <b>Guardar</b>.</li>
+    <li>A <b>limpeza</b> do dia de saída fica criada sozinha (vais vê-la no separador Tarefas, quando estiver pronto).</li>
+  </ol></details>
+
+  <details class="aj"><summary><span class="n">4</span>Editar ou apagar uma reserva</summary><ol>
+    <li><b>Toca na barra colorida</b> da reserva no calendário (ou na lista "Próximos 14 dias").</li>
+    <li>Muda o que quiseres e carrega em <b>Guardar</b>.</li>
+    <li>Para apagar: carrega em <b>Apagar</b> e confirma.</li>
+    <li>Dica: se a reserva foi só cancelada, muda o <b>Estado</b> para <b>Cancelada</b> em vez de apagar — fica o registo.</li>
+  </ol></details>
+
+  <details class="aj"><summary><span class="n">5</span>Bloquear dias (sem hóspede)</summary><ol>
+    <li>Cria uma reserva normal e escolhe o estado <b>Bloqueio (sem hóspede)</b>.</li>
+    <li>Aparece às riscas cinzentas. Serve para obras, uso próprio, etc.</li>
+  </ol></details>
+
+  <details class="aj"><summary><span class="n">6</span>Trazer reservas do Airbnb / Booking</summary><ol>
+    <li>No Airbnb ou Booking, procura <b>Exportar calendário</b> / <b>iCal</b> e descarrega o ficheiro <b>.ics</b>.</li>
+    <li>Aqui, toca no nome do alojamento → em <b>Ficheiro .ics</b> escolhe o ficheiro → escolhe a <b>origem</b> → <b>Guardar</b>.</li>
+    <li>As reservas entram no calendário. Se importares outra vez, não duplica — atualiza.</li>
+    <li>Podes também guardar os <b>links iCal</b> no alojamento; a atualização automática chega numa próxima versão.</li>
+  </ol></details>
+
+  <details class="aj"><summary><span class="n">7</span>Ler o calendário</summary><ul>
+    <li><b>Cores</b>: Airbnb (laranja), Booking (azul), Direta (verde), Outra (roxo), Bloqueio (riscas).</li>
+    <li><b>Tracejado</b> = reserva pendente. <b>Contorno vermelho ⚠</b> = duas reservas sobrepostas no mesmo alojamento.</li>
+    <li>O dia de saída de um hóspede pode ser o dia de entrada do seguinte — isso <b>não</b> é sobreposição.</li>
+    <li>Usa <b>‹ ›</b> para mudar de mês e <b>Hoje</b> para voltar ao mês atual.</li>
+  </ul></details>
+
+  <details class="aj"><summary><span class="n">8</span>Passar para a Gerirmais e sair</summary><ul>
+    <li>O botão <b>Gerirmais ↗</b> (em cima) leva-te à Gestão de Negócio, sem novo login — só aparece se tiveres acesso.</li>
+    <li>O botão <b>⏻</b> termina a sessão nas duas aplicações neste aparelho.</li>
+    <li>A conta e a password são as mesmas da Gerirmais. Esqueceste-te? Usa "Esqueci-me da password" na Gerirmais.</li>
+  </ul></details>
+
+  <div class="acts"><button class="btn pri" onclick="fechar('mAjuda')">Fechar</button></div>
+</div></div>
+
 <div id="toast" class="toast hide"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -250,7 +321,7 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
    ==================================================================== */
 const SUPA_URL='https://xkfshzlcwiuvztfdwvjm.supabase.co';   // MESMO projeto da gerirmais (Gestao de Negocio) → mesma conta, sem novo login
 const SUPA_KEY='sb_publishable_SGjww6C455tzA6wpIevT-w_t2X9lqMJ';   // chave publishable da gerirmais (pública; a segurança está no RLS)
-const VERSAO='2.0';
+const VERSAO='2.1';
 const GERIRMAIS_URL='index.html';
 
 /* ---------- utilitários ---------- */
@@ -270,6 +341,7 @@ const fd=s=>{const d=new Date(pd(s));return d.getUTCDate()+' '+MS[d.getUTCMonth(
 const uuid=()=>(crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c=='x'?r:(r&3|8)).toString(16);}));
 function toast(t,ms){const e=$('toast');e.textContent=t;e.classList.remove('hide');clearTimeout(toast._t);toast._t=setTimeout(()=>e.classList.add('hide'),ms||2800);}
 function abrir(id){$(id).classList.remove('hide');}
+function abrirAjuda(){abrir('mAjuda');}
 function fechar(id){$(id).classList.add('hide');}
 
 /* ---------- estado ---------- */
@@ -410,7 +482,7 @@ function render(){
     return;
   }
   if(!S.aloj.length){
-    m.innerHTML=`<div class="empty"><div class="big">🏠</div><b>Ainda não tens alojamentos</b><p style="margin:6px 0 14px">Adiciona o primeiro para começares a registar reservas.</p><button class="btn pri" onclick="abrirAloj()">+ Adicionar alojamento</button></div>`;
+    m.innerHTML=`<div class="empty"><div class="big">🏠</div><b>Ainda não tens alojamentos</b><p style="margin:6px 0 14px">Adiciona o primeiro para começares a registar reservas.</p><button class="btn pri" onclick="abrirAloj()">+ Adicionar alojamento</button><p style="margin-top:12px"><a href="#" onclick="abrirAjuda();return false" style="color:var(--accent-d);font-weight:700">❓ Como funciona? Ver ajuda passo a passo</a></p></div>`;
     return;
   }
   const {y,m:mes}=S.view,n=new Date(Date.UTC(y,mes+1,0)).getUTCDate(),ini=iso(Date.UTC(y,mes,1)),fim=addD(ini,n),T=hoje();
@@ -462,7 +534,8 @@ function render(){
   });
   h+=`</div></div>
     <div class="legend"><span><i style="background:var(--airbnb)"></i>Airbnb</span><span><i style="background:var(--booking)"></i>Booking</span><span><i style="background:var(--direta)"></i>Direta</span><span><i style="background:var(--outra)"></i>Outra</span><span><i style="background:#B8BFC7"></i>Bloqueio</span></div>
-    <div style="display:flex;gap:8px;margin-top:10px"><button class="btn pri" style="flex:1" onclick="abrirRes()">+ Nova reserva</button><button class="btn" onclick="abrirAloj()">+ Alojamento</button></div>`;
+    <div style="display:flex;gap:8px;margin-top:10px"><button class="btn pri" style="flex:1" onclick="abrirRes()">+ Nova reserva</button><button class="btn" onclick="abrirAloj()">+ Alojamento</button></div>
+    <div class="dica">💡 <b>Toca numa reserva</b> para a editar ou apagar · <b>toca no nome do alojamento</b> para o editar ou remover · <a href="#" onclick="abrirAjuda();return false" style="color:var(--accent-d);font-weight:700">Ver ajuda completa</a></div>`;
 
   /* próximos movimentos */
   const evs=[];S.res.filter(ativa).forEach(r=>{
