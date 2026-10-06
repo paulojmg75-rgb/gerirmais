@@ -122,6 +122,7 @@ body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;backgrou
 .metric-label{font-size:10px;color:var(--text2);margin-bottom:4px;font-weight:500}
 .metric-value{font-size:19px;font-weight:700;color:var(--text);line-height:1.2;letter-spacing:-.01em}
 .metric-sub{font-size:10px;margin-top:3px}
+.metric-outro .metric-label,.metric-outro .metric-sub{overflow-wrap:anywhere}
 
 /* CARDS */
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:.875rem;margin-bottom:.875rem}
@@ -334,6 +335,9 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
   #dash-metrics>.metric>.metric-value{font-size:clamp(12px,3.6vw,16px)}
   #dash-metrics>.metric>.metric-sub{font-size:8px;line-height:1.15}
   #dash-metrics>.mob-top{display:none}
+  #dash-metrics.metrics-outro{grid-template-columns:repeat(4,minmax(0,1fr))}
+  #dash-metrics.metrics-outro>.metric>.metric-value{font-size:clamp(10px,3vw,14px)}
+  #dash-metrics.metrics-outro>.metric>.metric-sub{font-size:7px}
   .metrics-3{grid-template-columns:repeat(2,1fr)}
   .grid2{grid-template-columns:1fr}
   .form-row{grid-template-columns:1fr}
@@ -427,6 +431,12 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
   .metric::after{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent)}
   .metric-label{font-size:10px!important;text-transform:uppercase;letter-spacing:.09em;color:var(--text3)!important;font-weight:700}
   .metric-value{font-size:24px!important;font-weight:800!important;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+  /* com o cartão do negócio "Outro": 6 cartões na MESMA linha, um pouco mais compactos */
+  #dash-metrics.metrics-outro{grid-template-columns:repeat(6,minmax(0,1fr))}
+  #dash-metrics.metrics-outro>.metric{padding:.85rem .9rem!important}
+  #dash-metrics.metrics-outro>.metric>.metric-label{font-size:9px!important;letter-spacing:.05em}
+  #dash-metrics.metrics-outro>.metric>.metric-value{font-size:clamp(15px,1.7vw,21px)!important}
+  #dash-metrics.metrics-outro>.metric>.metric-sub{font-size:9px}
   .card{border:none!important;border-radius:16px!important;box-shadow:0 1px 2px rgba(28,25,23,.04),0 8px 24px -12px rgba(28,25,23,.12)!important}
   .card-title i{color:var(--accent)}
   .pill{border-radius:999px!important;font-weight:700}
@@ -528,7 +538,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
     <div class="nav-row">
       <div class="nav-item active" data-page="dashboard" style="--ac:var(--n1);--ac-l:var(--n1-l)"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
       <div class="nav-item" data-page="lancamentos" style="--ac:var(--n7);--ac-l:var(--n7-l)"><i class="ti ti-receipt"></i> Lançamentos</div>
-      <div class="nav-item" data-page="feiras" style="--ac:var(--n2);--ac-l:var(--n2-l)"><i class="ti ti-calendar-event"></i> Feiras/Eventos</div>
+      <div class="nav-item" data-page="feiras" style="--ac:var(--n2);--ac-l:var(--n2-l)"><i class="ti ti-calendar-event"></i> Feiras/Eventos/Outro</div>
       <div class="nav-item" data-page="filtros" style="--ac:var(--n8);--ac-l:var(--n8-l)"><i class="ti ti-filter"></i> Filtros</div>
       <div class="nav-item" data-page="relatorio" style="--ac:var(--n10);--ac-l:var(--n10-l)"><i class="ti ti-chart-bar"></i> Relatório</div>
       <div class="nav-item" data-page="comparar" style="--ac:var(--n3);--ac-l:var(--n3-l)"><i class="ti ti-arrows-left-right"></i> Comparar</div>
@@ -580,7 +590,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 <nav class="mobile-nav">
   <div class="mobile-nav-item active" data-page="dashboard"><i class="ti ti-layout-dashboard"></i><span>Início</span></div>
   <div class="mobile-nav-item" data-page="lancamentos"><i class="ti ti-receipt"></i><span>Lançar</span></div>
-  <div class="mobile-nav-item" data-page="feiras"><i class="ti ti-calendar-event"></i><span>Feiras/Ev.</span></div>
+  <div class="mobile-nav-item" data-page="feiras"><i class="ti ti-calendar-event"></i><span>Feiras/Outro</span></div>
   <div class="mobile-nav-item" data-page="filtros"><i class="ti ti-filter"></i><span>Filtros</span></div>
   <div class="mobile-nav-item" data-page="relatorio"><i class="ti ti-chart-bar"></i><span>Relatório</span></div>
   <div class="mobile-nav-item" data-page="comparar"><i class="ti ti-arrows-left-right"></i><span>Comparar</span></div>
@@ -1634,11 +1644,23 @@ function renderDashboard(){
   const metricsEl=document.getElementById('dash-metrics');
   const cartaoResultado=`<div class="metric mob-top" style="border:2px solid ${res>=0?'var(--teal)':'var(--red)'};background:${res>=0?'var(--teal-l)':'var(--red-l)'}"><div class="metric-label" style="font-weight:700;color:${res>=0?'var(--teal)':'var(--red)'}">💰 Resultado líquido</div><div class="metric-value" style="font-size:26px;color:${res>=0?'var(--teal)':'var(--red)'}">${fmt(res)}</div><div class="metric-sub" style="color:var(--text2)">Margem ${rec>0?Math.round(res/rec*100):0}%</div></div>`;
   const cartaoFundo=`<div class="metric mob-top" style="border-top:2.5px solid var(--blue);cursor:pointer" onclick="editarFundoCaixa()" title="Clica para atualizar o fundo de caixa"><div class="metric-label" style="color:var(--blue)">🪙 Fundo de caixa <i class="ti ti-pencil" style="font-size:10px"></i></div><div class="metric-value" style="color:var(--blue)">${_fundoAtual?fmt(_fundoAtual.valor):'definir'}</div><div class="metric-sub" style="color:var(--text2)">${_fundoAtual?'atualizado em '+_fundoAtual.data:'toca para definir'}</div></div>`;
+  // Cartão do negócio "Outro" (ex.: Alojamento Local): só existe se criaste um "Outro"; senão o painel fica como estava
+  let cartaoOutro='';
+  const temOutro=fairs.some(ehOutro);
+  if(temOutro){
+    const tO=filtered.filter(t=>t.tipo!=='Fundo de Caixa'&&txEhOutro(t));
+    const recO=tO.filter(t=>t.tipo==='Receita').reduce((a,b)=>a+b.valor,0);
+    const despO=tO.filter(t=>t.tipo==='Despesa').reduce((a,b)=>a+b.valor,0);
+    const resO=recO-despO;
+    const k0=v=>Math.round(v).toLocaleString('pt-PT')+'€';
+    cartaoOutro=`<div class="metric metric-outro" style="border-top:2.5px solid var(--purple)" title="${escHtml(outroNome())}: receitas ${fmt(recO)} · despesas ${fmt(despO)} (já incluídas nos totais)"><div class="metric-label" style="color:var(--purple)">🏷️ ${escHtml(outroNome())}</div><div class="metric-value" style="color:${resO>=0?'var(--teal)':'var(--red)'}">${fmt(resO)}</div><div class="metric-sub" style="color:var(--text2)">↑ ${k0(recO)} · ↓ ${k0(despO)}</div></div>`;
+  }
+  if(metricsEl)metricsEl.classList.toggle('metrics-outro',temOutro);
   if(metricsEl)metricsEl.innerHTML=cartaoResultado+`
     <div class="metric" style="border-top:2.5px solid var(--teal)"><div class="metric-label">Receita total</div><div class="metric-value">${fmt(rec)}</div><div class="metric-sub" style="color:var(--teal)">↑ ${filtered.filter(t=>t.tipo==='Receita').length} registos</div></div>
     <div class="metric" style="border-top:2.5px solid var(--red)"><div class="metric-label">Despesas totais</div><div class="metric-value">${fmt(desp)}</div><div class="metric-sub" style="color:var(--red)">↓ ${filtered.filter(t=>t.tipo==='Despesa').length} registos</div></div>`
     +cartaoFundo+`
-    <div class="metric" style="border-top:2.5px solid var(--amber)"><div class="metric-label">Feiras / Eventos</div><div class="metric-value">${fairs.filter(f=>(anoSel==='Todos'||String(f.ano)===String(anoSel))&&tipoFeira(f)==='feira').length} / ${fairs.filter(f=>(anoSel==='Todos'||String(f.ano)===String(anoSel))&&f.tipo==='evento').length}</div><div class="metric-sub" style="color:var(--text2)">feiras / eventos · ${[...new Set(filtered.map(t=>t.mes))].length} meses ativos</div></div>`;
+    <div class="metric" style="border-top:2.5px solid var(--amber)"><div class="metric-label">Feiras / Eventos</div><div class="metric-value">${fairs.filter(f=>(anoSel==='Todos'||String(f.ano)===String(anoSel))&&tipoFeira(f)==='feira').length} / ${fairs.filter(f=>(anoSel==='Todos'||String(f.ano)===String(anoSel))&&f.tipo==='evento').length}</div><div class="metric-sub" style="color:var(--text2)">feiras / eventos · ${[...new Set(filtered.map(t=>t.mes))].length} meses ativos</div></div>`+cartaoOutro;
   const rmEl=document.getElementById('dash-result-mobile');
   if(rmEl)rmEl.innerHTML=cartaoResultado+cartaoFundo;
   // Receita por local — TODAS as feiras/locais (sem limite)
@@ -3352,9 +3374,16 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.77';
-const APP_UPDATE_DATE='2026-10-05'; // formato AAAA-MM-DD
+const APP_VERSION='3.79';
+const APP_UPDATE_DATE='2026-10-06'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.79',data:'2026-10-06',notas:[
+    'No Dashboard aparece um cartão novo com o resultado do teu negócio "Outro" (ex.: Alojamento Local), com o nome que lhe deste. Só aparece se tiveres criado um "Outro"; se não, o painel fica exatamente como estava. Cabe na mesma linha dos outros cartões (no PC e no telemóvel), sem mudar o tamanho das letras de forma visível.',
+    'Os totais do Dashboard continuam a incluir tudo, como antes; o cartão novo mostra só a parte do "Outro" (resultado, e em baixo receitas e despesas).'
+  ]},
+  {v:'3.78',data:'2026-10-06',notas:[
+    'O botão do menu "Feiras/Eventos" passou a chamar-se "Feiras/Eventos/Outro" (no telemóvel, "Feiras/Outro"), para ser claro que é lá que também crias e vês o teu outro negócio. Nada mais mudou.'
+  ]},
   {v:'3.77',data:'2026-10-05',notas:[
     'O botão "Outro" passa a ter o nome do teu negócio (ex.: "Alojamento Local"): defines o nome uma vez — ao criar ou em Configurações — e ele aparece no botão, nas etiquetas, nos títulos e na lista de lançamentos, no telemóvel e no PC (guarda-se na tua conta, sem mexer em tabelas).',
     'Categorias próprias do Outro: em Configurações há um cartão novo com os tipos de receita e as categorias de despesa só deste negócio (criar, renomear e apagar). Ao lançar numa feira deste tipo só aparecem estas; nas feiras e eventos continuam as de sempre, intocadas. Renomear uma categoria atualiza também os lançamentos antigos desse negócio.',
@@ -5654,5 +5683,4 @@ if(document.readyState==='loading'){
 }
 </script>
 </body>
-<!-- v3.77 republicado 2026-10-06 -->
 </html>
