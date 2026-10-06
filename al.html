@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F3EDE3">
+<title>Gestão AL — Gestão de Negócio</title>
+<meta name="robots" content="noindex">
+<style>
+:root{
+  --bg:#F3EDE3;--card:#fff;--ink:#1F1C18;--ink2:#6B645A;--ink3:#9A9286;--line:#E4DBCC;--line2:#D3C8B6;
+  --accent:#2FB5A5;--accent-d:#1F8F82;--red:#D6453D;--amber:#E0952B;
+  --airbnb:#E8705F;--booking:#3F8FD8;--direta:#3FA96F;--outra:#9C6BC9;--bloq:#9AA3AD;
+  --lab:92px;--dw:42px;--lane:30px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.4}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.hide{display:none!important}
+
+/* ---------- ecrãs de arranque ---------- */
+.screen{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:20px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:26px 22px;width:100%;max-width:400px;box-shadow:0 8px 30px -12px rgba(60,45,20,.25)}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.logo{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#2FB5A5,#3F8FD8);color:#fff;font-weight:800;font-size:15px;display:grid;place-items:center;letter-spacing:.02em}
+.box h1{font-size:19px}
+.box p.sub{color:var(--ink2);font-size:13px;margin:2px 0 0}
+.fld{display:block;margin-top:12px}
+.fld>span{display:block;font-size:11px;font-weight:600;color:var(--ink2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+.fld input,.fld select,.fld textarea{width:100%;padding:11px 12px;border:1px solid var(--line2);border-radius:11px;background:#FFFDF9;font-size:15px}
+.fld input:focus,.fld select:focus,.fld textarea:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 16px;border-radius:12px;border:1px solid var(--line2);background:#fff;font-weight:600;font-size:14px}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.pri:active{background:var(--accent-d)}
+.btn.red{color:var(--red);border-color:#F0C7C3;background:#FDF3F2}
+.btn.full{width:100%;margin-top:14px}
+.btn.sm{padding:7px 11px;font-size:13px;border-radius:10px}
+.msg{margin-top:12px;font-size:13px;color:var(--red);min-height:18px}
+.steps{font-size:13px;color:var(--ink2);margin:10px 0 0 18px;line-height:1.6}
+.sep{display:flex;align-items:center;gap:10px;color:var(--ink3);font-size:12px;margin:16px 0 0}
+.sep::before,.sep::after{content:"";flex:1;height:1px;background:var(--line)}
+
+/* ---------- app ---------- */
+#app{display:flex;flex-direction:column;height:100dvh;max-width:1200px;margin:0 auto}
+header{display:flex;align-items:center;gap:10px;padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top))}
+header .t{font-weight:800;font-size:16px;flex:1;display:flex;align-items:center;gap:8px}
+.badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:#FFF0D6;color:#9A6212;letter-spacing:.03em}
+.lnk{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--ink);text-decoration:none;padding:7px 11px;border-radius:99px;background:#fff;border:1px solid var(--line2)}
+.ibtn{width:34px;height:34px;border-radius:99px;border:1px solid var(--line2);background:#fff;font-size:15px}
+main{flex:1;overflow-y:auto;padding:0 14px 96px;-webkit-overflow-scrolling:touch}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;background:rgba(243,237,227,.96);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:20}
+nav.tabs .in{display:flex;width:100%;max-width:1200px}
+nav.tabs button{flex:1;border:none;background:none;padding:9px 2px 8px;font-size:11px;font-weight:600;color:var(--ink3);display:flex;flex-direction:column;align-items:center;gap:2px;min-height:54px}
+nav.tabs button .ic{font-size:18px;line-height:1}
+nav.tabs button.on{color:var(--accent-d)}
+nav.tabs button.on .ic{transform:translateY(-1px)}
+nav.tabs button small{font-size:8.5px;font-weight:700;color:var(--ink3);margin-top:-2px}
+
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 13px;min-width:104px}
+.chip b{display:block;font-size:19px;line-height:1.1}
+.chip span{font-size:11px;color:var(--ink2)}
+.alert{background:#FDF0EE;border:1px solid #F2C4BF;color:#9B2D26;border-radius:14px;padding:10px 13px;font-size:13px;font-weight:600;margin-bottom:10px;cursor:pointer;display:flex;gap:8px;align-items:flex-start}
+.alert small{display:block;font-weight:500;color:#B5524A;margin-top:2px}
+
+.bar-top{display:flex;align-items:center;gap:8px;margin:2px 0 10px}
+.bar-top h2{flex:1;font-size:17px;text-align:center}
+.nb{width:38px;height:38px;border-radius:12px;border:1px solid var(--line2);background:#fff;font-size:16px;font-weight:700}
+.today-btn{padding:0 12px;width:auto;font-size:12px}
+
+.tl{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:auto;-webkit-overflow-scrolling:touch}
+.inner{width:max-content;min-width:100%}
+.rw{display:flex}
+.lab{position:sticky;left:0;z-index:5;width:var(--lab);flex:0 0 var(--lab);background:var(--card);border-right:1px solid var(--line);padding:6px 8px;font-size:12px;font-weight:700;display:flex;align-items:flex-start;gap:6px}
+.lab i{width:9px;height:9px;border-radius:50%;flex:0 0 9px;margin-top:4px}
+.lab span{overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.25}
+.rw.hd .lab{background:var(--card);align-items:center;color:var(--ink3);font-weight:600;font-size:11px}
+.cells{position:relative;flex:0 0 auto;background-image:linear-gradient(to right,var(--line) 1px,transparent 1px);background-size:var(--dw) 100%;cursor:cell}
+.rw+.rw .cells,.rw+.rw .lab{border-top:1px solid var(--line)}
+.dh{display:flex}
+.dh div{width:var(--dw);flex:0 0 var(--dw);text-align:center;padding:5px 0 4px;font-size:10px;color:var(--ink3);line-height:1.2}
+.dh div b{display:block;font-size:13px;color:var(--ink)}
+.dh .we{background:#F7F2E9}
+.dh .td b{background:var(--accent);color:#fff;border-radius:99px;width:24px;margin:0 auto}
+.col-we{position:absolute;top:0;bottom:0;width:var(--dw);background:#F7F2E9;opacity:.8;pointer-events:none}
+.col-td{position:absolute;top:0;bottom:0;width:var(--dw);background:rgba(47,181,165,.09);pointer-events:none;border-left:1px solid rgba(47,181,165,.4);border-right:1px solid rgba(47,181,165,.4)}
+.res{position:absolute;height:calc(var(--lane) - 4px);border-radius:9px;color:#fff;font-size:11.5px;font-weight:700;padding:0 8px;display:flex;align-items:center;gap:5px;overflow:hidden;white-space:nowrap;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.18);z-index:2}
+.res small{font-weight:600;opacity:.85;font-size:10px}
+.res.airbnb{background:var(--airbnb)}.res.booking{background:var(--booking)}.res.direta{background:var(--direta)}.res.outra{background:var(--outra)}
+.res.bloqueio{background:repeating-linear-gradient(135deg,#B8BFC7,#B8BFC7 6px,#A5ADB6 6px,#A5ADB6 12px);color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.25)}
+.res.pendente{opacity:.78;outline:2px dashed rgba(0,0,0,.35);outline-offset:-2px}
+.res.conflito{outline:3px solid var(--red);outline-offset:1px;z-index:3}
+.res.cl{border-top-left-radius:0;border-bottom-left-radius:0}
+.res.cr{border-top-right-radius:0;border-bottom-right-radius:0}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:11px;color:var(--ink2);margin:10px 2px 4px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:4px;margin-right:5px;vertical-align:-1px}
+h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink2);margin:18px 2px 8px}
+.ev{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:9px 12px;margin-bottom:7px;cursor:pointer}
+.ev .d{width:44px;text-align:center;line-height:1.1}
+.ev .d b{display:block;font-size:17px}.ev .d span{font-size:10px;color:var(--ink2);text-transform:uppercase}
+.ev .x{flex:1;min-width:0}.ev .x div:first-child{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ev .x div:last-child{font-size:12px;color:var(--ink2)}
+.tag{font-size:10px;font-weight:800;padding:3px 8px;border-radius:99px;color:#fff;letter-spacing:.03em}
+.tag.in{background:var(--direta)}.tag.out{background:var(--amber)}
+.empty{text-align:center;color:var(--ink2);padding:36px 16px}
+.empty .big{font-size:34px;margin-bottom:6px}
+.soon{background:var(--card);border:1px dashed var(--line2);border-radius:16px;padding:22px 18px;text-align:center;margin-top:8px}
+.soon h2{font-size:17px;margin-bottom:6px}.soon p{color:var(--ink2);font-size:13px;max-width:420px;margin:0 auto}
+
+/* ---------- janelas ---------- */
+.ov{position:fixed;inset:0;background:rgba(31,28,24,.45);display:flex;align-items:flex-end;justify-content:center;z-index:50}
+.sheet{background:var(--card);width:100%;max-width:520px;border-radius:22px 22px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));max-height:92dvh;overflow-y:auto}
+.sheet h2{font-size:17px;margin-bottom:2px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sheet .acts{display:flex;gap:8px;margin-top:16px}
+.sheet .acts .btn{flex:1}
+.nights{font-size:12px;color:var(--ink2);margin-top:6px;min-height:17px}
+.warn{background:#FFF6E3;border:1px solid #F2DDA6;color:#8A5A0C;border-radius:11px;padding:8px 11px;font-size:12.5px;margin-top:10px}
+.sw{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.sw button{width:30px;height:30px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px var(--line2)}
+.sw button.on{box-shadow:0 0 0 2px var(--ink)}
+.note{font-size:12px;color:var(--ink2);background:#F7F2E9;border-radius:11px;padding:9px 11px;margin-top:10px}
+.toast{position:fixed;left:50%;bottom:78px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-size:13px;z-index:99;max-width:90vw;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+@media(min-width:760px){
+  :root{--lab:150px}
+  .ov{align-items:center}.sheet{border-radius:22px}
+  main{padding:0 22px 96px}header{padding:14px 22px}
+  .lab{font-size:13px}
+}
+</style>
+</head>
+<body>
+
+<!-- CONFIGURAÇÃO (só aparece se ainda não ligaste o Supabase) -->
+<div id="cfg" class="screen hide"><div class="box">
+  <div class="brand"><div class="logo">AL</div><div><h1>Gestão AL</h1><p class="sub">Ligar à tua base de dados</p></div></div>
+  <ol class="steps">
+    <li>No Supabase cria um projeto novo (só para esta app).</li>
+    <li>SQL Editor → cola o ficheiro <b>01_esquema.sql</b> → Run.</li>
+    <li>Project Settings → API → copia o <b>Project URL</b> e a chave <b>anon / publishable</b> para aqui.</li>
+  </ol>
+  <label class="fld"><span>Project URL</span><input id="cfgUrl" placeholder="https://xxxx.supabase.co" autocapitalize="off" autocomplete="off"></label>
+  <label class="fld"><span>Chave anon / publishable</span><input id="cfgKey" placeholder="sb_publishable_… ou eyJ…" autocapitalize="off" autocomplete="off"></label>
+  <div class="msg" id="cfgMsg"></div>
+  <button class="btn pri full" onclick="guardarCfg()">Guardar e continuar</button>
+  <div class="sep">ou</div>
+  <button class="btn full" onclick="entrarDemo()">Experimentar com dados de exemplo</button>
+</div></div>
+
+<!-- LOGIN -->
+<div id="auth" class="screen hide"><div class="box">
+  <div class="brand"><div class="logo">AL</div><div><h1>Gestão AL</h1><p class="sub">Os teus alojamentos, num só sítio</p></div></div>
+  <label class="fld hide" id="auCodWrap"><span>Código de acesso</span><input id="auCod" autocapitalize="characters" autocomplete="off" placeholder="Recebido de quem te deu acesso"></label>
+  <label class="fld"><span>Email</span><input id="auEmail" type="email" autocomplete="username" autocapitalize="off"></label>
+  <label class="fld"><span>Palavra-passe</span><input id="auPass" type="password" autocomplete="current-password"></label>
+  <div class="msg" id="auMsg"></div>
+  <button class="btn pri full" onclick="entrar()" style="margin-top:6px">Entrar</button>
+  <button class="btn full" id="btnCriar" onclick="criarConta()" style="margin-top:8px">Criar conta (tenho um código)</button>
+  <div class="sep">ou</div>
+  <button class="btn full" onclick="entrarDemo()">Ver com dados de exemplo</button>
+  <p style="text-align:center;margin-top:14px;font-size:12px"><a href="index.html" style="color:var(--ink2)">Esqueci-me da password</a> · <span style="color:var(--ink3)">mesma conta da gerirmais</span></p>
+</div></div>
+
+<!-- SEM ACESSO -->
+<div id="semAcesso" class="screen hide"><div class="box" style="text-align:center">
+  <div class="brand" style="justify-content:center"><div class="logo">AL</div><div style="text-align:left"><h1>Gestão AL</h1><p class="sub">Alojamento local</p></div></div>
+  <p id="semAcessoTxt" style="color:var(--ink2);font-size:14px">A tua conta ainda não tem acesso à Gestão AL. Contacta quem te deu acesso ao programa.</p>
+  <a class="btn pri full hide" id="semAcessoG" href="index.html" style="text-decoration:none">Ir para a Gestão de Negócio</a>
+  <button class="btn full" onclick="S.sb.auth.signOut().then(()=>location.reload())">Terminar sessão</button>
+</div></div>
+
+<!-- APP -->
+<div id="app" class="hide">
+  <header>
+    <div class="t"><div class="logo" style="width:32px;height:32px;font-size:13px;border-radius:9px">AL</div> Gestão AL <span class="badge hide" id="demoBadge">EXEMPLO</span><small style="font-size:10px;color:var(--ink3);font-weight:600">v2.0</small></div>
+    <a class="lnk hide" id="lnkGerirmais" href="index.html" title="Ir para a Gestão de Negócio (mesma conta)">Gerirmais ↗</a>
+    <button class="ibtn" onclick="sair()" title="Sair">⏻</button>
+  </header>
+  <main id="main"></main>
+  <nav class="tabs"><div class="in">
+    <button data-t="cal" class="on" onclick="tab('cal')"><span class="ic">📅</span>Calendário</button>
+    <button data-t="hosp" onclick="tab('hosp')"><span class="ic">👥</span>Hóspedes<small>em breve</small></button>
+    <button data-t="tar" onclick="tab('tar')"><span class="ic">🧹</span>Tarefas<small>em breve</small></button>
+    <button data-t="con" onclick="tab('con')"><span class="ic">💶</span>Contas<small>em breve</small></button>
+    <button data-t="not" onclick="tab('not')"><span class="ic">🔧</span>Notas<small>em breve</small></button>
+  </div></nav>
+</div>
+
+<!-- JANELA: RESERVA -->
+<div id="mRes" class="ov hide" onclick="if(event.target===this)fechar('mRes')"><div class="sheet">
+  <h2 id="rTitulo">Nova reserva</h2>
+  <label class="fld"><span>Alojamento</span><select id="rAloj"></select></label>
+  <label class="fld"><span>Hóspede (nome)</span><input id="rNome" list="dlHosp" placeholder="Opcional" autocomplete="off"></label>
+  <datalist id="dlHosp"></datalist>
+  <div class="row2">
+    <label class="fld"><span>Check-in</span><input id="rIn" type="date" oninput="rCalc()"></label>
+    <label class="fld"><span>Check-out</span><input id="rOut" type="date" oninput="rCalc()"></label>
+  </div>
+  <div class="nights" id="rNoites"></div>
+  <div class="row2">
+    <label class="fld"><span>Origem</span><select id="rOrig"><option value="direta">Direta</option><option value="airbnb">Airbnb</option><option value="booking">Booking</option><option value="outra">Outra</option></select></label>
+    <label class="fld"><span>Estado</span><select id="rEst" onchange="rCalc()"><option value="confirmada">Confirmada</option><option value="pendente">Pendente</option><option value="bloqueio">Bloqueio (sem hóspede)</option><option value="cancelada">Cancelada</option></select></label>
+  </div>
+  <div class="row2">
+    <label class="fld"><span>Nº hóspedes</span><input id="rPax" type="number" min="1" inputmode="numeric"></label>
+    <label class="fld"><span>Valor total (€)</span><input id="rVal" type="number" min="0" step="0.01" inputmode="decimal"></label>
+  </div>
+  <label class="fld"><span>Notas</span><textarea id="rNotas" rows="2"></textarea></label>
+  <div id="rAviso"></div>
+  <div class="acts">
+    <button class="btn red hide" id="rDel" onclick="apagarRes()">Apagar</button>
+    <button class="btn" onclick="fechar('mRes')">Cancelar</button>
+    <button class="btn pri" onclick="guardarRes()">Guardar</button>
+  </div>
+</div></div>
+
+<!-- JANELA: ALOJAMENTO -->
+<div id="mAloj" class="ov hide" onclick="if(event.target===this)fechar('mAloj')"><div class="sheet">
+  <h2 id="aTitulo">Novo alojamento</h2>
+  <label class="fld"><span>Nome</span><input id="aNome" placeholder="Ex: Casa do Centro"></label>
+  <label class="fld"><span>Lotação (opcional)</span><input id="aCap" type="number" min="1" inputmode="numeric"></label>
+  <div class="fld"><span>Cor no calendário</span><div class="sw" id="aCores"></div></div>
+  <div class="fld"><span>Links iCal (opcional)</span></div>
+  <label class="fld" style="margin-top:4px"><input id="aIcAir" placeholder="Link iCal do Airbnb" autocapitalize="off"></label>
+  <label class="fld" style="margin-top:6px"><input id="aIcBook" placeholder="Link iCal do Booking" autocapitalize="off"></label>
+  <label class="fld" style="margin-top:6px"><input id="aIcOut" placeholder="Link iCal de outra plataforma" autocapitalize="off"></label>
+  <div class="note">A sincronização automática pelos links liga-se no próximo passo (Edge Function). Até lá podes importar já o ficheiro <b>.ics</b> da plataforma:</div>
+  <div class="row2" id="aImp">
+    <label class="fld"><span>Origem do ficheiro</span><select id="aImpOrig"><option value="airbnb">Airbnb</option><option value="booking">Booking</option><option value="outra">Outra</option></select></label>
+    <label class="fld"><span>Ficheiro .ics</span><input id="aImpFile" type="file" accept=".ics,text/calendar" style="padding:8px"></label>
+  </div>
+  <div class="acts">
+    <button class="btn red hide" id="aDel" onclick="apagarAloj()">Remover</button>
+    <button class="btn" onclick="fechar('mAloj')">Cancelar</button>
+    <button class="btn pri" onclick="guardarAloj()">Guardar</button>
+  </div>
+</div></div>
+
+<div id="toast" class="toast hide"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ====================================================================
+   GESTÃO AL — primeiro ecrã: calendário de reservas
+   Base de dados e login PRÓPRIOS (Supabase). Não usa a API da gerirmais.
+   Se preferires, preenche aqui a ligação e a janela de configuração deixa de aparecer:
+   ==================================================================== */
+const SUPA_URL='https://xkfshzlcwiuvztfdwvjm.supabase.co';   // MESMO projeto da gerirmais (Gestao de Negocio) → mesma conta, sem novo login
+const SUPA_KEY='sb_publishable_SGjww6C455tzA6wpIevT-w_t2X9lqMJ';   // chave publishable da gerirmais (pública; a segurança está no RLS)
+const VERSAO='2.0';
+const GERIRMAIS_URL='index.html';
+
+/* ---------- utilitários ---------- */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const MS=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const DS=['D','S','T','Q','Q','S','S'];
+const ORIG={airbnb:'Airbnb',booking:'Booking',direta:'Direta',outra:'Outra'};
+const CORES=['#2FB5A5','#3F8FD8','#E8705F','#F2A03D','#9C6BC9','#3FA96F','#C98F4E','#7F8C99'];
+const iso=ms=>new Date(ms).toISOString().slice(0,10);
+const pd=s=>{const[a,b,c]=s.split('-').map(Number);return Date.UTC(a,b-1,c);};
+const addD=(s,n)=>iso(pd(s)+n*864e5);
+const diffD=(a,b)=>Math.round((pd(b)-pd(a))/864e5);
+const hoje=()=>{const d=new Date();return iso(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));};
+const fd=s=>{const d=new Date(pd(s));return d.getUTCDate()+' '+MS[d.getUTCMonth()];};
+const uuid=()=>(crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c=='x'?r:(r&3|8)).toString(16);}));
+function toast(t,ms){const e=$('toast');e.textContent=t;e.classList.remove('hide');clearTimeout(toast._t);toast._t=setTimeout(()=>e.classList.add('hide'),ms||2800);}
+function abrir(id){$(id).classList.remove('hide');}
+function fechar(id){$(id).classList.add('hide');}
+
+/* ---------- estado ---------- */
+const S={modo:null,sb:null,user:null,aloj:[],res:[],hosp:[],fontes:[],view:{y:new Date().getFullYear(),m:new Date().getMonth()},tab:'cal',editRes:null,editAloj:null};
+
+/* ---------- dados de exemplo ---------- */
+function dadosDemo(){
+  const t=hoje(),A=uuid(),B=uuid(),C=uuid();
+  S.aloj=[{id:A,nome:'Casa do Centro',cor:'#2FB5A5',capacidade:4},{id:B,nome:'Apartamento Mar',cor:'#3F8FD8',capacidade:2},{id:C,nome:'Estúdio da Vila',cor:'#E8705F',capacidade:2}];
+  const h=['Maria Santos','John Miller','Família Costa','Anna Weber','Pedro Alves','Sophie Martin'].map(n=>({id:uuid(),nome:n}));
+  S.hosp=h;S.fontes=[];
+  const R=(aj,hi,o,e,a,b,v)=>({id:uuid(),alojamento_id:aj,hospede_id:hi==null?null:h[hi].id,origem:o,estado:e,checkin:addD(t,a),checkout:addD(t,b),valor_total:v||null});
+  S.res=[R(A,0,'airbnb','confirmada',-2,2,420),R(A,1,'booking','confirmada',4,8,560),R(A,null,'direta','pendente',10,13,300),
+         R(B,2,'direta','confirmada',-5,-1,280),R(B,3,'airbnb','confirmada',1,6,390),R(B,null,'outra','bloqueio',9,12,null),
+         R(C,4,'booking','confirmada',0,3,240),R(C,5,'airbnb','confirmada',2,5,260),R(C,null,'booking','confirmada',8,10,150)];
+  S.res[8].hospede_id=h[4].id;
+}
+
+/* ---------- camada de dados (nuvem OU exemplo) ---------- */
+const nuvem=()=>S.modo==='nuvem';
+async function carregar(){
+  if(!nuvem())return;
+  const sb=S.sb,[a,r,h,f]=await Promise.all([
+    sb.from('al_alojamentos').select('*').eq('ativo',true).order('nome'),
+    sb.from('al_reservas').select('*').order('checkin'),
+    sb.from('al_hospedes').select('*').order('nome'),
+    sb.from('al_ical_fontes').select('*')]);
+  const err=a.error||r.error||h.error||f.error;
+  if(err)throw err;
+  S.aloj=a.data;S.res=r.data;S.hosp=h.data;S.fontes=f.data;
+}
+async function acharOuCriarHospede(nome){
+  nome=(nome||'').trim();if(!nome)return null;
+  const ex=S.hosp.find(x=>x.nome.toLowerCase()===nome.toLowerCase());
+  if(ex)return ex.id;
+  if(!nuvem()){const n={id:uuid(),nome};S.hosp.push(n);return n.id;}
+  const{data,error}=await S.sb.from('al_hospedes').insert({nome}).select().single();
+  if(error)throw error;S.hosp.push(data);return data.id;
+}
+async function gravarRes(o){
+  if(!nuvem()){const i=S.res.findIndex(x=>x.id===o.id);if(i>=0)S.res[i]={...S.res[i],...o};else S.res.push({...o,id:o.id||uuid()});return;}
+  const{error}=o.id?await S.sb.from('al_reservas').update(o).eq('id',o.id):await S.sb.from('al_reservas').insert(o);
+  if(error)throw error;await carregar();
+}
+async function apagarResDB(id){
+  if(!nuvem()){S.res=S.res.filter(x=>x.id!==id);return;}
+  const{error}=await S.sb.from('al_reservas').delete().eq('id',id);if(error)throw error;await carregar();
+}
+async function gravarAloj(o,fontes){
+  if(!nuvem()){
+    const id=o.id||uuid(),i=S.aloj.findIndex(x=>x.id===id);
+    if(i>=0)S.aloj[i]={...S.aloj[i],...o};else S.aloj.push({...o,id});
+    S.fontes=S.fontes.filter(f=>f.alojamento_id!==id).concat(fontes.map(f=>({...f,id:uuid(),alojamento_id:id})));return id;
+  }
+  let id=o.id;
+  if(id){const{error}=await S.sb.from('al_alojamentos').update(o).eq('id',id);if(error)throw error;}
+  else{const{data,error}=await S.sb.from('al_alojamentos').insert(o).select().single();if(error)throw error;id=data.id;}
+  let e=(await S.sb.from('al_ical_fontes').delete().eq('alojamento_id',id)).error;if(e)throw e;
+  if(fontes.length){e=(await S.sb.from('al_ical_fontes').insert(fontes.map(f=>({...f,alojamento_id:id}))).select()).error;if(e)throw e;}
+  await carregar();return id;
+}
+async function apagarAlojDB(id){
+  if(!nuvem()){S.aloj=S.aloj.filter(x=>x.id!==id);S.res=S.res.filter(x=>x.alojamento_id!==id);S.fontes=S.fontes.filter(x=>x.alojamento_id!==id);return;}
+  const{error}=await S.sb.from('al_alojamentos').delete().eq('id',id);if(error)throw error;await carregar();
+}
+async function importarLinhas(ajId,linhas){
+  if(!linhas.length)return;
+  if(!nuvem()){
+    linhas.forEach(l=>{const i=S.res.findIndex(x=>x.alojamento_id===ajId&&x.ical_uid===l.ical_uid);
+      if(i>=0)S.res[i]={...S.res[i],...l};else S.res.push({...l,id:uuid(),alojamento_id:ajId});});return;
+  }
+  const{error}=await S.sb.from('al_reservas').upsert(linhas.map(l=>({...l,alojamento_id:ajId})),{onConflict:'alojamento_id,ical_uid'});
+  if(error)throw error;await carregar();
+}
+
+/* ---------- iCal (.ics) ---------- */
+function lerIcs(txt){
+  const L=txt.replace(/\r/g,'').replace(/\n[ \t]/g,'').split('\n'),ev=[];let cur=null;
+  for(const ln of L){
+    if(ln.startsWith('BEGIN:VEVENT'))cur={};
+    else if(ln.startsWith('END:VEVENT')){if(cur)ev.push(cur);cur=null;}
+    else if(cur){
+      const i=ln.indexOf(':');if(i<0)continue;
+      const k=ln.slice(0,i).split(';')[0].toUpperCase(),v=ln.slice(i+1).trim();
+      if(k==='DTSTART')cur.ini=v;else if(k==='DTEND')cur.fim=v;else if(k==='UID')cur.uid=v;else if(k==='SUMMARY')cur.res=v.replace(/\\,/g,',').replace(/\\n/g,' ');
+    }
+  }
+  const dt=v=>v&&/^\d{8}/.test(v)?v.slice(0,4)+'-'+v.slice(4,6)+'-'+v.slice(6,8):null;
+  return ev.map(e=>({uid:e.uid,checkin:dt(e.ini),checkout:dt(e.fim),resumo:e.res||''})).filter(e=>e.checkin&&e.checkout&&e.checkout>e.checkin);
+}
+const ehBloqueio=s=>/not available|unavailable|blocked|closed|indispon|bloque/i.test(s||'');
+function linhasDoIcs(txt,origem){
+  const limite=addD(hoje(),-90);
+  return lerIcs(txt).filter(e=>e.checkout>=limite).map(e=>{
+    const bloq=ehBloqueio(e.resumo),generico=/^(reserved|reservado|booked)$/i.test(e.resumo);
+    return{ical_uid:e.uid||(origem+'-'+e.checkin+'-'+e.checkout),origem,estado:bloq?'bloqueio':'confirmada',checkin:e.checkin,checkout:e.checkout,
+           notas:(!bloq&&!generico&&e.resumo)?e.resumo:null};
+  });
+}
+
+/* ---------- lógica de reservas ---------- */
+const ativa=r=>r.estado==='confirmada'||r.estado==='pendente';
+const nomeHosp=r=>{const h=S.hosp.find(x=>x.id===r.hospede_id);return h?h.nome:'';};
+const nomeAloj=id=>(S.aloj.find(a=>a.id===id)||{}).nome||'—';
+function conflitos(){
+  const out=[],porAj={};
+  S.res.filter(ativa).forEach(r=>(porAj[r.alojamento_id]=porAj[r.alojamento_id]||[]).push(r));
+  Object.values(porAj).forEach(L=>{
+    L.sort((a,b)=>a.checkin<b.checkin?-1:1);
+    for(let i=0;i<L.length;i++)for(let j=i+1;j<L.length&&L[j].checkin<L[i].checkout;j++)
+      out.push({a:L[i],b:L[j],de:L[j].checkin,ate:L[i].checkout<L[j].checkout?L[i].checkout:L[j].checkout});
+  });
+  return out;
+}
+function conflitoCom(o){ // reservas que chocam com o objeto "o" (ainda não gravado)
+  if(!ativa(o))return[];
+  return S.res.filter(r=>r.id!==o.id&&r.alojamento_id===o.alojamento_id&&ativa(r)&&r.checkin<o.checkout&&o.checkin<r.checkout);
+}
+
+/* ---------- navegação ---------- */
+function tab(t){
+  S.tab=t;
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  render();$('main').scrollTop=0;
+}
+function mudaMes(d){let m=S.view.m+d,y=S.view.y;if(m<0){m=11;y--;}if(m>11){m=0;y++;}S.view={y,m};render();}
+function irHoje(){const d=new Date();S.view={y:d.getFullYear(),m:d.getMonth()};render();}
+
+/* ---------- desenho ---------- */
+function render(){
+  const m=$('main');
+  if(S.tab!=='cal'){
+    const T={hosp:['👥','Hóspedes','Ficha de cada hóspede (contacto, notas) e o histórico das suas estadias — nasce das reservas.'],
+             tar:['🧹','Tarefas','As limpezas já são criadas automaticamente na base de dados a cada check-out; aqui vais geri-las, com estado e responsável.'],
+             con:['💶','Contas','Receitas e despesas por alojamento, com resumo mensal/anual e margem — só do alojamento.'],
+             not:['🔧','Manutenção e notas','Avarias, compras e lembretes por alojamento.']}[S.tab];
+    m.innerHTML=`<div class="soon"><div style="font-size:34px">${T[0]}</div><h2>${T[1]}</h2><p>${T[2]}</p><p style="margin-top:10px;font-weight:700;color:var(--accent-d)">Chega no próximo passo.</p></div>`;
+    return;
+  }
+  if(!S.aloj.length){
+    m.innerHTML=`<div class="empty"><div class="big">🏠</div><b>Ainda não tens alojamentos</b><p style="margin:6px 0 14px">Adiciona o primeiro para começares a registar reservas.</p><button class="btn pri" onclick="abrirAloj()">+ Adicionar alojamento</button></div>`;
+    return;
+  }
+  const {y,m:mes}=S.view,n=new Date(Date.UTC(y,mes+1,0)).getUTCDate(),ini=iso(Date.UTC(y,mes,1)),fim=addD(ini,n),T=hoje();
+  const desk=window.innerWidth>=760,wrap=($('main').clientWidth||360)-(desk?44:28)-2;
+  const lab=desk?150:92,dw=desk?Math.max(30,Math.floor((wrap-lab-4)/n)):42;
+  document.documentElement.style.setProperty('--dw',dw+'px');
+  const cf=conflitos(),emConf=new Set();cf.forEach(c=>{emConf.add(c.a.id);emConf.add(c.b.id);});
+
+  /* resumo */
+  const ocHoje=new Set(S.res.filter(r=>ativa(r)&&r.checkin<=T&&r.checkout>T).map(r=>r.alojamento_id)).size;
+  const entr=S.res.filter(r=>ativa(r)&&r.checkin===T).length,said=S.res.filter(r=>ativa(r)&&r.checkout===T).length;
+  let noites=0;S.aloj.forEach(a=>{const dias=new Set();S.res.filter(r=>r.alojamento_id===a.id&&ativa(r)).forEach(r=>{
+    for(let d=Math.max(0,diffD(ini,r.checkin));d<Math.min(n,diffD(ini,r.checkout));d++)dias.add(d);});noites+=dias.size;});
+  const ocup=Math.round(100*noites/(n*S.aloj.length));
+  let h=`<div class="chips">
+    <div class="chip"><b>${entr}</b><span>entradas hoje</span></div>
+    <div class="chip"><b>${said}</b><span>saídas hoje</span></div>
+    <div class="chip"><b>${ocHoje}/${S.aloj.length}</b><span>ocupados hoje</span></div>
+    <div class="chip"><b>${ocup}%</b><span>ocupação de ${MESES[mes].toLowerCase()}</span></div></div>`;
+  if(cf.length){const c=cf[0];h+=`<div class="alert" onclick="abrirRes('${c.a.id}')"><span>⚠️</span><div>${cf.length===1?'1 sobreposição':cf.length+' sobreposições'} de reservas<small>${esc(nomeAloj(c.a.alojamento_id))} · ${fd(c.de)} → ${fd(c.ate)} · ${esc(nomeHosp(c.a)||ORIG[c.a.origem])} × ${esc(nomeHosp(c.b)||ORIG[c.b.origem])}${cf.length>1?' (e mais '+(cf.length-1)+')':''}</small></div></div>`;}
+
+  /* barra do mês */
+  h+=`<div class="bar-top"><button class="nb" onclick="mudaMes(-1)" aria-label="Mês anterior">‹</button><h2>${MESES[mes]} ${y}</h2><button class="nb today-btn" onclick="irHoje()">Hoje</button><button class="nb" onclick="mudaMes(1)" aria-label="Mês seguinte">›</button></div>`;
+
+  /* colunas de fim de semana / hoje */
+  let cols='';for(let i=0;i<n;i++){const wd=new Date(pd(addD(ini,i))).getUTCDay();if(wd===0||wd===6)cols+=`<div class="col-we" style="left:${i*dw}px"></div>`;}
+  const ti=diffD(ini,T);if(ti>=0&&ti<n)cols+=`<div class="col-td" style="left:${ti*dw}px"></div>`;
+  const W=n*dw;
+
+  /* cabeçalho dos dias */
+  let dh='';for(let i=0;i<n;i++){const d=new Date(pd(addD(ini,i))),wd=d.getUTCDay();dh+=`<div class="${wd===0||wd===6?'we':''}${i===ti?' td':''}">${DS[wd]}<b>${d.getUTCDate()}</b></div>`;}
+  h+=`<div class="tl" id="tl"><div class="inner"><div class="rw hd"><div class="lab">Alojamento</div><div class="dh" style="width:${W}px">${dh}</div></div>`;
+
+  /* linhas por alojamento */
+  S.aloj.forEach(a=>{
+    const L=S.res.filter(r=>r.alojamento_id===a.id&&r.estado!=='cancelada'&&r.checkout>=ini&&r.checkin<fim).sort((x,y)=>x.checkin<y.checkin?-1:x.checkin>y.checkin?1:0);
+    const lanes=[];let bars='';
+    L.forEach(r=>{
+      const ci=diffD(ini,r.checkin),co=diffD(ini,r.checkout);
+      const x0=ci<0?0:(ci+.5)*dw,x1=co>n?W:(co+.5)*dw;
+      let ln=lanes.findIndex(e=>e<=x0+1);if(ln<0){ln=lanes.length;lanes.push(0);}lanes[ln]=x1;
+      const nm=r.estado==='bloqueio'?'Bloqueado':(nomeHosp(r)||(r.origem==='direta'?'Reserva':'Reservado'));
+      const noi=diffD(r.checkin,r.checkout);
+      bars+=`<div class="res ${r.origem} ${r.estado==='bloqueio'?'bloqueio':''} ${r.estado==='pendente'?'pendente':''} ${emConf.has(r.id)?'conflito':''} ${ci<0?'cl':''} ${co>n?'cr':''}" style="left:${x0}px;width:${Math.max(18,x1-x0)}px;top:${4+ln*30}px" onclick="event.stopPropagation();abrirRes('${r.id}')" title="${esc(nm)} · ${fd(r.checkin)} → ${fd(r.checkout)}">${emConf.has(r.id)?'⚠ ':''}${esc(nm)}<small>${noi}n</small></div>`;
+    });
+    const hgt=Math.max(1,lanes.length)*30+8;
+    h+=`<div class="rw"><div class="lab" style="min-height:${hgt}px" onclick="abrirAloj('${a.id}')" title="Editar alojamento"><i style="background:${esc(a.cor)}"></i><span>${esc(a.nome)}</span></div>
+        <div class="cells" data-aj="${a.id}" style="width:${W}px;height:${hgt}px" onclick="cliqueDia(event,'${a.id}','${ini}',${dw})">${cols}${bars}</div></div>`;
+  });
+  h+=`</div></div>
+    <div class="legend"><span><i style="background:var(--airbnb)"></i>Airbnb</span><span><i style="background:var(--booking)"></i>Booking</span><span><i style="background:var(--direta)"></i>Direta</span><span><i style="background:var(--outra)"></i>Outra</span><span><i style="background:#B8BFC7"></i>Bloqueio</span></div>
+    <div style="display:flex;gap:8px;margin-top:10px"><button class="btn pri" style="flex:1" onclick="abrirRes()">+ Nova reserva</button><button class="btn" onclick="abrirAloj()">+ Alojamento</button></div>`;
+
+  /* próximos movimentos */
+  const evs=[];S.res.filter(ativa).forEach(r=>{
+    if(r.checkin>=T&&r.checkin<=addD(T,14))evs.push({d:r.checkin,t:'in',r});
+    if(r.checkout>=T&&r.checkout<=addD(T,14))evs.push({d:r.checkout,t:'out',r});});
+  evs.sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:(a.t==='out'?-1:1));
+  h+=`<h3 class="sec">Próximos 14 dias</h3>`;
+  h+=evs.length?evs.slice(0,12).map(e=>{const d=new Date(pd(e.d));
+    return`<div class="ev" onclick="abrirRes('${e.r.id}')"><div class="d"><b>${d.getUTCDate()}</b><span>${MS[d.getUTCMonth()]}</span></div><div class="x"><div>${esc(nomeHosp(e.r)||'Reserva '+ORIG[e.r.origem])}</div><div>${esc(nomeAloj(e.r.alojamento_id))} · ${ORIG[e.r.origem]}</div></div><span class="tag ${e.t}">${e.t==='in'?'ENTRADA':'SAÍDA'}</span></div>`;}).join('')
+    :`<div class="empty" style="padding:18px">Sem entradas nem saídas nos próximos 14 dias.</div>`;
+  m.innerHTML=h;
+  const tl=$('tl');if(tl&&ti>=0&&tl.scrollWidth>tl.clientWidth+2)tl.scrollLeft=Math.max(0,(ti-2)*dw);
+}
+function cliqueDia(ev,ajId,ini,dw){
+  const x=ev.clientX-ev.currentTarget.getBoundingClientRect().left,i=Math.max(0,Math.floor(x/dw));
+  abrirRes(null,{alojamento_id:ajId,checkin:addD(ini,i),checkout:addD(ini,i+1)});
+}
+
+/* ---------- janela de reserva ---------- */
+function abrirRes(id,pre){
+  if(!S.aloj.length){abrirAloj();return;}
+  const r=id?S.res.find(x=>x.id===id):null;S.editRes=r?r.id:null;
+  $('rTitulo').textContent=r?'Editar reserva':'Nova reserva';
+  $('rAloj').innerHTML=S.aloj.map(a=>`<option value="${a.id}">${esc(a.nome)}</option>`).join('');
+  $('dlHosp').innerHTML=S.hosp.map(h=>`<option value="${esc(h.nome)}">`).join('');
+  const o=r||pre||{};
+  $('rAloj').value=o.alojamento_id||S.aloj[0].id;
+  $('rNome').value=r?nomeHosp(r):'';
+  $('rIn').value=o.checkin||hoje();$('rOut').value=o.checkout||addD(hoje(),1);
+  $('rOrig').value=o.origem||'direta';$('rEst').value=o.estado||'confirmada';
+  $('rPax').value=o.num_hospedes||'';$('rVal').value=o.valor_total==null?'':o.valor_total;$('rNotas').value=o.notas||'';
+  $('rDel').classList.toggle('hide',!r);
+  rCalc();abrir('mRes');
+}
+function rCalc(){
+  const a=$('rIn').value,b=$('rOut').value;let t='',av='';
+  if(a&&b){
+    const n=diffD(a,b);
+    if(n<=0)t='⚠ O check-out tem de ser depois do check-in.';
+    else{t=n+(n===1?' noite':' noites');
+      const ch=conflitoCom({id:S.editRes,alojamento_id:$('rAloj').value,checkin:a,checkout:b,estado:$('rEst').value});
+      if(ch.length)av=`<div class="warn">⚠️ Sobrepõe-se a ${ch.map(c=>esc((nomeHosp(c)||ORIG[c.origem])+' ('+fd(c.checkin)+' → '+fd(c.checkout)+')')).join(', ')}. Podes guardar na mesma.</div>`;}
+  }
+  $('rNoites').textContent=t;$('rAviso').innerHTML=av;
+}
+$('rAloj').addEventListener('change',rCalc);
+async function guardarRes(){
+  const a=$('rIn').value,b=$('rOut').value;
+  if(!a||!b||diffD(a,b)<=0){toast('Verifica as datas: o check-out tem de ser depois do check-in.',3400);return;}
+  try{
+    const est=$('rEst').value;
+    const hid=est==='bloqueio'?null:await acharOuCriarHospede($('rNome').value);
+    const o={alojamento_id:$('rAloj').value,hospede_id:hid,origem:$('rOrig').value,estado:est,checkin:a,checkout:b,
+      num_hospedes:$('rPax').value?+$('rPax').value:null,valor_total:$('rVal').value===''?null:+$('rVal').value,notas:$('rNotas').value.trim()||null};
+    if(S.editRes)o.id=S.editRes;
+    await gravarRes(o);
+    fechar('mRes');render();toast(S.editRes?'Reserva atualizada ✓':'Reserva guardada ✓');
+  }catch(e){console.error(e);toast('Não foi possível guardar: '+(e.message||e),4500);}
+}
+async function apagarRes(){
+  if(!S.editRes||!confirm('Apagar esta reserva? (A limpeza associada também desaparece.)'))return;
+  try{await apagarResDB(S.editRes);fechar('mRes');render();toast('Reserva apagada');}catch(e){toast('Erro: '+(e.message||e),4500);}
+}
+
+/* ---------- janela de alojamento ---------- */
+let corSel=CORES[0];
+function pintaCores(){$('aCores').innerHTML=CORES.map(c=>`<button type="button" style="background:${c}" class="${c===corSel?'on':''}" onclick="corSel='${c}';pintaCores()" aria-label="Cor ${c}"></button>`).join('');}
+function abrirAloj(id){
+  const a=id?S.aloj.find(x=>x.id===id):null;S.editAloj=a?a.id:null;
+  $('aTitulo').textContent=a?'Editar alojamento':'Novo alojamento';
+  $('aNome').value=a?a.nome:'';$('aCap').value=a&&a.capacidade?a.capacidade:'';
+  corSel=a?a.cor:CORES[S.aloj.length%CORES.length];pintaCores();
+  const f=a?S.fontes.filter(x=>x.alojamento_id===a.id):[],get=p=>(f.find(x=>x.plataforma===p)||{}).url||'';
+  $('aIcAir').value=get('airbnb');$('aIcBook').value=get('booking');$('aIcOut').value=get('outra');
+  $('aImp').classList.toggle('hide',!a);$('aDel').classList.toggle('hide',!a);$('aImpFile').value='';
+  abrir('mAloj');
+}
+async function guardarAloj(){
+  const nome=$('aNome').value.trim();if(!nome){toast('Dá um nome ao alojamento.');return;}
+  const o={nome,cor:corSel,capacidade:$('aCap').value?+$('aCap').value:null};if(S.editAloj)o.id=S.editAloj;
+  const fontes=[['airbnb','aIcAir'],['booking','aIcBook'],['outra','aIcOut']].map(([p,i])=>({plataforma:p,url:$(i).value.trim()})).filter(f=>f.url);
+  try{
+    const id=await gravarAloj(o,fontes);
+    const file=$('aImpFile').files[0];
+    if(file){
+      const linhas=linhasDoIcs(await file.text(),$('aImpOrig').value);
+      if(!linhas.length)toast('O ficheiro não tem reservas válidas.',3600);
+      else{await importarLinhas(id,linhas);const b=linhas.filter(l=>l.estado==='bloqueio').length;
+        toast(`Importadas ${linhas.length-b} reservas e ${b} bloqueios ✓`,4200);}
+    }else toast('Alojamento guardado ✓');
+    fechar('mAloj');render();
+  }catch(e){console.error(e);toast('Não foi possível guardar: '+(e.message||e),4500);}
+}
+async function apagarAloj(){
+  const a=S.aloj.find(x=>x.id===S.editAloj);if(!a)return;
+  const n=S.res.filter(r=>r.alojamento_id===a.id).length;
+  if(!confirm(`Remover "${a.nome}"?\n\nIsto apaga também as ${n} reservas, tarefas e movimentos deste alojamento e NÃO se pode desfazer.`))return;
+  if(prompt('Para confirmar, escreve o nome do alojamento:')!==a.nome){toast('Nome diferente — nada foi apagado.');return;}
+  try{await apagarAlojDB(a.id);fechar('mAloj');render();toast('Alojamento removido');}catch(e){toast('Erro: '+(e.message||e),4500);}
+}
+
+/* ---------- arranque, login e configuração ---------- */
+function cfgAtual(){
+  if(SUPA_URL&&SUPA_KEY)return{url:SUPA_URL,key:SUPA_KEY};
+  try{const c=JSON.parse(localStorage.getItem('gal_cfg')||'null');if(c&&c.url&&c.key)return c;}catch(e){}
+  return null;
+}
+function mostrar(id){['cfg','auth','app','semAcesso'].forEach(x=>$(x).classList.toggle('hide',x!==id));}
+function guardarCfg(){
+  const url=$('cfgUrl').value.trim().replace(/\/+$/,''),key=$('cfgKey').value.trim();
+  if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)){$('cfgMsg').textContent='O Project URL deve ser do género https://xxxx.supabase.co';return;}
+  if(key.length<20){$('cfgMsg').textContent='Cola a chave anon / publishable completa.';return;}
+  try{localStorage.setItem('gal_cfg',JSON.stringify({url,key}));}catch(e){}
+  location.reload();
+}
+function mudarCfg(){try{localStorage.removeItem('gal_cfg');}catch(e){}location.reload();}
+function entrarDemo(){
+  S.modo='demo';dadosDemo();$('demoBadge').classList.remove('hide');mostrar('app');render();
+}
+async function entrarNuvem(){
+  // Interruptores do admin.html: só entra quem tem a Gestão AL ligada
+  let ac=null;
+  try{const{data,error}=await S.sb.rpc('meus_acessos');if(!error&&data&&data.length)ac=data[0];}catch(e){}
+  if(!ac){mostrar('semAcesso');$('semAcessoTxt').textContent='Não foi possível confirmar o teu acesso agora. Verifica a internet e tenta de novo.';return;}
+  if(ac.bloqueado){mostrar('semAcesso');$('semAcessoTxt').textContent='A tua conta está temporariamente bloqueada. Contacta quem te deu acesso ao programa.';return;}
+  if(!ac.al){mostrar('semAcesso');$('semAcessoG').classList.toggle('hide',!ac.gerirmais);return;}
+  $('lnkGerirmais').classList.toggle('hide',!ac.gerirmais);
+  S.modo='nuvem';$('demoBadge').classList.add('hide');
+  try{await carregar();}catch(e){console.error(e);
+    const falta=/relation|does not exist|schema cache/i.test(e.message||'');
+    toast(falta?'A Gestão AL ainda não está instalada na base de dados (falta correr o SQL 02).':'Erro ao carregar: '+(e.message||e),6000);S.aloj=[];S.res=[];}
+  mostrar('app');render();
+}
+async function entrar(){
+  $('auMsg').textContent='';
+  const{error}=await S.sb.auth.signInWithPassword({email:$('auEmail').value.trim(),password:$('auPass').value});
+  if(error){$('auMsg').textContent=/invalid/i.test(error.message)?'Email ou palavra-passe incorretos.':/not confirmed/i.test(error.message)?'Confirma primeiro o teu email (verifica a caixa de entrada).':error.message;return;}
+}
+async function criarConta(){
+  $('auMsg').textContent='';$('auMsg').style.color='';
+  if($('auCodWrap').classList.contains('hide')){$('auCodWrap').classList.remove('hide');$('btnCriar').textContent='Criar a minha conta';$('auCod').focus();return;}
+  const cod=$('auCod').value.trim(),email=$('auEmail').value.trim(),password=$('auPass').value;
+  if(!cod){$('auMsg').textContent='Introduz o código de acesso.';return;}
+  if(!email||password.length<6){$('auMsg').textContent='Indica o email e uma palavra-passe com pelo menos 6 caracteres.';return;}
+  const v=await S.sb.rpc('validar_codigo_ativacao',{p_codigo:cod});
+  if(v.error){$('auMsg').textContent='Não foi possível validar o código agora. Tenta novamente.';return;}
+  if(!v.data){$('auMsg').textContent='Código de acesso inválido, desligado ou já utilizado.';return;}
+  const opts=/^https?:/.test(location.protocol)?{emailRedirectTo:location.origin+location.pathname}:{};
+  const{data,error}=await S.sb.auth.signUp({email,password,options:opts});
+  if(error){$('auMsg').textContent=/already|exists/i.test(error.message)?'Já existe uma conta com este email — usa Entrar.':error.message;return;}
+  try{await S.sb.rpc('marcar_codigo_usado',{p_codigo:cod,p_email:email});}catch(e){}
+  if(!data.session)$('auMsg').style.color='var(--ink2)',$('auMsg').textContent='Conta criada. Confirma o email que enviámos e depois clica em Entrar.';
+}
+async function sair(){
+  if(nuvem()){await S.sb.auth.signOut();return;}
+  location.reload();
+}
+async function arranque(){
+  try{const cod=new URLSearchParams(location.search).get('codigo');if(cod){$('auCodWrap').classList.remove('hide');$('auCod').value=cod;$('btnCriar').textContent='Criar a minha conta';}}catch(e){}
+  const c=cfgAtual();
+  if(!c){mostrar('cfg');return;}
+  if(!window.supabase){mostrar('auth');$('auMsg').textContent='Sem ligação à internet para carregar o Supabase. O modo de exemplo funciona na mesma.';return;}
+  S.sb=window.supabase.createClient(c.url,c.key);
+  S.sb.auth.onAuthStateChange((ev,ses)=>{
+    // setTimeout: evita bloquear o login ao chamar o Supabase dentro deste aviso
+    if(ses&&ses.user){if(!S.user||S.user.id!==ses.user.id){S.user=ses.user;setTimeout(entrarNuvem,0);}}
+    else{S.user=null;S.modo=null;mostrar('auth');}
+  });
+  const{data}=await S.sb.auth.getSession();
+  if(!data.session)mostrar('auth');
+}
+window.addEventListener('resize',()=>{clearTimeout(window._rz);window._rz=setTimeout(()=>{if(!$('app').classList.contains('hide'))render();},150);});
+arranque();
+</script>
+</body>
+</html>

@@ -565,6 +565,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
     <div class="nav-sync-label" id="lastSyncLabel">A sincronizar...</div>
     <div class="nav-sync-label" id="contaAtivaLabel" title="Conta com sessão iniciada neste aparelho" style="font-weight:600"></div>
     <div class="nav-sync-label" id="appVersaoLabel" title="Versão da aplicação"></div>
+    <a id="btnGestaoAL" href="al.html" class="btn" title="Abrir a Gestão AL (alojamento local)" style="display:none;margin-top:6px;justify-content:center;color:#0F766E;border-color:#99D5CF;background:linear-gradient(135deg,#E4F5F3,#fff);text-decoration:none"><i class="ti ti-building-cottage"></i> Gestão AL</a>
   </div>
 </div>
 
@@ -587,6 +588,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
       <div id="lastSyncLabelMobile" style="font-size:8px;color:var(--side-text-dim)">A sincronizar...</div>
       <div id="contaAtivaLabelMobile" title="Conta com sessão iniciada neste aparelho" style="font-size:8px;color:var(--side-text-dim);font-weight:600"></div>
       <div id="appVersaoLabelMobile" title="Versão da aplicação" style="font-size:8px;color:var(--side-text-dim)"></div>
+      <a id="btnGestaoALMobile" href="al.html" class="btn" title="Abrir a Gestão AL (alojamento local)" style="display:none;margin-top:3px;padding:3px 8px;font-size:10px;flex:0 0 auto;color:#0F766E;border-color:#99D5CF;background:linear-gradient(135deg,#E4F5F3,#fff);text-decoration:none"><i class="ti ti-building-cottage"></i> Gestão AL</a>
     </div>
   </div>
 </header>
@@ -3553,9 +3555,13 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.83';
+const APP_VERSION='3.84';
 const APP_UPDATE_DATE='2026-10-06'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.84',data:'2026-10-06',notas:[
+    'Nova aplicação irmã: Gestão AL (alojamento local). Se o teu acesso a incluir, aparece o botão "Gestão AL" no topo e entras logo, com a mesma conta e sem novo login.',
+    'O início de sessão ficou mais fiável: corrigido um caso em que o botão "Entrar" podia ficar parado em "A processar...". Não mexe nos teus dados.'
+  ]},
   {v:'3.83',data:'2026-10-06',notas:[
     'Mais segurança para os teus dados, tudo automático (não tens de mexer em nada): a app passa a guardar sozinha cópias de segurança neste aparelho — uma por dia e uma antes de qualquer operação perigosa (importar Excel, apagar tudo, apagar listas, ou quando a cloud traz menos dados do que tens). Em Configurações há um cartão novo \"Cópias de segurança automáticas\" onde podes descarregar ou restaurar uma cópia, se alguma vez for preciso.',
     'Importar Excel e restaurar ficaram seguros: primeiro grava os dados novos e confirma que entraram todos, e só depois apaga os antigos (antes apagava primeiro). Se falhar a meio, desfaz tudo e os teus dados de antes ficam intactos.',
@@ -5809,6 +5815,20 @@ function toggleSenhaVisibilidade(id,icone){
    Se o dono da app marcar este cliente como "bloqueado" (ex.: deixou de
    pagar), esta verificação impede a entrada mesmo com a conta/password
    corretas — mostra um aviso e termina logo a sessão. */
+/* Conta só com a Gestão AL ligada (gerirmais desligada no admin) */
+function mostrarSemAcessoGerirmais(temAL){
+  const overlay=document.getElementById('authOverlay');
+  if(overlay){
+    overlay.style.display='flex';
+    overlay.innerHTML=`<div class="auth-box" style="text-align:center">
+      <div class="auth-title">Sem acesso a esta aplicação</div>
+      <div class="auth-sub" style="margin-top:6px">A tua conta não inclui a Gestão de Negócio.${temAL?' Mas tens acesso à Gestão AL:':' Contacta quem te deu acesso ao programa.'}</div>
+      ${temAL?'<a class="btn btn-primary" href="al.html" style="width:100%;justify-content:center;margin-top:16px;text-decoration:none"><i class="ti ti-building-cottage"></i> Abrir a Gestão AL</a>':''}
+      <button class="btn" style="width:100%;justify-content:center;margin-top:10px" onclick="supaClient.auth.signOut().then(()=>location.reload())"><i class="ti ti-logout"></i> Terminar sessão</button>
+    </div>`;
+  }
+  const root=document.getElementById('appRoot'); if(root)root.style.display='none';
+}
 async function mostrarBloqueioAcesso(){
   try{ await supaClient.auth.signOut(); }catch(e){}
   const overlay=document.getElementById('authOverlay');
@@ -5833,6 +5853,14 @@ async function enterApp(session){
     const{data:bloqueado}=await supaClient.rpc('cliente_bloqueado');
     if(bloqueado){ mostrarBloqueioAcesso(); return; }
   }catch(e){ /* se a verificação falhar, não bloqueia por precaução */ }
+  // Acessos por aplicação (interruptores no admin.html): gerirmais e Gestão AL.
+  // Se a verificação falhar (ex.: função ainda não criada), a app funciona como antes.
+  try{
+    const{data:ac,error:acErr}=await supaClient.rpc('meus_acessos');
+    const acessos=(!acErr&&ac&&ac.length)?ac[0]:null;
+    if(acessos&&acessos.gerirmais===false){ mostrarSemAcessoGerirmais(!!acessos.al); return; }
+    if(acessos&&acessos.al){ ['btnGestaoAL','btnGestaoALMobile'].forEach(id=>{const b=document.getElementById(id); if(b)b.style.display='';}); }
+  }catch(e){}
   const overlay=document.getElementById('authOverlay'); if(overlay)overlay.style.display='none';
   const root=document.getElementById('appRoot'); if(root)root.style.display='';
   const emailEl=document.getElementById('cfgAccountEmail'); if(emailEl)emailEl.value=currentUser.email||'';
@@ -5879,7 +5907,8 @@ supaClient.auth.onAuthStateChange((event,session)=>{
   }
   if(event==='SIGNED_IN'&&session){
     if(emFluxoRecuperacao)return;
-    enterApp(session);
+    // setTimeout: chamar o Supabase dentro deste aviso pode bloquear o login ("A processar..." parado)
+    setTimeout(()=>enterApp(session),0);
   }
 });
 // Executa mesmo que o evento de load já tenha passado

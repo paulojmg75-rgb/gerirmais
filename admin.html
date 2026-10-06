@@ -72,6 +72,7 @@ td button{width:auto;padding:5px 8px;font-size:10px;margin:0 4px 0 0;background:
     </div>
   </div>
   <button id="loginBtn" onclick="doLogin()">Entrar</button>
+  <div style="text-align:center;margin-top:12px;font-size:12px"><a href="https://gerirmais.com/" style="color:var(--teal)">Esqueci-me da password</a><div style="color:var(--ink2);font-size:11px;margin-top:4px">É a mesma conta e a mesma password da gerirmais. Recupera-a lá e volta aqui.</div></div>
 </div>
 
 <div class="box hidden" id="adminBox">
@@ -83,6 +84,13 @@ td button{width:auto;padding:5px 8px;font-size:10px;margin:0 4px 0 0;background:
     <div class="form-group">
       <label>Nome do cliente</label>
       <input type="text" id="nomeCliente" placeholder="Ex: João Tombola">
+    </div>
+    <div class="form-group" id="appsNovo">
+      <label>Aplicações a que este cliente tem acesso</label>
+      <div style="display:flex;gap:14px;font-size:13px;margin-top:4px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink);font-weight:600;margin:0"><input type="checkbox" id="novoGerirmais" checked style="width:auto"> Gerirmais</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink);font-weight:600;margin:0"><input type="checkbox" id="novoAL" style="width:auto"> Gestão AL</label>
+      </div>
     </div>
     <button id="gerarBtn" onclick="gerarCodigo()">Gerar link</button>
     <div class="link-out hidden" id="linkWrap">
@@ -122,6 +130,7 @@ td button{width:auto;padding:5px 8px;font-size:10px;margin:0 4px 0 0;background:
             <th>Último acesso</th>
             <th>Validade</th>
             <th>Estado</th>
+            <th>Aplicações</th>
             <th></th>
           </tr>
         </thead>
@@ -218,23 +227,29 @@ function estadoValidade(validade){
 async function carregarClientes(){
   setErr('listaMsg','');
   try{
-    const{data:dataBruta,error}=await supaClient.rpc('listar_clientes_admin');
+    // v2 traz também os interruptores por aplicação; se ainda não existir, usa a antiga
+    let{data:dataBruta,error}=await supaClient.rpc('listar_clientes_admin_v2');
+    if(error){ temApps=false; ({data:dataBruta,error}=await supaClient.rpc('listar_clientes_admin')); } else temApps=true;
     const body=document.getElementById('tabelaClientesBody');
     if(error){ setErr('listaMsg','Não foi possível carregar a lista.'); return; }
     const data=(dataBruta||[]).filter(r=>!r.eliminado);
-    if(!data.length){ body.innerHTML='<tr><td colspan="7" style="color:var(--ink2)">Ainda não geraste nenhum código.</td></tr>'; return; }
+    if(!data.length){ body.innerHTML='<tr><td colspan="8" style="color:var(--ink2)">Ainda não geraste nenhum código.</td></tr>'; return; }
     body.innerHTML=data.map(row=>{
       const est=estadoValidade(row.validade);
       const codigoSeguro=row.codigo.replace(/"/g,'&quot;');
       const usado=!!row.usado_por_email;
       const bloqueado=!!row.bloqueado;
       const protegido=!!row.protegido;
+      const apG=row.acesso_gerirmais!==false, apA=!!row.acesso_al;
+      const tipoLink=(!apG&&apA)?'al':'g';
+      const btnApp=(app,lig,nome)=>`<button style="background:${lig?'var(--teal)':'#A8A29E'};display:block;width:100%;margin:0 0 4px 0;text-align:left" title="Clica para ${lig?'desligar':'ligar'}" onclick="alternarApp('${codigoSeguro}','${app}',${!lig})">${lig?'✅':'⛔'} ${nome}</button>`;
+      const celApps=temApps?(btnApp('gerirmais',apG,'Gerirmais')+btnApp('al',apA,'Gestão AL')):'<span style="font-size:10px;color:var(--ink2)">corre o SQL 02</span>';
       const botaoEliminar=usado
         ? `<button style="background:var(--ink2)" onclick="eliminarCliente('${codigoSeguro}')">Eliminar</button>`
         : `<button style="background:var(--red)" onclick="eliminarCodigo('${codigoSeguro}')">Eliminar</button>`;
       return `<tr data-codigo="${codigoSeguro}">
         <td>${row.cliente||'—'}</td>
-        <td style="font-family:monospace;font-size:11px">${row.codigo}<br><button style="margin-top:4px" onclick="copiarLinkCliente('${codigoSeguro}',this)">Copiar link</button></td>
+        <td style="font-family:monospace;font-size:11px">${row.codigo}<br><button style="margin-top:4px" onclick="copiarLinkCliente('${codigoSeguro}',this,'${tipoLink}')">Copiar link</button></td>
         <td style="font-size:11px">${row.usado_por_email?row.usado_por_email:'<em>por usar</em>'}</td>
         <td style="font-size:11px">${formatarDataHora(row.ultimo_acesso)}</td>
         <td><input type="date" value="${row.validade||''}" class="inp-validade"></td>
@@ -243,6 +258,7 @@ async function carregarClientes(){
           ${bloqueado?'<span class="badge" style="background:var(--red-l);color:var(--red);margin-left:4px">Bloqueado</span>':''}
           ${protegido?'<span class="badge" style="background:#EFEBE3;color:var(--ink2);margin-left:4px">🔒 Protegido</span>':''}
         </td>
+        <td style="min-width:120px">${celApps}</td>
         <td style="white-space:nowrap">
           <div>
             <button onclick="ajustarValidade('${codigoSeguro}',1)">+1 ano</button>
@@ -293,6 +309,16 @@ async function alternarBloqueio(codigo,bloquear){
     carregarClientes();
   }catch(e){ setErr('listaMsg','Erro de ligação.'); }
 }
+let temApps=false;
+async function alternarApp(codigo,app,ligar){
+  const nome=app==='al'?'Gestão AL':'Gerirmais';
+  if(!ligar && !confirm('Desligar o acesso à '+nome+' para este cliente? Os dados dele ficam guardados; volta a ver tudo quando ligares de novo.'))return;
+  try{
+    const{data,error}=await supaClient.rpc('alternar_acesso_app',{p_codigo:codigo,p_app:app,p_ligar:ligar});
+    if(error||!data){ setErr('listaMsg','Não foi possível mudar o acesso à '+nome+'.'); return; }
+    carregarClientes();
+  }catch(e){ setErr('listaMsg','Erro de ligação.'); }
+}
 async function alternarProtecao(codigo,protegido){
   try{
     const{data,error}=await supaClient.rpc('alternar_protecao_codigo',{p_codigo:codigo,p_protegido:protegido});
@@ -321,14 +347,18 @@ async function gerarCodigo(){
   const nome=document.getElementById('nomeCliente').value.trim();
   setErr('adminErr',''); document.getElementById('adminOk').style.display='none'; hide('linkWrap');
   if(!nome){ setErr('adminErr','Escreve o nome do cliente.'); return; }
+  const querG=document.getElementById('novoGerirmais').checked, querA=document.getElementById('novoAL').checked;
+  if(!querG&&!querA){ setErr('adminErr','Escolhe pelo menos uma aplicação.'); return; }
   const btn=document.getElementById('gerarBtn');
   btn.disabled=true; btn.textContent='A gerar...';
   try{
-    const{data,error}=await supaClient.rpc('criar_codigo_ativacao',{p_cliente:nome});
+    // com interruptores (SQL 02); se ainda não existir e for só gerirmais, usa a antiga
+    let{data,error}=await supaClient.rpc('criar_codigo_ativacao_v2',{p_cliente:nome,p_gerirmais:querG,p_al:querA});
+    if(error&&querG&&!querA){ ({data,error}=await supaClient.rpc('criar_codigo_ativacao',{p_cliente:nome})); }
     if(error||!data){
       setErr('adminErr','Não foi possível gerar. Tenta novamente.');
     }else{
-      document.getElementById('linkGerado').value='https://gerirmais.com/?codigo='+encodeURIComponent(data);
+      document.getElementById('linkGerado').value=linkCliente(data,(!querG&&querA)?'al':'g');
       show('linkWrap');
       document.getElementById('nomeCliente').value='';
       document.getElementById('googleStepsBody').classList.remove('hidden');
@@ -339,8 +369,11 @@ async function gerarCodigo(){
   btn.disabled=false; btn.textContent='Gerar link';
 }
 
-function copiarLinkCliente(codigo,btn){
-  const link='https://gerirmais.com/?codigo='+encodeURIComponent(codigo);
+function linkCliente(codigo,tipo){
+  return (tipo==='al'?'https://gerirmais.com/al.html?codigo=':'https://gerirmais.com/?codigo=')+encodeURIComponent(codigo);
+}
+function copiarLinkCliente(codigo,btn,tipo){
+  const link=linkCliente(codigo,tipo);
   try{
     if(navigator.clipboard)navigator.clipboard.writeText(link);
     else{
