@@ -123,6 +123,11 @@ body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;backgrou
 .metric-value{font-size:19px;font-weight:700;color:var(--text);line-height:1.2;letter-spacing:-.01em}
 .metric-sub{font-size:10px;margin-top:3px}
 .metric-outro .metric-label,.metric-outro .metric-sub{overflow-wrap:anywhere}
+/* escolha "Feiras/Eventos" ou "Outro" no topo do lançamento */
+.neg-seg{display:flex;gap:8px;margin-bottom:12px}
+.neg-seg button{flex:1;min-width:0;padding:10px 8px;border-radius:var(--radius);border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.neg-seg button.on[data-n="feira"]{background:var(--blue-l);border-color:var(--blue);color:var(--blue)}
+.neg-seg button.on[data-n="outro"]{background:var(--purple-l);border-color:var(--purple);color:var(--purple)}
 
 /* CARDS */
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:.875rem;margin-bottom:.875rem}
@@ -1118,6 +1123,10 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
     <button class="close-btn" onclick="closeTxModal()"><i class="ti ti-x"></i></button>
   </div>
   <div class="edit-banner" id="editBanner" style="display:none"><i class="ti ti-pencil"></i> Estás a editar um lançamento existente. Corrige o que precisas e guarda.</div>
+  <div class="neg-seg" id="negSeg" style="display:none">
+    <button type="button" data-n="feira" onclick="setNegocioTx('feira')">🎪 Feiras/Eventos</button>
+    <button type="button" data-n="outro" id="negSegOutro" onclick="setNegocioTx('outro')">🏷️ Outro</button>
+  </div>
   <div class="form-row">
     <div class="form-group"><label class="form-label">Tipo</label><select id="f-tipo" onchange="refreshCatSelect()"><option value="Receita">Receita</option><option value="Despesa">Despesa</option></select></div>
     <div class="form-group"><label class="form-label">Data</label><input type="date" id="f-data" onchange="onDataChange()"></div>
@@ -1160,6 +1169,10 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
     </div>
   </div>
   <div class="form-group">
+    <label class="form-label">Conta / Local <span style="font-weight:400;color:var(--text3);font-size:10px">(a feira/evento é o local)</span></label>
+    <select id="f-conta" onchange="onContaChange()"></select>
+  </div>
+  <div class="form-group">
     <label class="form-label"><span id="cat-label-text">Categoria de despesa</span> <button class="link-btn" id="new-cat-link" onclick="openCatModal()">+ Nova categoria</button></label>
     <select id="f-cat" onchange="toggleViatField()"></select>
   </div>
@@ -1168,10 +1181,6 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
     <select id="f-viat">
       <option value="">— Selecionar viatura —</option>
     </select>
-  </div>
-  <div class="form-group">
-    <label class="form-label">Conta / Local <span style="font-weight:400;color:var(--text3);font-size:10px">(a feira/evento é o local)</span></label>
-    <select id="f-conta" onchange="onContaChange()"></select>
   </div>
   <div class="form-row">
     <div class="form-group">
@@ -1807,7 +1816,12 @@ function openTxModal(){
   document.getElementById('f-tipo').value='Receita';
   document.getElementById('f-meio').value='Dinheiro';
   document.getElementById('f-empregado').innerHTML='<option value="">— Nenhum —</option>'+emps.map(e=>`<option value="${e.nome}">${e.nome}</option>`).join('');
-  refreshCatSelect();refreshContaSelect();
+  negocioTx='feira';
+  // Já vem escolhido o último local usado (e o grupo certo: Feiras/Eventos ou Outro)
+  const _ul=ultimoLocalParaAno(document.getElementById('f-ano').value);
+  if(_ul&&temOutroNegocio())negocioTx=ehOutro(_ul)?'outro':'feira';
+  refreshContaSelect(_ul?('fid:'+_ul.id):'');
+  refreshCatSelect();
   document.getElementById('f-viat').value='';
   document.getElementById('txModal').style.display='flex';
 }
@@ -1825,6 +1839,7 @@ function editTx(id){
   document.getElementById('f-notas').value=t.notas||'';
   document.getElementById('f-meio').value=t.meio||'Dinheiro';
   document.getElementById('f-empregado').innerHTML='<option value="">— Nenhum —</option>'+emps.map(e=>`<option value="${e.nome}"${e.nome===t.empregado?' selected':''}>${e.nome}</option>`).join('');
+  negocioTx=txEhOutro(t)?'outro':'feira';
   refreshCatSelect(t.cat);refreshContaSelect(t.feiraId?('fid:'+t.feiraId):(t.conta||''));refreshCatSelect(t.cat);
   if(t.viatura)document.getElementById('f-viat').value=t.viatura;
   // Restaurar documento se existir
@@ -1867,7 +1882,7 @@ function refreshCatSelect(sel){
   if(label)label.textContent=tipo==='Receita'?'Tipo de receita':'Categoria de despesa';
   if(addBtn)addBtn.textContent=tipo==='Receita'?'+ Novo tipo de receita':'+ Nova categoria';
   const s=document.getElementById('f-cat');
-  s.innerHTML=list.map(c=>`<option${sel&&c===sel?' selected':''}>${c}</option>`).join('');
+  s.innerHTML=list.length?list.map(c=>`<option${sel&&c===sel?' selected':''}>${c}</option>`).join(''):`<option value="">— cria o primeiro em «${tipo==='Receita'?'+ Novo tipo de receita':'+ Nova categoria'}» —</option>`;
   if(sel&&!list.includes(sel))s.innerHTML+=`<option selected>${sel}</option>`;
   toggleViatField();
 }
@@ -1925,20 +1940,53 @@ function getConta(t){
    solto (lançamento antigo, de antes desta versão, ou sem feira/evento). Usar o ID da feira
    como valor da opção — em vez do nome — é o que faz o lançamento continuar corretamente
    ligado à feira mesmo que ela seja renomeada mais tarde. */
+/* ---- Lançamento: escolher logo no topo se é "Feiras/Eventos" ou "Outro" ---- */
+let negocioTx='feira';
+function temOutroNegocio(){return fairs.some(ehOutro);}
+function atualizarNegSeg(){
+  const box=document.getElementById('negSeg');if(!box)return;
+  const tem=temOutroNegocio();
+  box.style.display=tem?'flex':'none';
+  if(!tem)negocioTx='feira';
+  const bo=document.getElementById('negSegOutro');if(bo)bo.textContent='🏷️ '+outroNome();
+  box.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.n===negocioTx));
+}
+function setNegocioTx(n){
+  negocioTx=n;atualizarNegSeg();
+  refreshContaSelect('');   // só mostra as contas desse grupo
+  try{onContaChange();}catch(e){}
+}
+/* ---- Lembra o último local usado num lançamento (só neste aparelho) ---- */
+function guardarUltimoLocal(feiraId,nome){
+  try{if(feiraId)localStorage.setItem(lsKey('rv_ultimo_local'),JSON.stringify({id:feiraId,nome:nome||''}));}catch(e){}
+}
+function ultimoLocalParaAno(ano){
+  let u=null;try{u=JSON.parse(localStorage.getItem(lsKey('rv_ultimo_local'))||'null');}catch(e){}
+  if(!u)return null;
+  const doAno=f=>!ano||String(f.ano)===String(ano);
+  // o mesmo local (mesmo registo) ou, se for de outro ano, o local com o mesmo nome deste ano
+  return fairs.find(f=>f.id===u.id&&doAno(f))||(u.nome?fairs.find(f=>f.nome===u.nome&&doAno(f)):null)||null;
+}
 function refreshContaSelect(sel){
   const s=document.getElementById('f-conta');
   // Ano do lançamento (o que define a associação à feira): primeiro o campo Ano, senão a data
   const ano=(document.getElementById('f-ano')?.value)||((document.getElementById('f-data')?.value||'').slice(0,4))||'';
-  let html='<option value="">— Sem feira/evento —</option>';
+  atualizarNegSeg();
+  const filtrar=temOutroNegocio();
+  const modoOutro=filtrar&&negocioTx==='outro';
+  let html=modoOutro?'<option value="">— Escolhe: '+outroNome()+' —</option>':'<option value="">— Sem feira/evento —</option>';
   // Só as feiras/eventos DESTE ano, e cada nome uma só vez
   const vistos=new Set();
   const lista=fairs
     .filter(f=>f.nome && (!ano||String(f.ano)===String(ano)))
+    .filter(f=>!filtrar||(modoOutro?ehOutro(f):!ehOutro(f)))
     .filter(f=>{ if(vistos.has(f.nome))return false; vistos.add(f.nome); return true; })
     .sort((a,b)=>a.nome.localeCompare(b.nome));
   const valoresDesteAno=new Set(lista.map(f=>'fid:'+f.id));
+  // No modo "Outro", se só há um para este ano, já fica escolhido
+  if(modoOutro&&!sel&&lista.length===1)sel='fid:'+lista[0].id;
   if(lista.length){
-    html+='<optgroup label="🎪 Feiras / Eventos de '+ano+'">';
+    html+='<optgroup label="'+(modoOutro?'🏷️ '+outroNome():'🎪 Feiras / Eventos')+' de '+ano+'">';
     html+=lista.map(f=>{const val='fid:'+f.id;const sufixo=ehOutro(f)?' · '+outroNome():'';return `<option value="${val}"${sel===val?' selected':''}>${f.nome}${sufixo}</option>`;}).join('');
     html+='</optgroup>';
   }
@@ -1952,6 +2000,7 @@ function refreshContaSelect(sel){
     }
     html+=`<optgroup label="Anterior"><option value="${sel}" selected>${rotulo}</option></optgroup>`;
   }
+  if(modoOutro&&!lista.length&&!sel)html+='<option value="" disabled>(sem "'+outroNome()+'" em '+ano+' — cria em Feiras/Eventos)</option>';
   s.innerHTML=html;
 }
 function saveDocLocal(txId, doc){
@@ -1990,10 +2039,12 @@ function saveTx(){
   const empregado=document.getElementById('f-empregado').value||'';
   const viatura=(cat==='Combustivel'?(document.getElementById('f-viat').value||''):'');
   if(!data||isNaN(valor)||valor<=0){alert('Por favor preenche a data e um valor válido (maior que zero).');return;}
+  if(temOutroNegocio()&&negocioTx==='outro'&&!contaRaw&&tipo!=='Fundo de Caixa'){alert('Escolheste "'+outroNome()+'": escolhe também o local (se ainda não existe para este ano, cria-o primeiro em Feiras/Eventos → '+outroNome()+').');return;}
   const splitAtivo=splitEnabled&&tipo==='Receita';
   const pct=splitAtivo?(parseFloat(document.getElementById('split-pct').value)||50):100;
   const valorFinal=splitAtivo?Math.round(valor*(pct/100)*100)/100:valor;
   const notasFinal=splitAtivo?(notas?notas+' ['+pct+'% partilhado]':'Receita partilhada a '+pct+'%'):notas;
+  guardarUltimoLocal(feiraId,conta);
   if(editTxId){
     const i=txList.findIndex(x=>x.id===editTxId);
     const docFinal=docData!==null?docData:loadDocLocal(editTxId);
@@ -2345,6 +2396,7 @@ async function puxarOutroCfg(forcar){
 function aplicarNomeOutro(){
   const n=outroNome();
   const b=document.getElementById('btnOutroLbl');if(b)b.textContent=n;
+  try{atualizarNegSeg();}catch(e){}
   const o=document.querySelector('#ff-tipo option[value="outro"]');if(o)o.textContent=n+' (outro negócio)';
   const t=document.getElementById('cfgOutroTitulo');if(t)t.textContent='Categorias — '+n;
   try{toggleOutroCampos();}catch(e){}
@@ -3374,9 +3426,21 @@ let currentUser=null;
    Atualiza estes dois valores sempre que publicares uma versão nova do index.html:
    sobe o número e acrescenta um novo objeto no TOPO de APP_CHANGELOG (fica visível
    no cartão "Versão" em Configurações). */
-const APP_VERSION='3.79';
+const APP_VERSION='3.82';
 const APP_UPDATE_DATE='2026-10-06'; // formato AAAA-MM-DD
 const APP_CHANGELOG=[
+  {v:'3.82',data:'2026-10-06',notas:[
+    'Ao abrir um "Novo lançamento", o Local já vem escolhido: é o último que usaste ao guardar (e, se tens um Outro, já vem no grupo certo — Feiras/Eventos ou Outro). Assim não tens de o procurar de cada vez; se quiseres outro, é só mudar. Se o último local for de um ano anterior, usa o que tem o mesmo nome neste ano, se existir.',
+    'Fica guardado só neste aparelho (telemóvel e PC lembram-se cada um do seu). Não mexe nos lançamentos nem nas configurações.'
+  ]},
+  {v:'3.81',data:'2026-10-06',notas:[
+    'No lançamento, "Conta / Local" passou para ANTES de "Tipo de receita" / "Categoria": primeiro escolhes onde é (feira, evento ou o teu Outro) e depois a categoria, que já aparece só com as opções desse local. É só uma troca de posição no ecrã: não mexe em nenhuma configuração nem nos lançamentos já feitos, por isso o histórico e as pesquisas ficam iguais.',
+    'Se o teu Outro ainda não tem categorias, o campo mostra uma indicação para criares a primeira em "+ Novo tipo de receita" (antes aparecia vazio).'
+  ]},
+  {v:'3.80',data:'2026-10-06',notas:[
+    'Ao fazer um lançamento, aparece logo no topo uma escolha: "Feiras/Eventos" ou o teu "Outro" (ex.: Alojamento Local). Conforme escolheres, a lista de locais e as categorias mostram só as desse negócio, para não haver confusão.',
+    'A escolha só aparece se tiveres criado um "Outro". Se não, o lançamento fica igual ao que sempre foi. Ao corrigir um lançamento antigo, já vem escolhido o grupo certo.'
+  ]},
   {v:'3.79',data:'2026-10-06',notas:[
     'No Dashboard aparece um cartão novo com o resultado do teu negócio "Outro" (ex.: Alojamento Local), com o nome que lhe deste. Só aparece se tiveres criado um "Outro"; se não, o painel fica exatamente como estava. Cabe na mesma linha dos outros cartões (no PC e no telemóvel), sem mudar o tamanho das letras de forma visível.',
     'Os totais do Dashboard continuam a incluir tudo, como antes; o cartão novo mostra só a parte do "Outro" (resultado, e em baixo receitas e despesas).'
