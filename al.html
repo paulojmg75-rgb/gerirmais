@@ -133,6 +133,8 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 .aj li{margin-top:4px}
 .aj .n{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;display:grid;place-items:center;flex:0 0 24px}
 .dica{font-size:12px;color:var(--ink2);background:#F7F2E9;border-radius:11px;padding:8px 11px;margin-top:10px;line-height:1.5}
+#ajudaFab{position:fixed;right:16px;bottom:78px;width:48px;height:48px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:22px;font-weight:800;box-shadow:0 6px 18px -4px rgba(31,28,24,.45);z-index:30;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+#ajudaFab:active{cursor:grabbing}
 @media(min-width:760px){
   :root{--lab:150px}
   .ov{align-items:center}.sheet{border-radius:22px}
@@ -184,12 +186,12 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 <!-- APP -->
 <div id="app" class="hide">
   <header>
-    <div class="t"><div class="logo" style="width:32px;height:32px;font-size:13px;border-radius:9px">AL</div> Gestão AL <span class="badge hide" id="demoBadge">EXEMPLO</span><small style="font-size:10px;color:var(--ink3);font-weight:600">v2.1</small></div>
+    <div class="t"><div class="logo" style="width:32px;height:32px;font-size:13px;border-radius:9px">AL</div> Gestão AL <span class="badge hide" id="demoBadge">EXEMPLO</span><small style="font-size:10px;color:var(--ink3);font-weight:600">v2.2</small></div>
     <a class="lnk hide" id="lnkGerirmais" href="index.html" title="Ir para a Gestão de Negócio (mesma conta)">Gerirmais ↗</a>
-    <button class="ibtn" onclick="abrirAjuda()" title="Ajuda passo a passo" style="font-weight:800;color:var(--accent-d)">?</button>
     <button class="ibtn" onclick="sair()" title="Sair">⏻</button>
   </header>
   <main id="main"></main>
+  <button id="ajudaFab" title="Ajuda passo a passo (podes arrastar este botão)" aria-label="Ajuda">?</button>
   <nav class="tabs"><div class="in">
     <button data-t="cal" class="on" onclick="tab('cal')"><span class="ic">📅</span>Calendário</button>
     <button data-t="hosp" onclick="tab('hosp')"><span class="ic">👥</span>Hóspedes<small>em breve</small></button>
@@ -252,7 +254,7 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 <!-- JANELA: AJUDA -->
 <div id="mAjuda" class="ov hide" onclick="if(event.target===this)fechar('mAjuda')"><div class="sheet">
   <h2>Ajuda — passo a passo</h2>
-  <p style="font-size:13px;color:var(--ink2);margin-top:2px">Toca num tema para ver os passos.</p>
+  <p style="font-size:13px;color:var(--ink2);margin-top:2px">Toca num tema para ver os passos. O botão <b>?</b> pode ser arrastado para onde não estorve.</p>
 
   <details class="aj" open><summary><span class="n">1</span>Começar: criar o primeiro alojamento</summary><ol>
     <li>Carrega em <b>+ Alojamento</b> (por baixo do calendário).</li>
@@ -321,7 +323,7 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
    ==================================================================== */
 const SUPA_URL='https://xkfshzlcwiuvztfdwvjm.supabase.co';   // MESMO projeto da gerirmais (Gestao de Negocio) → mesma conta, sem novo login
 const SUPA_KEY='sb_publishable_SGjww6C455tzA6wpIevT-w_t2X9lqMJ';   // chave publishable da gerirmais (pública; a segurança está no RLS)
-const VERSAO='2.1';
+const VERSAO='2.2';
 const GERIRMAIS_URL='index.html';
 
 /* ---------- utilitários ---------- */
@@ -342,6 +344,20 @@ const uuid=()=>(crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-x
 function toast(t,ms){const e=$('toast');e.textContent=t;e.classList.remove('hide');clearTimeout(toast._t);toast._t=setTimeout(()=>e.classList.add('hide'),ms||2800);}
 function abrir(id){$(id).classList.remove('hide');}
 function abrirAjuda(){abrir('mAjuda');}
+/* Botão de ajuda flutuante: toca para abrir, arrasta para mudar de sítio (fica lembrado neste aparelho) */
+(function(){
+  const b=document.getElementById('ajudaFab');if(!b)return;
+  const fixa=(x,y)=>{const m=6,W=innerWidth-b.offsetWidth-m,H=innerHeight-b.offsetHeight-m;
+    b.style.left=Math.max(m,Math.min(W,x))+'px';b.style.top=Math.max(m,Math.min(H,y))+'px';b.style.right='auto';b.style.bottom='auto';};
+  try{const p=JSON.parse(localStorage.getItem('alAjudaPos')||'null');if(p)requestAnimationFrame(()=>fixa(p.x,p.y));}catch(e){}
+  let ini=null,mexeu=false;
+  b.addEventListener('pointerdown',e=>{const r=b.getBoundingClientRect();ini={dx:e.clientX-r.left,dy:e.clientY-r.top,x:e.clientX,y:e.clientY};mexeu=false;b.setPointerCapture(e.pointerId);});
+  b.addEventListener('pointermove',e=>{if(!ini)return;if(!mexeu&&Math.hypot(e.clientX-ini.x,e.clientY-ini.y)<6)return;mexeu=true;fixa(e.clientX-ini.dx,e.clientY-ini.dy);});
+  b.addEventListener('pointerup',e=>{if(!ini)return;ini=null;
+    if(mexeu){try{localStorage.setItem('alAjudaPos',JSON.stringify({x:parseInt(b.style.left),y:parseInt(b.style.top)}));}catch(e){}}
+    else abrirAjuda();});
+  addEventListener('resize',()=>{if(b.style.left)fixa(parseInt(b.style.left),parseInt(b.style.top));});
+})();
 function fechar(id){$(id).classList.add('hide');}
 
 /* ---------- estado ---------- */
@@ -534,8 +550,7 @@ function render(){
   });
   h+=`</div></div>
     <div class="legend"><span><i style="background:var(--airbnb)"></i>Airbnb</span><span><i style="background:var(--booking)"></i>Booking</span><span><i style="background:var(--direta)"></i>Direta</span><span><i style="background:var(--outra)"></i>Outra</span><span><i style="background:#B8BFC7"></i>Bloqueio</span></div>
-    <div style="display:flex;gap:8px;margin-top:10px"><button class="btn pri" style="flex:1" onclick="abrirRes()">+ Nova reserva</button><button class="btn" onclick="abrirAloj()">+ Alojamento</button></div>
-    <div class="dica">💡 <b>Toca numa reserva</b> para a editar ou apagar · <b>toca no nome do alojamento</b> para o editar ou remover · <a href="#" onclick="abrirAjuda();return false" style="color:var(--accent-d);font-weight:700">Ver ajuda completa</a></div>`;
+    <div style="display:flex;gap:8px;margin-top:10px"><button class="btn pri" style="flex:1" onclick="abrirRes()">+ Nova reserva</button><button class="btn" onclick="abrirAloj()">+ Alojamento</button></div>`;
 
   /* próximos movimentos */
   const evs=[];S.res.filter(ativa).forEach(r=>{
