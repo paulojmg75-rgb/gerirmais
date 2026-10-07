@@ -216,7 +216,7 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 <!-- APP -->
 <div id="app" class="hide">
   <header>
-    <div class="t"><div class="logo" style="width:32px;height:32px;font-size:13px;border-radius:9px">AL</div> Gestão AL <span class="badge hide" id="demoBadge">EXEMPLO</span><small style="font-size:10px;color:var(--ink3);font-weight:600">v3.1</small></div>
+    <div class="t"><div class="logo" style="width:32px;height:32px;font-size:13px;border-radius:9px">AL</div> Gestão AL <span class="badge hide" id="demoBadge">EXEMPLO</span><small style="font-size:10px;color:var(--ink3);font-weight:600">v3.2</small></div>
     <a class="lnk hide" id="lnkGerirmais" href="index.html" title="Ir para a Gestão de Negócio (mesma conta)">Gerirmais ↗</a>
     <button class="ibtn" id="copiaBtn" onclick="abrirCopias()" title="Cópias na Google Drive">☁️</button>
     <button class="ibtn" onclick="sair()" title="Sair">⏻</button>
@@ -420,7 +420,7 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
   <details class="aj"><summary><span class="n">9</span>💶 Contas (receitas e despesas)</summary><ol>
     <li>Escolhe <b>Mês</b> ou <b>Ano</b> e usa <b>‹ ›</b> para mudar de período.</li>
     <li><b>+ Receita</b> ou <b>+ Despesa</b>: valor, data, alojamento e categoria (podes escolher da lista ou escrever).</li>
-    <li>As reservas com valor que ainda não lançaste aparecem em <b>"Reservas por lançar"</b> — carrega em <b>Lançar</b> (ou "Lançar todas").</li>
+    <li>As reservas com valor que ainda não lançaste aparecem em <b>"Reservas por lançar"</b> — carrega em <b>Lançar</b> (ou em <b>"Lançar as … de uma vez"</b>, para todas).</li>
     <li>Em cima tens o total de receitas, despesas e a <b>margem</b>. "Por alojamento" mostra cada casa; toca numa para a ver sozinha.</li>
     <li>Toca num movimento para o <b>editar</b> ou <b>apagar</b>.</li>
   </ol></details>
@@ -468,7 +468,7 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
    ==================================================================== */
 const SUPA_URL='https://xkfshzlcwiuvztfdwvjm.supabase.co';   // MESMO projeto da gerirmais (Gestao de Negocio) → mesma conta, sem novo login
 const SUPA_KEY='sb_publishable_SGjww6C455tzA6wpIevT-w_t2X9lqMJ';   // chave publishable da gerirmais (pública; a segurança está no RLS)
-const VERSAO='3.1';
+const VERSAO='3.2';
 const GERIRMAIS_URL='index.html';
 
 /* ---------- utilitários ---------- */
