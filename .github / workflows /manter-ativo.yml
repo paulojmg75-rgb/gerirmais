@@ -1,0 +1,46 @@
+# =====================================================================
+#  MANTER ATIVO — impede o Supabase gratuito de "adormecer" (pausa o
+#  projeto ao fim de 7 dias sem uso). Corre sozinho no GitHub, a cada
+#  2 dias, e faz uma pequena consulta à base de dados da gerirmais
+#  (a mesma da Gestão AL). Não lê nem altera dados de ninguém.
+#  Ficheiro: .github/workflows/manter-ativo.yml  (repo gerirmais)
+# =====================================================================
+name: Manter ativo
+
+on:
+  schedule:
+    - cron: "17 6 */2 * *"   # de 2 em 2 dias, às 06:17 UTC
+  workflow_dispatch: {}      # permite correr à mão (botão "Run workflow")
+
+permissions:
+  actions: write             # para se manter ligado (o GitHub desliga agendamentos parados há 60 dias)
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Consulta à base de dados (Supabase)
+        env:
+          URL: https://xkfshzlcwiuvztfdwvjm.supabase.co
+          KEY: sb_publishable_SGjww6C455tzA6wpIevT-w_t2X9lqMJ   # chave pública (a mesma que está no site)
+        run: |
+          for i in 1 2 3; do
+            code=$(curl -s -o resp.txt -w "%{http_code}" -X POST "$URL/rest/v1/rpc/meus_acessos" \
+              -H "apikey: $KEY" -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" -d '{}')
+            echo "Tentativa $i: HTTP $code"; cat resp.txt; echo
+            if [ "$code" = "200" ]; then exit 0; fi
+            sleep 30
+          done
+          echo "::error::O Supabase não respondeu. Pode estar pausado: abre o painel do Supabase e carrega em Restore/Resume."
+          exit 1
+
+      - name: Visita ao site
+        run: |
+          curl -s -o /dev/null -w "gerirmais.com: HTTP %{http_code}\n" https://gerirmais.com/
+          curl -s -o /dev/null -w "gerirmais.com/al.html: HTTP %{http_code}\n" https://gerirmais.com/al.html
+
+      - name: Manter este agendamento ligado
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/manter-ativo.yml/enable" || true
