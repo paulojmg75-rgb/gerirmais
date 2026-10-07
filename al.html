@@ -133,6 +133,36 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 .aj li{margin-top:4px}
 .aj .n{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;display:grid;place-items:center;flex:0 0 24px}
 .dica{font-size:12px;color:var(--ink2);background:#F7F2E9;border-radius:11px;padding:8px 11px;margin-top:10px;line-height:1.5}
+.filtros{display:flex;gap:8px;margin:0 0 8px;flex-wrap:wrap}
+.filtros select,.filtros input{flex:1;min-width:140px;padding:10px 11px;border:1px solid var(--line2);border-radius:11px;background:#fff;font-size:14px}
+.seg{display:flex;background:#fff;border:1px solid var(--line2);border-radius:12px;padding:3px;margin:0 auto 10px;width:max-content}
+.seg button{border:none;background:none;padding:7px 18px;border-radius:9px;font-weight:700;font-size:13px;color:var(--ink2)}
+.seg button.on{background:var(--accent);color:#fff}
+.chk{width:30px;height:30px;border-radius:50%;border:2px solid var(--line2);background:#fff;color:#fff;font-weight:800;flex:0 0 30px}
+.chk.on{background:var(--direta);border-color:var(--direta)}
+.ev.feita{opacity:.6}.ev.feita .x div:first-child{text-decoration:line-through}
+.av{width:38px;height:38px;border-radius:50%;background:var(--accent);color:#fff;font-weight:800;display:grid;place-items:center;flex:0 0 38px}
+.mini{display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;margin-top:6px;cursor:pointer;background:#FFFDF9}
+.pos{color:var(--direta)}.neg{color:var(--red)}
+.tab-al{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.tab-al .lin{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:6px;padding:10px 12px;font-size:12.5px;align-items:center;cursor:pointer}
+.tab-al .lin+.lin{border-top:1px solid var(--line)}
+.tab-al .lin span:first-child{font-weight:700;display:flex;align-items:center;gap:6px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.tab-al i{width:9px;height:9px;border-radius:50%;flex:0 0 9px}
+.tab-al .lin>*:not(:first-child){text-align:right}
+.meses{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 8px 8px}
+.mes{text-align:center;font-size:9.5px;color:var(--ink2);cursor:pointer}
+.mes .bb{height:80px;display:flex;align-items:flex-end;justify-content:center;gap:2px}
+.mes .bb i{width:40%;border-radius:3px 3px 0 0;min-height:1px}.mes .r{background:var(--direta)}.mes .d{background:var(--red);opacity:.75}
+.notas{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:10px}
+.nota{background:#FFFCF2;border:1px solid var(--line);border-top:4px solid var(--ink3);border-radius:13px;padding:11px 12px;cursor:pointer;min-height:96px;display:flex;flex-direction:column}
+.nota .nt{font-weight:800;margin-bottom:4px}.nota .nx{font-size:13px;color:var(--ink2);white-space:pre-wrap;flex:1;overflow:hidden;max-height:7.5em}
+.nota .nf{font-size:10.5px;color:var(--ink3);margin-top:6px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.acoesh{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.acoesh a{text-decoration:none}
+.ibtn{position:relative}
+#copiaBtn.alerta::after{content:"";position:absolute;top:1px;right:1px;width:10px;height:10px;border-radius:50%;background:var(--red);border:2px solid #fff}
+.avisoCp{background:#EEF6FF;border:1px solid #C9DDF5;color:#1E4F86;border-radius:14px;padding:10px 13px;font-size:13px;margin-bottom:10px;display:flex;gap:10px;align-items:center}
+.avisoCp b{display:block}
 #ajudaFab{position:fixed;right:16px;bottom:78px;width:48px;height:48px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:22px;font-weight:800;box-shadow:0 6px 18px -4px rgba(31,28,24,.45);z-index:30;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
 #ajudaFab:active{cursor:grabbing}
 @media(min-width:760px){
@@ -186,18 +216,19 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 <!-- APP -->
 <div id="app" class="hide">
   <header>
-    <div class="t"><div class="logo" style="width:32px;height:32px;font-size:13px;border-radius:9px">AL</div> Gestão AL <span class="badge hide" id="demoBadge">EXEMPLO</span><small style="font-size:10px;color:var(--ink3);font-weight:600">v2.2</small></div>
+    <div class="t"><div class="logo" style="width:32px;height:32px;font-size:13px;border-radius:9px">AL</div> Gestão AL <span class="badge hide" id="demoBadge">EXEMPLO</span><small style="font-size:10px;color:var(--ink3);font-weight:600">v3.1</small></div>
     <a class="lnk hide" id="lnkGerirmais" href="index.html" title="Ir para a Gestão de Negócio (mesma conta)">Gerirmais ↗</a>
+    <button class="ibtn" id="copiaBtn" onclick="abrirCopias()" title="Cópias na Google Drive">☁️</button>
     <button class="ibtn" onclick="sair()" title="Sair">⏻</button>
   </header>
   <main id="main"></main>
   <button id="ajudaFab" title="Ajuda passo a passo (podes arrastar este botão)" aria-label="Ajuda">?</button>
   <nav class="tabs"><div class="in">
     <button data-t="cal" class="on" onclick="tab('cal')"><span class="ic">📅</span>Calendário</button>
-    <button data-t="hosp" onclick="tab('hosp')"><span class="ic">👥</span>Hóspedes<small>em breve</small></button>
-    <button data-t="tar" onclick="tab('tar')"><span class="ic">🧹</span>Tarefas<small>em breve</small></button>
-    <button data-t="con" onclick="tab('con')"><span class="ic">💶</span>Contas<small>em breve</small></button>
-    <button data-t="not" onclick="tab('not')"><span class="ic">🔧</span>Notas<small>em breve</small></button>
+    <button data-t="hosp" onclick="tab('hosp')"><span class="ic">👥</span>Hóspedes</button>
+    <button data-t="tar" onclick="tab('tar')"><span class="ic">🧹</span>Tarefas</button>
+    <button data-t="con" onclick="tab('con')"><span class="ic">💶</span>Contas</button>
+    <button data-t="not" onclick="tab('not')"><span class="ic">🔧</span>Notas</button>
   </div></nav>
 </div>
 
@@ -251,6 +282,81 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
   </div>
 </div></div>
 
+<!-- JANELA: TAREFA -->
+<div id="mTar" class="ov hide" onclick="if(event.target===this)fechar('mTar')"><div class="sheet">
+  <h2 id="tTitulo">Nova tarefa</h2>
+  <div class="row2">
+    <label class="fld"><span>Tipo</span><select id="tTipo"><option value="limpeza">🧹 Limpeza</option><option value="avaria">🔧 Avaria</option><option value="compra">🛒 Compra</option><option value="lembrete">🔔 Lembrete</option></select></label>
+    <label class="fld"><span>Estado</span><select id="tEst"><option value="pendente">Pendente</option><option value="em_curso">Em curso</option><option value="feita">Feita</option></select></label>
+  </div>
+  <label class="fld"><span>O que é preciso fazer</span><input id="tTit" placeholder="Ex: Mudar lâmpada da sala"></label>
+  <div class="row2">
+    <label class="fld"><span>Alojamento</span><select id="tAloj"></select></label>
+    <label class="fld"><span>Data</span><input id="tData" type="date"></label>
+  </div>
+  <label class="fld"><span>Responsável (opcional)</span><input id="tResp" placeholder="Ex: D. Rosa"></label>
+  <label class="fld"><span>Notas</span><textarea id="tNotas" rows="2"></textarea></label>
+  <div class="note hide" id="tRes"></div>
+  <div class="acts"><button class="btn red hide" id="tDel" onclick="apagarTarefa()">Apagar</button><button class="btn" onclick="fechar('mTar')">Cancelar</button><button class="btn pri" onclick="guardarTarefa()">Guardar</button></div>
+</div></div>
+
+<!-- JANELA: MOVIMENTO (CONTAS) -->
+<div id="mMov" class="ov hide" onclick="if(event.target===this)fechar('mMov')"><div class="sheet">
+  <h2 id="mTitulo">Nova receita</h2>
+  <div class="row2">
+    <label class="fld"><span>Tipo</span><select id="mTipo" onchange="mCats()"><option value="receita">Receita</option><option value="despesa">Despesa</option></select></label>
+    <label class="fld"><span>Valor (€)</span><input id="mVal" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off"></label>
+  </div>
+  <div class="row2">
+    <label class="fld"><span>Data</span><input id="mData" type="date"></label>
+    <label class="fld"><span>Alojamento</span><select id="mAlojSel"></select></label>
+  </div>
+  <label class="fld"><span>Categoria</span><input id="mCat" list="dlCat" placeholder="Escolhe ou escreve" autocomplete="off"></label>
+  <datalist id="dlCat"></datalist>
+  <label class="fld"><span>Descrição (opcional)</span><input id="mDesc"></label>
+  <div class="acts"><button class="btn red hide" id="mDel" onclick="apagarMov()">Apagar</button><button class="btn" onclick="fechar('mMov')">Cancelar</button><button class="btn pri" onclick="guardarMov()">Guardar</button></div>
+</div></div>
+
+<!-- JANELA: HÓSPEDE -->
+<div id="mHosp" class="ov hide" onclick="if(event.target===this)fechar('mHosp')"><div class="sheet">
+  <h2 id="hTitulo">Novo hóspede</h2>
+  <label class="fld"><span>Nome</span><input id="hNome"></label>
+  <div class="row2">
+    <label class="fld"><span>Telefone</span><input id="hTel" type="tel" inputmode="tel" placeholder="+351…"></label>
+    <label class="fld"><span>País</span><input id="hPais"></label>
+  </div>
+  <label class="fld"><span>Email</span><input id="hEmail" type="email" autocapitalize="off"></label>
+  <label class="fld"><span>Notas (preferências, observações…)</span><textarea id="hNotas" rows="2"></textarea></label>
+  <div class="acoesh" id="hAcoes"></div>
+  <div id="hHist"></div>
+  <div class="acts"><button class="btn red hide" id="hDel" onclick="apagarHosp()">Apagar</button><button class="btn" onclick="fechar('mHosp')">Cancelar</button><button class="btn pri" onclick="guardarHosp()">Guardar</button></div>
+</div></div>
+
+<!-- JANELA: NOTA -->
+<div id="mNota" class="ov hide" onclick="if(event.target===this)fechar('mNota')"><div class="sheet">
+  <h2 id="nTitulo">Nova nota</h2>
+  <label class="fld"><span>Título</span><input id="nTit" placeholder="Ex: Wi-Fi e cofre"></label>
+  <label class="fld"><span>Alojamento</span><select id="nAloj"></select></label>
+  <label class="fld"><span>Texto</span><textarea id="nTxt" rows="6"></textarea></label>
+  <label style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:14px"><input type="checkbox" id="nFix" style="width:18px;height:18px"> 📌 Fixar no topo</label>
+  <div class="acts"><button class="btn red hide" id="nDel" onclick="apagarNota()">Apagar</button><button class="btn" onclick="fechar('mNota')">Cancelar</button><button class="btn pri" onclick="guardarNota()">Guardar</button></div>
+</div></div>
+
+<!-- JANELA: CÓPIAS -->
+<div id="mCopias" class="ov hide" onclick="if(event.target===this)fechar('mCopias')"><div class="sheet">
+  <h2>☁️ Cópias de segurança</h2>
+  <p style="font-size:13px;color:var(--ink2);margin-top:2px">A aplicação guarda <b>sozinha</b> uma cópia de todos os teus dados na <b>tua</b> Google Drive (pasta <b>GestaoNegocio › GestaoAL</b>): um Excel para consultar e uma cópia completa. Atualiza-se poucos segundos depois de cada alteração e fica <b>sempre só a versão mais recente</b> (substitui a anterior — a pasta nunca enche).</p>
+  <label class="fld"><span>Conta Google onde guardar (o email que preferires)</span><input id="cpEmail" type="email" autocapitalize="off" placeholder="o-teu-email@gmail.com"></label>
+  <div class="note" id="cpEstado" style="line-height:1.6"></div>
+  <button class="btn pri full" onclick="ligarCopias()">Ligar / Guardar cópia agora</button>
+  <div class="row2" style="margin-top:8px">
+    <button class="btn" id="cpPasta" onclick="abrirPastaDrive()">📂 Abrir pasta na Drive</button>
+    <button class="btn" onclick="descarregarExcel()">⬇️ Descarregar Excel</button>
+  </div>
+  <p class="note" style="margin-top:10px">Na 1.ª vez a Google pede autorização — escolhe a conta e aceita. A aplicação só consegue ver os ficheiros que ela própria criou. Se já ligaste a Drive na Gerirmais, aqui fica logo ligada.</p>
+  <div class="acts"><button class="btn red hide" id="cpDesligar" onclick="desligarCopias()">Desligar</button><button class="btn" onclick="guardarEmailCopias().then(ok=>ok&&fechar('mCopias'))">Fechar</button></div>
+</div></div>
+
 <!-- JANELA: AJUDA -->
 <div id="mAjuda" class="ov hide" onclick="if(event.target===this)fechar('mAjuda')"><div class="sheet">
   <h2>Ajuda — passo a passo</h2>
@@ -274,7 +380,7 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
     <li>Escolhe o alojamento, escreve o <b>nome do hóspede</b> e as datas de <b>check-in</b> e <b>check-out</b>.</li>
     <li>Escolhe a <b>origem</b> (Airbnb, Booking, Direta, Outra) e o <b>estado</b>.</li>
     <li>Opcional: nº de hóspedes, valor e notas. Carrega em <b>Guardar</b>.</li>
-    <li>A <b>limpeza</b> do dia de saída fica criada sozinha (vais vê-la no separador Tarefas, quando estiver pronto).</li>
+    <li>A <b>limpeza</b> do dia de saída fica criada sozinha (aparece no separador <b>Tarefas</b>).</li>
   </ol></details>
 
   <details class="aj"><summary><span class="n">4</span>Editar ou apagar uma reserva</summary><ol>
@@ -303,7 +409,44 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
     <li>Usa <b>‹ ›</b> para mudar de mês e <b>Hoje</b> para voltar ao mês atual.</li>
   </ul></details>
 
-  <details class="aj"><summary><span class="n">8</span>Passar para a Gerirmais e sair</summary><ul>
+  <details class="aj"><summary><span class="n">8</span>🧹 Tarefas e limpezas</summary><ol>
+    <li>Cada reserva <b>confirmada</b> cria sozinha uma <b>limpeza</b> no dia de saída. Se mudares as datas da reserva, a limpeza acompanha.</li>
+    <li>Para criar outra tarefa (avaria, compra, lembrete): <b>+ Nova tarefa</b>.</li>
+    <li>Toca no <b>círculo ◯</b> à direita para marcar como <b>feita</b> (toca outra vez para desfazer).</li>
+    <li>Toca na tarefa para <b>editar</b> (data, responsável, estado) ou <b>apagar</b>.</li>
+    <li>Em cima vês as <b>atrasadas</b> (a vermelho), as de <b>hoje</b> e as <b>próximas</b>. Usa os filtros para ver só um alojamento ou um tipo.</li>
+  </ol></details>
+
+  <details class="aj"><summary><span class="n">9</span>💶 Contas (receitas e despesas)</summary><ol>
+    <li>Escolhe <b>Mês</b> ou <b>Ano</b> e usa <b>‹ ›</b> para mudar de período.</li>
+    <li><b>+ Receita</b> ou <b>+ Despesa</b>: valor, data, alojamento e categoria (podes escolher da lista ou escrever).</li>
+    <li>As reservas com valor que ainda não lançaste aparecem em <b>"Reservas por lançar"</b> — carrega em <b>Lançar</b> (ou "Lançar todas").</li>
+    <li>Em cima tens o total de receitas, despesas e a <b>margem</b>. "Por alojamento" mostra cada casa; toca numa para a ver sozinha.</li>
+    <li>Toca num movimento para o <b>editar</b> ou <b>apagar</b>.</li>
+  </ol></details>
+
+  <details class="aj"><summary><span class="n">10</span>👥 Hóspedes</summary><ol>
+    <li>Os hóspedes aparecem <b>sozinhos</b> quando escreves o nome numa reserva. Também podes criar com <b>+ Novo hóspede</b>.</li>
+    <li>Toca num hóspede para ver a <b>ficha</b>: contactos, notas e todas as estadias. Os botões <b>Ligar / WhatsApp / Email</b> aparecem quando há contacto.</li>
+    <li>Toca numa estadia da lista para abrir essa reserva.</li>
+    <li>Apagar a ficha <b>não</b> apaga as reservas.</li>
+  </ol></details>
+
+  <details class="aj"><summary><span class="n">11</span>📝 Notas</summary><ol>
+    <li>Guarda informação útil: Wi-Fi, códigos, contactos, regras da casa…</li>
+    <li><b>+ Nova nota</b> → título, texto e alojamento (ou "Geral"). Marca <b>📌 Fixar</b> para ficar sempre no topo.</li>
+    <li>Toca numa nota para <b>editar</b> ou <b>apagar</b>.</li>
+  </ol></details>
+
+  <details class="aj"><summary><span class="n">12</span>☁️ Cópias de segurança na Google Drive</summary><ol>
+    <li>Toca na <b>nuvem ☁️</b> no topo (um ponto vermelho quer dizer "por ligar" ou "falhou").</li>
+    <li>Escreve o <b>email da conta Google</b> onde queres guardar e carrega em <b>Ligar / Guardar cópia agora</b>.</li>
+    <li>Na janela da Google escolhe essa conta e aceita. Pronto: a partir daqui é <b>automático</b>.</li>
+    <li>Na tua Drive aparece a pasta <b>GestaoNegocio › GestaoAL</b> com 2 ficheiros: o <b>Excel</b> (abre em qualquer aparelho) e a cópia completa. São sempre substituídos pela versão mais recente — nunca se acumulam.</li>
+    <li>Também podes <b>Descarregar Excel</b> para o aparelho quando quiseres.</li>
+  </ol></details>
+
+  <details class="aj"><summary><span class="n">13</span>Passar para a Gerirmais e sair</summary><ul>
     <li>O botão <b>Gerirmais ↗</b> (em cima) leva-te à Gestão de Negócio, sem novo login — só aparece se tiveres acesso.</li>
     <li>O botão <b>⏻</b> termina a sessão nas duas aplicações neste aparelho.</li>
     <li>A conta e a password são as mesmas da Gerirmais. Esqueceste-te? Usa "Esqueci-me da password" na Gerirmais.</li>
@@ -314,6 +457,8 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 
 <div id="toast" class="toast hide"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ====================================================================
@@ -323,7 +468,7 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
    ==================================================================== */
 const SUPA_URL='https://xkfshzlcwiuvztfdwvjm.supabase.co';   // MESMO projeto da gerirmais (Gestao de Negocio) → mesma conta, sem novo login
 const SUPA_KEY='sb_publishable_SGjww6C455tzA6wpIevT-w_t2X9lqMJ';   // chave publishable da gerirmais (pública; a segurança está no RLS)
-const VERSAO='2.2';
+const VERSAO='3.1';
 const GERIRMAIS_URL='index.html';
 
 /* ---------- utilitários ---------- */
@@ -374,6 +519,7 @@ function dadosDemo(){
          R(B,2,'direta','confirmada',-5,-1,280),R(B,3,'airbnb','confirmada',1,6,390),R(B,null,'outra','bloqueio',9,12,null),
          R(C,4,'booking','confirmada',0,3,240),R(C,5,'airbnb','confirmada',2,5,260),R(C,null,'booking','confirmada',8,10,150)];
   S.res[8].hospede_id=h[4].id;
+  demoExtra();
 }
 
 /* ---------- camada de dados (nuvem OU exemplo) ---------- */
@@ -388,6 +534,7 @@ async function carregar(){
   const err=a.error||r.error||h.error||f.error;
   if(err)throw err;
   S.aloj=a.data;S.res=r.data;S.hosp=h.data;S.fontes=f.data;
+  await carregarExtra();
 }
 async function acharOuCriarHospede(nome){
   nome=(nome||'').trim();if(!nome)return null;
@@ -398,12 +545,12 @@ async function acharOuCriarHospede(nome){
   if(error)throw error;S.hosp.push(data);return data.id;
 }
 async function gravarRes(o){
-  if(!nuvem()){const i=S.res.findIndex(x=>x.id===o.id);if(i>=0)S.res[i]={...S.res[i],...o};else S.res.push({...o,id:o.id||uuid()});return;}
+  if(!nuvem()){const i=S.res.findIndex(x=>x.id===o.id);let r;if(i>=0){S.res[i]={...S.res[i],...o};r=S.res[i];}else{r={...o,id:o.id||uuid()};S.res.push(r);}demoLimpeza(r);return;}
   const{error}=o.id?await S.sb.from('al_reservas').update(o).eq('id',o.id):await S.sb.from('al_reservas').insert(o);
   if(error)throw error;await carregar();
 }
 async function apagarResDB(id){
-  if(!nuvem()){S.res=S.res.filter(x=>x.id!==id);return;}
+  if(!nuvem()){S.res=S.res.filter(x=>x.id!==id);S.tar=S.tar.filter(t=>t.reserva_id!==id);S.mov.forEach(x=>{if(x.reserva_id===id)x.reserva_id=null;});return;}
   const{error}=await S.sb.from('al_reservas').delete().eq('id',id);if(error)throw error;await carregar();
 }
 async function gravarAloj(o,fontes){
@@ -420,14 +567,14 @@ async function gravarAloj(o,fontes){
   await carregar();return id;
 }
 async function apagarAlojDB(id){
-  if(!nuvem()){S.aloj=S.aloj.filter(x=>x.id!==id);S.res=S.res.filter(x=>x.alojamento_id!==id);S.fontes=S.fontes.filter(x=>x.alojamento_id!==id);return;}
+  if(!nuvem()){S.aloj=S.aloj.filter(x=>x.id!==id);S.res=S.res.filter(x=>x.alojamento_id!==id);S.fontes=S.fontes.filter(x=>x.alojamento_id!==id);S.tar=S.tar.filter(x=>x.alojamento_id!==id);S.notas=S.notas.filter(x=>x.alojamento_id!==id);S.mov.forEach(x=>{if(x.alojamento_id===id)x.alojamento_id=null;});return;}
   const{error}=await S.sb.from('al_alojamentos').delete().eq('id',id);if(error)throw error;await carregar();
 }
 async function importarLinhas(ajId,linhas){
   if(!linhas.length)return;
   if(!nuvem()){
     linhas.forEach(l=>{const i=S.res.findIndex(x=>x.alojamento_id===ajId&&x.ical_uid===l.ical_uid);
-      if(i>=0)S.res[i]={...S.res[i],...l};else S.res.push({...l,id:uuid(),alojamento_id:ajId});});return;
+      if(i>=0)S.res[i]={...S.res[i],...l};else S.res.push({...l,id:uuid(),alojamento_id:ajId});demoLimpeza(S.res.find(x=>x.alojamento_id===ajId&&x.ical_uid===l.ical_uid));});return;
   }
   const{error}=await S.sb.from('al_reservas').upsert(linhas.map(l=>({...l,alojamento_id:ajId})),{onConflict:'alojamento_id,ical_uid'});
   if(error)throw error;await carregar();
@@ -477,6 +624,441 @@ function conflitoCom(o){ // reservas que chocam com o objeto "o" (ainda não gra
   return S.res.filter(r=>r.id!==o.id&&r.alojamento_id===o.alojamento_id&&ativa(r)&&r.checkin<o.checkout&&o.checkin<r.checkout);
 }
 
+/* ====================================================================
+   GESTÃO AL v3 — separadores Tarefas, Contas, Hóspedes e Notas
+   ==================================================================== */
+const TIPOS_T={limpeza:['🧹','Limpeza'],avaria:['🔧','Avaria'],compra:['🛒','Compra'],lembrete:['🔔','Lembrete']};
+const EST_T={pendente:'Pendente',em_curso:'Em curso',feita:'Feita'};
+const CAT_REC=['Reserva','Taxa de limpeza','Extra / serviço','Outra receita'];
+const CAT_DES=['Limpeza','Lavandaria','Consumíveis','Manutenção / reparação','Comissão da plataforma','Água / luz / gás','Internet / TV','Condomínio','Seguro','Impostos / taxas','Equipamento','Outra despesa'];
+const eur=v=>(Math.round((+v||0)*100)/100).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+const fdl=s=>{if(!s)return'—';const d=new Date(pd(s));return d.getUTCDate()+' '+MS[d.getUTCMonth()]+' '+d.getUTCFullYear();};
+const optsAloj=(sel,vazio)=>(vazio?`<option value="">${vazio}</option>`:'')+S.aloj.map(a=>`<option value="${a.id}"${a.id===sel?' selected':''}>${esc(a.nome)}</option>`).join('');
+Object.assign(S,{tar:[],mov:[],notas:[],notasOk:true,fT:{aj:'',tipo:'',feitas:false},fC:{modo:'mes',y:new Date().getFullYear(),m:new Date().getMonth(),aj:''},fH:'',fN:'',editT:null,editM:null,editH:null,editN:null});
+
+/* ---------- dados: carregar extra / gravar / apagar genéricos ---------- */
+async function carregarExtra(){
+  if(!nuvem())return;
+  const sb=S.sb,[t,m,n]=await Promise.all([
+    sb.from('al_tarefas').select('*').order('data',{ascending:true}),
+    sb.from('al_movimentos').select('*').order('data',{ascending:false}),
+    sb.from('al_notas').select('*').order('atualizado_em',{ascending:false})]);
+  if(t.error)throw t.error;if(m.error)throw m.error;
+  S.tar=t.data;S.mov=m.data;
+  if(n.error){S.notas=[];S.notasOk=false;}else{S.notas=n.data;S.notasOk=true;}
+  if(S._jaCarregou)agendarCopia();S._jaCarregou=true;
+}
+const LISTA={al_tarefas:'tar',al_movimentos:'mov',al_notas:'notas',al_hospedes:'hosp'};
+async function gravar(tab,o){
+  const k=LISTA[tab];
+  if(!nuvem()){const i=S[k].findIndex(x=>x.id===o.id);if(i>=0)S[k][i]={...S[k][i],...o};else S[k].push({...o,id:o.id||uuid(),criado_em:new Date().toISOString()});return;}
+  const{error}=o.id?await S.sb.from(tab).update(o).eq('id',o.id):await S.sb.from(tab).insert(o);
+  if(error)throw error;await carregar();
+}
+async function apagarDe(tab,id){
+  const k=LISTA[tab];
+  if(!nuvem()){S[k]=S[k].filter(x=>x.id!==id);if(tab==='al_hospedes')S.res.forEach(r=>{if(r.hospede_id===id)r.hospede_id=null;});return;}
+  const{error}=await S.sb.from(tab).delete().eq('id',id);if(error)throw error;await carregar();
+}
+/* no modo exemplo, imita o gatilho da base de dados (limpeza no dia de saída) */
+function demoLimpeza(r){
+  if(nuvem())return;
+  const ex=S.tar.find(t=>t.reserva_id===r.id&&t.tipo==='limpeza');
+  if(r.estado==='confirmada'){
+    if(ex){if(ex.estado!=='feita'){ex.data=r.checkout;ex.alojamento_id=r.alojamento_id;}}
+    else S.tar.push({id:uuid(),reserva_id:r.id,alojamento_id:r.alojamento_id,tipo:'limpeza',titulo:'Limpeza após check-out',data:r.checkout,estado:'pendente'});
+  }else if(ex&&ex.estado==='pendente')S.tar=S.tar.filter(t=>t!==ex);
+}
+function demoExtra(){
+  S.tar=[];S.res.forEach(demoLimpeza);
+  const t=hoje(),A=S.aloj[0].id,B=S.aloj[1].id,C=S.aloj[2].id;
+  const passada=S.tar.find(x=>x.data<t);if(passada)passada.estado='feita';
+  if(S.tar[1])S.tar[1].responsavel='D. Rosa';
+  S.tar.push({id:uuid(),alojamento_id:B,tipo:'avaria',titulo:'Torneira da cozinha a pingar',data:addD(t,2),estado:'pendente',responsavel:'Canalizador'},
+             {id:uuid(),alojamento_id:A,tipo:'compra',titulo:'Comprar toalhas e café',data:addD(t,1),estado:'pendente'});
+  const mes=t.slice(0,8);
+  S.mov=[{id:uuid(),alojamento_id:A,reserva_id:S.res[0].id,tipo:'receita',categoria:'Reserva',data:S.res[0].checkin,valor:420,descricao:'Maria Santos'},
+         {id:uuid(),alojamento_id:B,reserva_id:S.res[3].id,tipo:'receita',categoria:'Reserva',data:S.res[3].checkin,valor:280,descricao:'Família Costa'},
+         {id:uuid(),alojamento_id:A,tipo:'despesa',categoria:'Limpeza',data:mes+'05',valor:60},
+         {id:uuid(),alojamento_id:B,tipo:'despesa',categoria:'Comissão da plataforma',data:mes+'03',valor:42},
+         {id:uuid(),alojamento_id:C,tipo:'despesa',categoria:'Água / luz / gás',data:mes+'02',valor:38.5}];
+  S.notas=[{id:uuid(),alojamento_id:A,titulo:'Wi-Fi e cofre',texto:'Rede: CasaCentro\nPassword: (escrever aqui)\nCódigo do cofre das chaves: (escrever aqui)',fixada:true,atualizado_em:new Date().toISOString()},
+           {id:uuid(),alojamento_id:null,titulo:'Contactos úteis',texto:'Limpeza: D. Rosa 91x xxx xxx\nCanalizador: Sr. Joaquim',fixada:false,atualizado_em:new Date().toISOString()}];
+  S.notasOk=true;
+}
+function chips(arr){return`<div class="chips">${arr.map(([b,s,c])=>`<div class="chip"${c?` style="border-color:${c}"`:''}><b${c?` style="color:${c}"`:''}>${b}</b><span>${s}</span></div>`).join('')}</div>`;}
+function barraFiltro(html){return`<div class="filtros">${html}</div>`;}
+
+/* ======================= TAREFAS / LIMPEZAS ======================= */
+function renderTarefas(m){
+  const T=hoje(),f=S.fT;
+  let L=S.tar.filter(t=>(!f.aj||t.alojamento_id===f.aj)&&(!f.tipo||t.tipo===f.tipo));
+  const abertas=L.filter(t=>t.estado!=='feita');
+  const atras=abertas.filter(t=>t.data&&t.data<T),hojeL=abertas.filter(t=>t.data===T),prox=abertas.filter(t=>!t.data||t.data>T);
+  const feitas=L.filter(t=>t.estado==='feita').sort((a,b)=>(b.data||'')<(a.data||'')?-1:1);
+  const ord=(a,b)=>(a.data||'9999')<(b.data||'9999')?-1:1;
+  let h=chips([[atras.length,'atrasadas',atras.length?'var(--red)':''],[hojeL.length,'para hoje'],[prox.length,'próximas'],[feitas.length,'feitas']]);
+  h+=barraFiltro(`<select onchange="S.fT.aj=this.value;render()">${optsAloj(f.aj,'Todos os alojamentos')}</select>
+    <select onchange="S.fT.tipo=this.value;render()"><option value="">Todos os tipos</option>${Object.entries(TIPOS_T).map(([k,v])=>`<option value="${k}"${f.tipo===k?' selected':''}>${v[0]} ${v[1]}</option>`).join('')}</select>`);
+  h+=`<button class="btn pri full" style="margin-top:4px" onclick="abrirTarefa()">+ Nova tarefa</button>`;
+  const sec=(tit,arr,cls)=>arr.length?`<h3 class="sec"${cls?` style="color:${cls}"`:''}>${tit} (${arr.length})</h3>`+arr.sort(ord).map(cartaoTarefa).join(''):'';
+  h+=sec('⚠ Atrasadas',atras,'var(--red)')+sec('Hoje',hojeL)+sec('Próximas',prox);
+  if(!abertas.length)h+=`<div class="empty" style="padding:22px">✅ Nada por fazer${f.aj||f.tipo?' com estes filtros':''}.<br><small>As limpezas aparecem sozinhas quando crias uma reserva confirmada.</small></div>`;
+  if(feitas.length)h+=`<h3 class="sec"><a href="#" onclick="S.fT.feitas=!S.fT.feitas;render();return false" style="color:inherit">${f.feitas?'▾':'▸'} Feitas (${feitas.length})</a></h3>`+(f.feitas?feitas.slice(0,60).map(cartaoTarefa).join(''):'');
+  m.innerHTML=h;
+}
+function cartaoTarefa(t){
+  const [ic,nm]=TIPOS_T[t.tipo]||TIPOS_T.lembrete,r=t.reserva_id?S.res.find(x=>x.id===t.reserva_id):null,feita=t.estado==='feita';
+  const sub=[nomeAloj(t.alojamento_id),r&&nomeHosp(r)?'saída de '+nomeHosp(r):'',t.responsavel?'👤 '+t.responsavel:''].filter(Boolean).map(esc).join(' · ');
+  return`<div class="ev${feita?' feita':''}" onclick="abrirTarefa('${t.id}')">
+    <div class="d"><b>${t.data?new Date(pd(t.data)).getUTCDate():'—'}</b><span>${t.data?MS[new Date(pd(t.data)).getUTCMonth()]:''}</span></div>
+    <div class="x"><div>${ic} ${esc(t.titulo)}</div><div>${sub||nm}</div></div>
+    <button class="chk${feita?' on':''}" title="${feita?'Marcar como por fazer':'Marcar como feita'}" onclick="event.stopPropagation();marcarTarefa('${t.id}')">${feita?'✓':''}</button></div>`;
+}
+async function marcarTarefa(id){
+  const t=S.tar.find(x=>x.id===id);if(!t)return;
+  try{await gravar('al_tarefas',{id,estado:t.estado==='feita'?'pendente':'feita'});render();toast(t.estado==='feita'?'Marcada como feita ✓':'Voltou a por fazer');}
+  catch(e){toast('Erro: '+(e.message||e),4500);}
+}
+function abrirTarefa(id){
+  if(!S.aloj.length){toast('Cria primeiro um alojamento no Calendário.');return;}
+  const t=id?S.tar.find(x=>x.id===id):null;S.editT=t?t.id:null;
+  $('tTitulo').textContent=t?'Editar tarefa':'Nova tarefa';
+  $('tTipo').value=t?t.tipo:'lembrete';$('tTit').value=t?t.titulo:'';
+  $('tAloj').innerHTML=optsAloj(t?t.alojamento_id:(S.fT.aj||S.aloj[0].id));
+  $('tData').value=t?(t.data||''):hoje();$('tEst').value=t?t.estado:'pendente';
+  $('tResp').value=t?(t.responsavel||''):'';$('tNotas').value=t?(t.notas||''):'';
+  const r=t&&t.reserva_id?S.res.find(x=>x.id===t.reserva_id):null;
+  $('tRes').innerHTML=r?`🔗 Ligada à reserva de <b>${esc(nomeHosp(r)||ORIG[r.origem])}</b> (${fd(r.checkin)} → ${fd(r.checkout)}). Se mudares as datas da reserva, esta limpeza acompanha.`:'';
+  $('tRes').classList.toggle('hide',!r);$('tDel').classList.toggle('hide',!t);
+  abrir('mTar');
+}
+async function guardarTarefa(){
+  const tit=$('tTit').value.trim();if(!tit){toast('Escreve o que é preciso fazer.');return;}
+  const o={tipo:$('tTipo').value,titulo:tit,alojamento_id:$('tAloj').value||null,data:$('tData').value||null,estado:$('tEst').value,
+    responsavel:$('tResp').value.trim()||null,notas:$('tNotas').value.trim()||null};
+  if(S.editT)o.id=S.editT;
+  try{await gravar('al_tarefas',o);fechar('mTar');render();toast(S.editT?'Tarefa atualizada ✓':'Tarefa criada ✓');}catch(e){toast('Não foi possível guardar: '+(e.message||e),4500);}
+}
+async function apagarTarefa(){
+  if(!S.editT||!confirm('Apagar esta tarefa?'))return;
+  try{await apagarDe('al_tarefas',S.editT);fechar('mTar');render();toast('Tarefa apagada');}catch(e){toast('Erro: '+(e.message||e),4500);}
+}
+
+/* ============================ CONTAS ============================ */
+function periodoC(){
+  const f=S.fC;
+  if(f.modo==='ano')return{ini:f.y+'-01-01',fim:(f.y+1)+'-01-01',nome:'Ano '+f.y};
+  const ini=iso(Date.UTC(f.y,f.m,1)),fim=iso(Date.UTC(f.y,f.m+1,1));return{ini,fim,nome:MESES[f.m]+' '+f.y};
+}
+function mudaPeriodo(d){const f=S.fC;if(f.modo==='ano')f.y+=d;else{f.m+=d;if(f.m<0){f.m=11;f.y--;}if(f.m>11){f.m=0;f.y++;}}render();}
+function renderContas(m){
+  const f=S.fC,P=periodoC(),noP=x=>x.data>=P.ini&&x.data<P.fim,doAj=x=>!f.aj||x.alojamento_id===f.aj;
+  const L=S.mov.filter(x=>noP(x)&&doAj(x)).sort((a,b)=>a.data<b.data?1:-1);
+  const rec=L.filter(x=>x.tipo==='receita').reduce((s,x)=>s+(+x.valor||0),0),des=L.filter(x=>x.tipo==='despesa').reduce((s,x)=>s+(+x.valor||0),0),mg=rec-des;
+  let h=`<div class="seg"><button class="${f.modo==='mes'?'on':''}" onclick="S.fC.modo='mes';render()">Mês</button><button class="${f.modo==='ano'?'on':''}" onclick="S.fC.modo='ano';render()">Ano</button></div>`;
+  h+=`<div class="bar-top"><button class="nb" onclick="mudaPeriodo(-1)" aria-label="Anterior">‹</button><h2>${P.nome}</h2><button class="nb" onclick="mudaPeriodo(1)" aria-label="Seguinte">›</button></div>`;
+  h+=barraFiltro(`<select onchange="S.fC.aj=this.value;render()">${optsAloj(f.aj,'Todos os alojamentos')}</select>`);
+  h+=chips([[eur(rec),'receitas','var(--direta)'],[eur(des),'despesas','var(--red)'],[eur(mg),'margem'+(rec?' ('+Math.round(100*mg/rec)+'%)':''),mg<0?'var(--red)':'var(--accent-d)']]);
+  h+=`<div style="display:flex;gap:8px;margin:2px 0 6px"><button class="btn pri" style="flex:1;background:var(--direta);border-color:var(--direta)" onclick="abrirMov(null,'receita')">+ Receita</button><button class="btn pri" style="flex:1;background:var(--red);border-color:var(--red)" onclick="abrirMov(null,'despesa')">+ Despesa</button></div>`;
+  /* reservas com valor ainda sem receita lançada */
+  const ligadas=new Set(S.mov.filter(x=>x.reserva_id).map(x=>x.reserva_id));
+  const porLancar=S.res.filter(r=>r.estado==='confirmada'&&+r.valor_total>0&&!ligadas.has(r.id)&&r.checkin>=P.ini&&r.checkin<P.fim&&doAj(r));
+  if(porLancar.length)h+=`<h3 class="sec">💡 Reservas por lançar como receita (${porLancar.length})</h3>`+porLancar.map(r=>`<div class="ev"><div class="x"><div>${esc(nomeHosp(r)||'Reserva '+ORIG[r.origem])} · ${eur(r.valor_total)}</div><div>${esc(nomeAloj(r.alojamento_id))} · ${fd(r.checkin)} → ${fd(r.checkout)}</div></div><button class="btn sm" onclick="lancarReserva('${r.id}')">Lançar</button></div>`).join('')
+    +(porLancar.length>1?`<button class="btn full sm" style="margin-top:2px" onclick="lancarTodas()">Lançar as ${porLancar.length} de uma vez</button>`:'');
+  /* por alojamento */
+  if(!f.aj&&S.aloj.length>1){
+    h+=`<h3 class="sec">Por alojamento</h3><div class="tab-al">`+S.aloj.map(a=>{const X=L.filter(x=>x.alojamento_id===a.id),r=X.filter(x=>x.tipo==='receita').reduce((s,x)=>s+(+x.valor||0),0),d=X.filter(x=>x.tipo==='despesa').reduce((s,x)=>s+(+x.valor||0),0);
+      return`<div class="lin" onclick="S.fC.aj='${a.id}';render()"><span><i style="background:${esc(a.cor)}"></i>${esc(a.nome)}</span><span class="pos">${eur(r)}</span><span class="neg">${eur(d)}</span><b class="${r-d<0?'neg':''}">${eur(r-d)}</b></div>`;}).join('')+`</div>`;
+  }
+  /* ano: mês a mês */
+  if(f.modo==='ano'){
+    const max=Math.max(1,...MESES.map((_,i)=>{const X=L.filter(x=>+x.data.slice(5,7)===i+1);return Math.max(X.filter(x=>x.tipo==='receita').reduce((s,x)=>s+(+x.valor||0),0),X.filter(x=>x.tipo==='despesa').reduce((s,x)=>s+(+x.valor||0),0));}));
+    h+=`<h3 class="sec">Mês a mês</h3><div class="meses">`+MS.map((nm,i)=>{const X=L.filter(x=>+x.data.slice(5,7)===i+1),r=X.filter(x=>x.tipo==='receita').reduce((s,x)=>s+(+x.valor||0),0),d=X.filter(x=>x.tipo==='despesa').reduce((s,x)=>s+(+x.valor||0),0);
+      return`<div class="mes" onclick="S.fC.modo='mes';S.fC.m=${i};render()" title="${MESES[i]}: receitas ${eur(r)}, despesas ${eur(d)}"><div class="bb"><i class="r" style="height:${Math.round(100*r/max)}%"></i><i class="d" style="height:${Math.round(100*d/max)}%"></i></div><span>${nm}</span></div>`;}).join('')+`</div>`;
+  }
+  h+=`<h3 class="sec">Movimentos (${L.length})</h3>`;
+  h+=L.length?L.slice(0,200).map(x=>`<div class="ev" onclick="abrirMov('${x.id}')"><div class="d"><b>${new Date(pd(x.data)).getUTCDate()}</b><span>${MS[new Date(pd(x.data)).getUTCMonth()]}</span></div><div class="x"><div>${esc(x.categoria||(x.tipo==='receita'?'Receita':'Despesa'))}${x.descricao?' · '+esc(x.descricao):''}</div><div>${esc(x.alojamento_id?nomeAloj(x.alojamento_id):'Geral')}</div></div><b class="${x.tipo==='receita'?'pos':'neg'}" style="white-space:nowrap">${x.tipo==='receita'?'+':'−'}${eur(x.valor)}</b></div>`).join('')
+    :`<div class="empty" style="padding:18px">Sem movimentos em ${P.nome.toLowerCase()}.</div>`;
+  m.innerHTML=h;
+}
+function abrirMov(id,tipo){
+  const x=id?S.mov.find(v=>v.id===id):null;S.editM=x?x.id:null;
+  const tp=x?x.tipo:tipo;$('mTipo').value=tp;
+  $('mTitulo').textContent=(x?'Editar ':'Nova ')+(tp==='receita'?'receita':'despesa');
+  $('mAlojSel').innerHTML=optsAloj(x?x.alojamento_id:(S.fC.aj||(S.aloj[0]||{}).id),'Geral (sem alojamento)');
+  $('mData').value=x?x.data:hoje();$('mVal').value=x?x.valor:'';$('mDesc').value=x?(x.descricao||''):'';
+  $('mCat').value=x?(x.categoria||''):'';mCats();$('mDel').classList.toggle('hide',!x);
+  abrir('mMov');setTimeout(()=>{if(!x)$('mVal').focus();},50);
+}
+function mCats(){const tp=$('mTipo').value;$('dlCat').innerHTML=(tp==='receita'?CAT_REC:CAT_DES).map(c=>`<option value="${esc(c)}">`).join('');$('mTitulo').textContent=(S.editM?'Editar ':'Nova ')+(tp==='receita'?'receita':'despesa');}
+async function guardarMov(){
+  const v=parseFloat(String($('mVal').value).replace(',','.'));if(!(v>=0)||$('mVal').value===''){toast('Indica o valor.');return;}
+  if(!$('mData').value){toast('Indica a data.');return;}
+  const o={tipo:$('mTipo').value,alojamento_id:$('mAlojSel').value||null,data:$('mData').value,valor:Math.round(v*100)/100,categoria:$('mCat').value.trim()||null,descricao:$('mDesc').value.trim()||null};
+  if(S.editM)o.id=S.editM;
+  try{await gravar('al_movimentos',o);fechar('mMov');render();toast('Guardado ✓');}catch(e){toast('Não foi possível guardar: '+(e.message||e),4500);}
+}
+async function apagarMov(){
+  if(!S.editM||!confirm('Apagar este movimento?'))return;
+  try{await apagarDe('al_movimentos',S.editM);fechar('mMov');render();toast('Movimento apagado');}catch(e){toast('Erro: '+(e.message||e),4500);}
+}
+const movDaReserva=r=>({tipo:'receita',alojamento_id:r.alojamento_id,reserva_id:r.id,data:r.checkin,valor:+r.valor_total,categoria:'Reserva',descricao:(nomeHosp(r)||ORIG[r.origem])+' · '+fd(r.checkin)+'→'+fd(r.checkout)});
+async function lancarReserva(id){const r=S.res.find(x=>x.id===id);if(!r)return;try{await gravar('al_movimentos',movDaReserva(r));render();toast('Receita lançada ✓');}catch(e){toast('Erro: '+(e.message||e),4500);}}
+async function lancarTodas(){
+  const P=periodoC(),f=S.fC,ligadas=new Set(S.mov.filter(x=>x.reserva_id).map(x=>x.reserva_id));
+  const L=S.res.filter(r=>r.estado==='confirmada'&&+r.valor_total>0&&!ligadas.has(r.id)&&r.checkin>=P.ini&&r.checkin<P.fim&&(!f.aj||r.alojamento_id===f.aj));
+  if(!L.length||!confirm(`Lançar ${L.length} reservas como receita (${eur(L.reduce((s,r)=>s+(+r.valor_total),0))})?`))return;
+  try{
+    if(nuvem()){const{error}=await S.sb.from('al_movimentos').insert(L.map(movDaReserva));if(error)throw error;await carregarExtra();}
+    else L.forEach(r=>S.mov.push({...movDaReserva(r),id:uuid()}));
+    render();toast(L.length+' receitas lançadas ✓');
+  }catch(e){toast('Erro: '+(e.message||e),4500);}
+}
+
+/* ============================ HÓSPEDES ============================ */
+function estadiasDe(id){return S.res.filter(r=>r.hospede_id===id&&r.estado!=='bloqueio').sort((a,b)=>a.checkin<b.checkin?1:-1);}
+function renderHospedes(m){
+  const q=S.fH.trim().toLowerCase();
+  const L=S.hosp.filter(h=>!q||[h.nome,h.email,h.telefone,h.pais].some(v=>(v||'').toLowerCase().includes(q)))
+    .map(h=>{const E=estadiasDe(h.id).filter(r=>r.estado!=='cancelada');return{h,n:E.length,ult:E[0],tot:E.reduce((s,r)=>s+(+r.valor_total||0),0)};})
+    .sort((a,b)=>(b.ult?b.ult.checkin:'')<(a.ult?a.ult.checkin:'')?-1:(b.ult?b.ult.checkin:'')>(a.ult?a.ult.checkin:'')?1:a.h.nome.localeCompare(b.h.nome));
+  const rep=L.filter(x=>x.n>1).length;
+  let h=chips([[S.hosp.length,'hóspedes'],[rep,'repetentes'],[S.hosp.filter(x=>x.telefone||x.email).length,'com contacto']]);
+  h+=`<div class="filtros"><input type="search" placeholder="🔍 Procurar nome, email, telefone…" value="${esc(S.fH)}" oninput="S.fH=this.value;clearTimeout(window._hq);window._hq=setTimeout(()=>{render();const i=document.querySelector('.filtros input');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length);}},250)"></div>`;
+  h+=`<button class="btn pri full" style="margin-top:4px" onclick="abrirHosp()">+ Novo hóspede</button>`;
+  h+=L.length?L.map(({h:x,n,ult,tot})=>`<div class="ev" onclick="abrirHosp('${x.id}')"><div class="av">${esc((x.nome||'?').trim().charAt(0).toUpperCase())}</div><div class="x"><div>${esc(x.nome)}${n>1?' <span class="tag in" style="font-size:9px">'+n+'×</span>':''}</div><div>${ult?'Última: '+esc(nomeAloj(ult.alojamento_id))+' · '+fdl(ult.checkin):'Sem estadias'}${x.pais?' · '+esc(x.pais):''}</div></div>${tot?`<b style="font-size:12px;white-space:nowrap">${eur(tot)}</b>`:''}</div>`).join('')
+    :`<div class="empty" style="padding:22px">${q?'Ninguém encontrado com “'+esc(S.fH)+'”.':'Ainda não há hóspedes. Aparecem sozinhos quando escreves o nome numa reserva.'}</div>`;
+  m.innerHTML=h;
+}
+function abrirHosp(id){
+  const x=id?S.hosp.find(v=>v.id===id):null;S.editH=x?x.id:null;
+  $('hTitulo').textContent=x?'Ficha do hóspede':'Novo hóspede';
+  ['Nome','Email','Tel','Pais','Notas'].forEach(k=>$('h'+k).value=x?(x[{Nome:'nome',Email:'email',Tel:'telefone',Pais:'pais',Notas:'notas'}[k]]||''):'');
+  const E=x?estadiasDe(x.id):[];
+  $('hHist').innerHTML=x?(`<div class="fld"><span>Estadias (${E.length})</span></div>`+(E.length?E.map(r=>`<div class="mini" onclick="fechar('mHosp');abrirRes('${r.id}')"><span>${fdl(r.checkin)} → ${fd(r.checkout)} · ${esc(nomeAloj(r.alojamento_id))}${r.estado==='cancelada'?' (cancelada)':''}</span><b>${r.valor_total?eur(r.valor_total):''}</b></div>`).join(''):'<p class="note" style="margin-top:4px">Ainda sem estadias.</p>')):'';
+  const tel=x&&x.telefone?x.telefone.replace(/[^\d+]/g,''):'';
+  $('hAcoes').innerHTML=x?[tel?`<a class="btn sm" href="tel:${esc(tel)}">📞 Ligar</a>`:'',tel?`<a class="btn sm" href="https://wa.me/${esc(tel.replace(/^\+/,''))}" target="_blank" rel="noopener">💬 WhatsApp</a>`:'',x.email?`<a class="btn sm" href="mailto:${esc(x.email)}">✉️ Email</a>`:''].join(''):'';
+  $('hDel').classList.toggle('hide',!x);abrir('mHosp');
+}
+async function guardarHosp(){
+  const nome=$('hNome').value.trim();if(!nome){toast('Escreve o nome.');return;}
+  const o={nome,email:$('hEmail').value.trim()||null,telefone:$('hTel').value.trim()||null,pais:$('hPais').value.trim()||null,notas:$('hNotas').value.trim()||null};
+  if(S.editH)o.id=S.editH;
+  try{await gravar('al_hospedes',o);fechar('mHosp');render();toast('Hóspede guardado ✓');}catch(e){toast('Não foi possível guardar: '+(e.message||e),4500);}
+}
+async function apagarHosp(){
+  if(!S.editH)return;const n=estadiasDe(S.editH).length;
+  if(!confirm('Apagar esta ficha de hóspede?'+(n?`\n\nAs ${n} reservas dele NÃO são apagadas — só ficam sem nome de hóspede.`:'')))return;
+  try{await apagarDe('al_hospedes',S.editH);fechar('mHosp');render();toast('Ficha apagada');}catch(e){toast('Erro: '+(e.message||e),4500);}
+}
+
+/* ============================== NOTAS ============================== */
+function renderNotas(m){
+  if(!S.notasOk){m.innerHTML=`<div class="soon"><div style="font-size:34px">📝</div><h2>Notas</h2><p>Falta instalar as notas na base de dados: corre o ficheiro <b>03_al_notas.sql</b> no Supabase (só uma vez).</p></div>`;return;}
+  const f=S.fN,L=S.notas.filter(n=>!f||(f==='geral'?!n.alojamento_id:n.alojamento_id===f)).sort((a,b)=>(b.fixada-a.fixada)||((b.atualizado_em||'')<(a.atualizado_em||'')?-1:1));
+  let h=`<p class="note" style="margin-top:0">Guarda aqui o que precisas de ter à mão: Wi-Fi, códigos, contactos, regras da casa, onde estão as coisas… Avarias e compras ficam nas <a href="#" onclick="tab('tar');return false" style="color:var(--accent-d);font-weight:700">Tarefas</a>.</p>`;
+  h+=barraFiltro(`<select onchange="S.fN=this.value;render()"><option value="">Todas as notas</option><option value="geral"${f==='geral'?' selected':''}>Gerais</option>${S.aloj.map(a=>`<option value="${a.id}"${f===a.id?' selected':''}>${esc(a.nome)}</option>`).join('')}</select>`);
+  h+=`<button class="btn pri full" style="margin-top:4px" onclick="abrirNota()">+ Nova nota</button>`;
+  h+=L.length?`<div class="notas">`+L.map(n=>{const a=S.aloj.find(x=>x.id===n.alojamento_id);return`<div class="nota" onclick="abrirNota('${n.id}')" style="border-top-color:${a?esc(a.cor):'var(--ink3)'}"><div class="nt">${n.fixada?'📌 ':''}${esc(n.titulo)}</div><div class="nx">${esc(n.texto||'').slice(0,240)}</div><div class="nf">${a?esc(a.nome):'Geral'}</div></div>`;}).join('')+`</div>`
+    :`<div class="empty" style="padding:22px">Ainda não há notas${f?' aqui':''}.</div>`;
+  m.innerHTML=h;
+}
+function abrirNota(id){
+  const n=id?S.notas.find(v=>v.id===id):null;S.editN=n?n.id:null;
+  $('nTitulo').textContent=n?'Editar nota':'Nova nota';
+  $('nAloj').innerHTML=optsAloj(n?n.alojamento_id:(S.fN&&S.fN!=='geral'?S.fN:''),'Geral (todos)');
+  $('nTit').value=n?n.titulo:'';$('nTxt').value=n?(n.texto||''):'';$('nFix').checked=n?!!n.fixada:false;
+  $('nDel').classList.toggle('hide',!n);abrir('mNota');
+}
+async function guardarNota(){
+  const t=$('nTit').value.trim();if(!t){toast('Dá um título à nota.');return;}
+  const o={titulo:t,texto:$('nTxt').value.trim()||null,alojamento_id:$('nAloj').value||null,fixada:$('nFix').checked,atualizado_em:new Date().toISOString()};
+  if(S.editN)o.id=S.editN;
+  try{await gravar('al_notas',o);fechar('mNota');render();toast('Nota guardada ✓');}catch(e){toast('Não foi possível guardar: '+(e.message||e),4500);}
+}
+async function apagarNota(){
+  if(!S.editN||!confirm('Apagar esta nota?'))return;
+  try{await apagarDe('al_notas',S.editN);fechar('mNota');render();toast('Nota apagada');}catch(e){toast('Erro: '+(e.message||e),4500);}
+}
+
+/* ====================================================================
+   GESTÃO AL v3.1 — CÓPIAS DE SEGURANÇA AUTOMÁTICAS NA GOOGLE DRIVE
+   • Guarda na Drive do PRÓPRIO cliente (pasta GestaoNegocio / GestaoAL):
+       - GestaoAL_Dados.xlsx  → Excel legível (abre em qualquer PC/telemóvel)
+       - GestaoAL_Dados.json  → cópia completa (para restaurar, se preciso)
+     Sempre SÓ a versão mais recente: cada cópia substitui a anterior
+     (nunca enche a pasta com ficheiros repetidos).
+   • Automático: alguns segundos depois de cada alteração e ao entrar
+     (se a última cópia tiver mais de 12 horas). Sem pedir nada, depois
+     de ligado uma vez.
+   • "Conta Google preferida": o cliente escolhe o email onde quer guardar
+     (fica guardado na conta dele, serve em todos os aparelhos).
+   • Usa a MESMA ligação Google da gerirmais (mesmo site): se já ligou a
+     Drive na gerirmais, aqui fica logo ligada.
+   ==================================================================== */
+const GDRIVE_CLIENT_ID='184393297918-p9j93fdm11olm8b8r0la9hvqf1fojfhf.apps.googleusercontent.com';
+const GDRIVE_SCOPE='https://www.googleapis.com/auth/drive.file';
+const G={tok:null,exp:0,cli:null,fila:[],conta:'',timer:null,aCorrer:false,pasta:null};
+const lsK=b=>b+'_'+((S.user&&S.user.id)||'anon');
+const gValido=()=>G.tok&&Date.now()<G.exp;
+function copiaCfg(){try{return JSON.parse(localStorage.getItem(lsK('al_copia'))||'{}')||{};}catch(e){return{};}}
+function copiaCfgSet(o){try{localStorage.setItem(lsK('al_copia'),JSON.stringify({...copiaCfg(),...o}));}catch(e){}}
+function emailPreferido(){return((S.user&&S.user.user_metadata&&S.user.user_metadata.al_email_copias)||copiaCfg().email||'').trim();}
+
+function gInit(){
+  if(G.cli)return G.cli;
+  if(!(window.google&&google.accounts&&google.accounts.oauth2))return null;
+  try{
+    G.cli=google.accounts.oauth2.initTokenClient({client_id:GDRIVE_CLIENT_ID,scope:GDRIVE_SCOPE,callback:resp=>{
+      const f=G.fila;G.fila=[];
+      if(resp&&resp.access_token){
+        G.tok=resp.access_token;G.exp=Date.now()+(resp.expires_in?resp.expires_in*1000:3600000)-60000;
+        try{localStorage.setItem(lsK('rv_gdrive_tok'),JSON.stringify({t:G.tok,e:G.exp}));}catch(e){} // mesma chave da gerirmais
+        f.forEach(p=>{try{p.ok&&p.ok();}catch(e){}});
+      }else f.forEach(p=>{try{p.err&&p.err(resp);}catch(e){}});
+    },error_callback:err=>{const f=G.fila;G.fila=[];f.forEach(p=>{try{p.err&&p.err(err);}catch(e){}});}});
+  }catch(e){G.cli=null;}
+  return G.cli;
+}
+function gAuth(silencioso){
+  return new Promise((ok,err)=>{
+    if(gValido())return ok();
+    if(!gInit())return err(new Error('O serviço da Google ainda não carregou. Tenta daqui a uns segundos.'));
+    G.fila.push({ok,err});
+    const o={};const em=emailPreferido();if(em)o.login_hint=em;
+    if(silencioso)o.prompt='';
+    try{G.cli.requestAccessToken(o);}catch(e){err(e);}
+  });
+}
+async function gFetch(url,opt){
+  const r=await fetch(url,{...(opt||{}),headers:{...((opt&&opt.headers)||{}),Authorization:'Bearer '+G.tok}});
+  if(r.status===401){G.tok=null;throw new Error('A ligação à Google expirou.');}
+  if(!r.ok)throw new Error('Google Drive respondeu '+r.status);
+  return r;
+}
+async function gPasta(nome,pai){
+  const q=encodeURIComponent(`name='${nome}' and mimeType='application/vnd.google-apps.folder' and trashed=false and '${pai||'root'}' in parents`);
+  const d=await (await gFetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id)`)).json();
+  if(d.files&&d.files.length)return d.files[0].id;
+  const c=await (await gFetch('https://www.googleapis.com/drive/v3/files',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:nome,mimeType:'application/vnd.google-apps.folder',...(pai?{parents:[pai]}:{})})})).json();
+  return c.id;
+}
+async function gGuardar(nome,blob,pastaId){ // substitui o ficheiro com o mesmo nome (não acumula)
+  const q=encodeURIComponent(`name='${nome}' and '${pastaId}' in parents and trashed=false`);
+  const d=await (await gFetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id)&orderBy=modifiedTime desc`)).json();
+  const id=d.files&&d.files[0]&&d.files[0].id;
+  for(const f of (d.files||[]).slice(1))await gFetch(`https://www.googleapis.com/drive/v3/files/${f.id}`,{method:'DELETE'}).catch(()=>{}); // nunca deixa repetidos
+  const meta=id?{name:nome}:{name:nome,parents:[pastaId]};
+  const form=new FormData();form.append('metadata',new Blob([JSON.stringify(meta)],{type:'application/json'}));form.append('file',blob);
+  await gFetch(id?`https://www.googleapis.com/upload/drive/v3/files/${id}?uploadType=multipart`:'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:id?'PATCH':'POST',body:form});
+}
+async function gLimparHistorico(pastaId){
+  const q=encodeURIComponent(`'${pastaId}' in parents and trashed=false and name contains 'GestaoAL_'`);
+  const d=await (await gFetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)&pageSize=200`)).json();
+  const limite=addD(hoje(),-30);
+  for(const f of (d.files||[])){const m=f.name.match(/(\d{4}-\d{2}-\d{2})/);if(m&&m[1]<limite)await gFetch(`https://www.googleapis.com/drive/v3/files/${f.id}`,{method:'DELETE'}).catch(()=>{});}
+}
+async function gContaLigada(){
+  try{const d=await (await gFetch('https://www.googleapis.com/drive/v3/about?fields=user(emailAddress)')).json();G.conta=(d.user&&d.user.emailAddress)||'';}catch(e){}
+  return G.conta;
+}
+
+/* ---------- conteúdo da cópia ---------- */
+function dadosCopia(){
+  return{app:'Gestão AL',versao:VERSAO,criado_em:new Date().toISOString(),conta:S.user&&S.user.email,
+    alojamentos:S.aloj,reservas:S.res,hospedes:S.hosp,tarefas:S.tar,movimentos:S.mov,notas:S.notas,ical:S.fontes};
+}
+function excelCopia(){
+  if(typeof XLSX==='undefined')return null;
+  const nA=id=>nomeAloj(id),nH=id=>{const h=S.hosp.find(x=>x.id===id);return h?h.nome:'';};
+  const wb=XLSX.utils.book_new(),add=(nome,linhas)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(linhas.length?linhas:[{'(vazio)':''}]),nome);
+  add('Reservas',S.res.slice().sort((a,b)=>a.checkin<b.checkin?-1:1).map(r=>({Alojamento:nA(r.alojamento_id),'Hóspede':nH(r.hospede_id),'Check-in':r.checkin,'Check-out':r.checkout,Noites:diffD(r.checkin,r.checkout),Origem:ORIG[r.origem]||r.origem,Estado:r.estado,'Nº hóspedes':r.num_hospedes||'','Valor (€)':r.valor_total==null?'':+r.valor_total,Notas:r.notas||''})));
+  add('Contas',S.mov.slice().sort((a,b)=>a.data<b.data?-1:1).map(x=>({Data:x.data,Tipo:x.tipo,Alojamento:x.alojamento_id?nA(x.alojamento_id):'Geral',Categoria:x.categoria||'','Descrição':x.descricao||'','Valor (€)':x.tipo==='despesa'?-(+x.valor):+x.valor})));
+  add('Tarefas',S.tar.slice().sort((a,b)=>(a.data||'')<(b.data||'')?-1:1).map(t=>({Data:t.data||'',Tipo:t.tipo,Tarefa:t.titulo,Alojamento:nA(t.alojamento_id),Estado:EST_T[t.estado]||t.estado,'Responsável':t.responsavel||'',Notas:t.notas||''})));
+  add('Hóspedes',S.hosp.map(h=>({Nome:h.nome,Email:h.email||'',Telefone:h.telefone||'','País':h.pais||'',Estadias:estadiasDe(h.id).length,Notas:h.notas||''})));
+  add('Notas',S.notas.map(n=>({Alojamento:n.alojamento_id?nA(n.alojamento_id):'Geral',Título:n.titulo,Texto:n.texto||'',Fixada:n.fixada?'Sim':''})));
+  add('Alojamentos',S.aloj.map(a=>({Nome:a.nome,'Lotação':a.capacidade||'',Morada:a.morada||''})));
+  return new Blob([XLSX.write(wb,{type:'array',bookType:'xlsx'})],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+
+/* ---------- fazer a cópia ---------- */
+async function fazerCopia(manual){
+  if(!nuvem()){if(manual)toast('No modo de exemplo não se guardam cópias.');return;}
+  if(G.aCorrer)return;G.aCorrer=true;estadoCopia('a guardar…');
+  try{
+    if(!gValido())await gAuth(!manual);
+    const raiz=await gPasta('GestaoNegocio'),pasta=await gPasta('GestaoAL',raiz);G.pasta=pasta;
+    const json=new Blob([JSON.stringify(dadosCopia(),null,1)],{type:'application/json'});
+    await gGuardar('GestaoAL_Dados.json',json,pasta);
+    const x=excelCopia();if(x)await gGuardar('GestaoAL_Dados.xlsx',x,pasta);
+    if(!G.conta)await gContaLigada();
+    copiaCfgSet({ultima:Date.now(),ultimoDia:hoje(),conta:G.conta,pasta,erro:''});
+    estadoCopia();if(manual)toast('Cópia guardada na Google Drive ✓');
+  }catch(e){
+    copiaCfgSet({erro:String(e&&e.message||e||'erro')});estadoCopia();
+    if(manual)toast('Não foi possível guardar na Drive: '+(e&&e.message||e),5000);
+  }finally{G.aCorrer=false;}
+}
+/* chamado depois de cada alteração: espera 20 s (junta várias alterações seguidas) */
+function agendarCopia(){
+  if(!nuvem())return;const c=copiaCfg();if(!c.ligada)return;
+  clearTimeout(G.timer);G.timer=setTimeout(()=>fazerCopia(false),20000);
+}
+function arranqueCopias(){
+  if(!nuvem())return;
+  try{const o=JSON.parse(localStorage.getItem(lsK('rv_gdrive_tok'))||'null');if(o&&o.t&&Date.now()<o.e){G.tok=o.t;G.exp=o.e;if(!copiaCfg().ligada)copiaCfgSet({ligada:true});}}catch(e){}
+  const c=copiaCfg();estadoCopia();
+  if(!c.ligada)return;
+  if(!c.ultima||Date.now()-c.ultima>12*3600000)setTimeout(()=>fazerCopia(false),4000);
+}
+function estadoCopia(txt){
+  const b=document.getElementById('copiaBtn');const c=copiaCfg();
+  const falhou=c.ligada&&c.erro,velha=c.ligada&&c.ultima&&Date.now()-c.ultima>3*86400000;
+  if(b){b.classList.toggle('alerta',!c.ligada||!!falhou||!!velha);b.title=!c.ligada?'Cópias na Google Drive: por ligar':falhou?'A última cópia falhou — toca para ver':'Cópias na Google Drive';}
+  const e=document.getElementById('cpEstado');if(!e)return;
+  if(txt){e.innerHTML='⏳ '+txt;return;}
+  e.innerHTML=!c.ligada?'⚪ Ainda não ligada.':
+    (falhou?`<span style="color:var(--red)">⚠️ A última tentativa falhou: ${esc(c.erro)}. Carrega em <b>Guardar cópia agora</b> para voltar a ligar.</span><br>`:'')+
+    (c.ultima?`✅ Última cópia: <b>${new Date(c.ultima).toLocaleString('pt-PT',{dateStyle:'short',timeStyle:'short'})}</b>`:'Ainda sem cópias.')+
+    (c.conta?`<br>Conta Google: <b>${esc(c.conta)}</b>`:'');
+}
+function abrirCopias(){
+  $('cpEmail').value=emailPreferido();estadoCopia();
+  const c=copiaCfg();$('cpPasta').classList.toggle('hide',!c.pasta);$('cpDesligar').classList.toggle('hide',!c.ligada);
+  abrir('mCopias');
+}
+async function guardarEmailCopias(){
+  const em=$('cpEmail').value.trim();
+  if(em&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){toast('Esse email não parece válido.');return false;}
+  copiaCfgSet({email:em});
+  if(nuvem()){try{const{data}=await S.sb.auth.updateUser({data:{al_email_copias:em||null}});if(data&&data.user)S.user=data.user;}catch(e){}}
+  return true;
+}
+async function ligarCopias(){
+  if(!nuvem()){toast('No modo de exemplo não se guardam cópias.');return;}
+  if(!(await guardarEmailCopias()))return;
+  const em=emailPreferido();
+  if(G.conta&&em&&G.conta.toLowerCase()!==em.toLowerCase()){G.tok=null;G.conta='';} // mudou de conta → pede de novo
+  try{
+    await gAuth(false);await gContaLigada();
+    if(em&&G.conta&&G.conta.toLowerCase()!==em.toLowerCase())toast('Atenção: ficou ligada a '+G.conta+' (e não a '+em+'). Se quiseres outra, escolhe-a no ecrã da Google.',6000);
+    copiaCfgSet({ligada:true,conta:G.conta});await fazerCopia(true);
+    $('cpPasta').classList.remove('hide');$('cpDesligar').classList.remove('hide');
+    render();
+  }catch(e){toast('Não foi possível ligar à Google Drive. '+(e&&e.message?e.message:''),5000);estadoCopia();}
+}
+function desligarCopias(){
+  if(!confirm('Desligar as cópias automáticas neste aparelho? (As cópias que já estão na Drive ficam lá.)'))return;
+  copiaCfgSet({ligada:false});G.tok=null;try{localStorage.removeItem(lsK('rv_gdrive_tok'));}catch(e){}
+  estadoCopia();$('cpDesligar').classList.add('hide');render();toast('Cópias automáticas desligadas');
+}
+function abrirPastaDrive(){const c=copiaCfg();if(c.pasta)window.open('https://drive.google.com/drive/folders/'+c.pasta,'_blank','noopener');}
+function descarregarExcel(){
+  const x=excelCopia();if(!x){toast('O Excel ainda não carregou. Tenta daqui a uns segundos.');return;}
+  const a=document.createElement('a');a.href=URL.createObjectURL(x);a.download='GestaoAL_'+hoje()+'.xlsx';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
+}
+
 /* ---------- navegação ---------- */
 function tab(t){
   S.tab=t;
@@ -489,14 +1071,10 @@ function irHoje(){const d=new Date();S.view={y:d.getFullYear(),m:d.getMonth()};r
 /* ---------- desenho ---------- */
 function render(){
   const m=$('main');
-  if(S.tab!=='cal'){
-    const T={hosp:['👥','Hóspedes','Ficha de cada hóspede (contacto, notas) e o histórico das suas estadias — nasce das reservas.'],
-             tar:['🧹','Tarefas','As limpezas já são criadas automaticamente na base de dados a cada check-out; aqui vais geri-las, com estado e responsável.'],
-             con:['💶','Contas','Receitas e despesas por alojamento, com resumo mensal/anual e margem — só do alojamento.'],
-             not:['🔧','Manutenção e notas','Avarias, compras e lembretes por alojamento.']}[S.tab];
-    m.innerHTML=`<div class="soon"><div style="font-size:34px">${T[0]}</div><h2>${T[1]}</h2><p>${T[2]}</p><p style="margin-top:10px;font-weight:700;color:var(--accent-d)">Chega no próximo passo.</p></div>`;
-    return;
-  }
+  if(S.tab==='tar'){renderTarefas(m);return;}
+  if(S.tab==='con'){renderContas(m);return;}
+  if(S.tab==='hosp'){renderHospedes(m);return;}
+  if(S.tab==='not'){renderNotas(m);return;}
   if(!S.aloj.length){
     m.innerHTML=`<div class="empty"><div class="big">🏠</div><b>Ainda não tens alojamentos</b><p style="margin:6px 0 14px">Adiciona o primeiro para começares a registar reservas.</p><button class="btn pri" onclick="abrirAloj()">+ Adicionar alojamento</button><p style="margin-top:12px"><a href="#" onclick="abrirAjuda();return false" style="color:var(--accent-d);font-weight:700">❓ Como funciona? Ver ajuda passo a passo</a></p></div>`;
     return;
@@ -518,6 +1096,7 @@ function render(){
     <div class="chip"><b>${said}</b><span>saídas hoje</span></div>
     <div class="chip"><b>${ocHoje}/${S.aloj.length}</b><span>ocupados hoje</span></div>
     <div class="chip"><b>${ocup}%</b><span>ocupação de ${MESES[mes].toLowerCase()}</span></div></div>`;
+  if(nuvem()&&!copiaCfg().ligada&&!copiaCfg().dispensado)h+=`<div class="avisoCp"><span style="font-size:22px">☁️</span><div style="flex:1"><b>Guarda uma cópia automática na tua Google Drive</b>Se alguma vez houver uma falha, tens sempre os teus dados lá.</div><button class="btn sm pri" onclick="abrirCopias()">Ligar</button><button class="btn sm" title="Agora não" onclick="copiaCfgSet({dispensado:true});render()">✕</button></div>`;
   if(cf.length){const c=cf[0];h+=`<div class="alert" onclick="abrirRes('${c.a.id}')"><span>⚠️</span><div>${cf.length===1?'1 sobreposição':cf.length+' sobreposições'} de reservas<small>${esc(nomeAloj(c.a.alojamento_id))} · ${fd(c.de)} → ${fd(c.ate)} · ${esc(nomeHosp(c.a)||ORIG[c.a.origem])} × ${esc(nomeHosp(c.b)||ORIG[c.b.origem])}${cf.length>1?' (e mais '+(cf.length-1)+')':''}</small></div></div>`;}
 
   /* barra do mês */
@@ -682,7 +1261,7 @@ async function entrarNuvem(){
   try{await carregar();}catch(e){console.error(e);
     const falta=/relation|does not exist|schema cache/i.test(e.message||'');
     toast(falta?'A Gestão AL ainda não está instalada na base de dados (falta correr o SQL 02).':'Erro ao carregar: '+(e.message||e),6000);S.aloj=[];S.res=[];}
-  mostrar('app');render();
+  mostrar('app');render();arranqueCopias();
 }
 async function entrar(){
   $('auMsg').textContent='';
