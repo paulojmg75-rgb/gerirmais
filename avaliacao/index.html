@@ -1,0 +1,850 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Avaliação para professores do 1.º ciclo: turmas, critérios, registos na aula e menções calculadas. Os dados ficam na Drive do professor.">
+<link rel="icon" type="image/png" href="../planificacao/icon-192.png">
+<link rel="apple-touch-icon" href="../planificacao/apple-touch-icon.png">
+<meta name="theme-color" content="#2c6e49">
+<meta name="robots" content="noindex">
+<title>Avaliação · gerirmais</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#eef2f0; --surface:#ffffff; --surface-2:#e5ece8;
+  --ink:#16202e; --ink-muted:#5a6676; --line:#d3dbd7; --line-strong:#b3c0ba;
+  --primary:#2c6e49; --primary-dark:#1f5236; --primary-contrast:#ffffff;
+  --blue:#1f4f8f;
+  --ok:#2c7a4b; --ok-bg:#e2f3e8; --warn:#9a5b00; --warn-bg:#fbefd9; --danger:#b23a2e; --danger-bg:#f8e3e0;
+  --l1:#c0392b; --l1-bg:#fbe5e2; --l2:#b8860b; --l2-bg:#fdf3d6; --l3:#2e7d32; --l3-bg:#e3f2e4; --l4:#1f4f8f; --l4-bg:#e1eaf7;
+  --shadow:0 1px 2px rgba(18,32,52,.06),0 10px 28px -14px rgba(18,32,52,.28);
+  --font-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --font-ui:'Source Sans 3','Segoe UI',Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1714; --surface:#17211d; --surface-2:#1f2c27; --ink:#e8efec; --ink-muted:#9fb3aa; --line:#2b3b35; --line-strong:#3c5048;
+    --primary:#6cc08f; --primary-dark:#4fa574; --primary-contrast:#0b1611; --blue:#7aa7e6;
+    --ok:#6cc893; --ok-bg:#183326; --warn:#f0b35a; --warn-bg:#3a2b12; --danger:#f08a7e; --danger-bg:#3d1f1b;
+    --l1:#f08a7e; --l1-bg:#3d1f1b; --l2:#f0c45a; --l2-bg:#3a3010; --l3:#7fd38a; --l3-bg:#183326; --l4:#8db5ef; --l4-bg:#17273d;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px -14px rgba(0,0,0,.6); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1714; --surface:#17211d; --surface-2:#1f2c27; --ink:#e8efec; --ink-muted:#9fb3aa; --line:#2b3b35; --line-strong:#3c5048;
+  --primary:#6cc08f; --primary-dark:#4fa574; --primary-contrast:#0b1611; --blue:#7aa7e6;
+  --ok:#6cc893; --ok-bg:#183326; --warn:#f0b35a; --warn-bg:#3a2b12; --danger:#f08a7e; --danger-bg:#3d1f1b;
+  --l1:#f08a7e; --l1-bg:#3d1f1b; --l2:#f0c45a; --l2-bg:#3a3010; --l3:#7fd38a; --l3-bg:#183326; --l4:#8db5ef; --l4-bg:#17273d;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px -14px rgba(0,0,0,.6); color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-ui);font-size:15px;line-height:1.45}
+h1,h2,h3{font-family:var(--font-display);margin:0;letter-spacing:-.01em}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+
+/* topo */
+.topbar{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand-mark{width:34px;height:34px;border-radius:8px;background:var(--primary);color:var(--primary-contrast);display:grid;place-items:center;font-family:var(--font-display);font-weight:800;font-size:17px;flex:none}
+.brand h1{font-size:18px;font-weight:800;line-height:1.1}
+.brand .sub{font-size:12px;color:var(--ink-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;border:1px solid var(--line-strong);color:var(--ink-muted);background:var(--surface);white-space:nowrap;cursor:pointer}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:var(--ink-muted)}
+.pill.ok{color:var(--ok);border-color:var(--ok);background:var(--ok-bg)} .pill.ok .dot{background:var(--ok)}
+.pill.warn{color:var(--warn);border-color:var(--warn);background:var(--warn-bg)} .pill.warn .dot{background:var(--warn)}
+.pill.err{color:var(--danger);border-color:var(--danger);background:var(--danger-bg)} .pill.err .dot{background:var(--danger)}
+.pill.busy .dot{animation:pulse 1s infinite alternate}
+@keyframes pulse{from{opacity:1}to{opacity:.2}}
+.turma-sel{border:1px solid var(--line-strong);border-radius:8px;padding:6px 8px;background:var(--surface);font-weight:600;max-width:180px}
+.avatar{width:34px;height:34px;border-radius:50%;border:none;background:var(--blue);color:#fff;font-weight:700}
+.ver{font-size:11px;color:var(--ink-muted);border:1px solid var(--line);border-radius:99px;padding:1px 7px}
+
+/* separadores */
+.tabs{display:flex;gap:4px;padding:8px 16px;background:var(--surface);border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none;position:sticky;top:55px;z-index:25}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:1px solid transparent;background:none;border-radius:99px;padding:6px 14px;font-weight:700;color:var(--ink-muted);white-space:nowrap}
+.tab:hover{background:var(--surface-2)}
+.tab.on{background:var(--primary);color:var(--primary-contrast)}
+
+.main{max-width:1100px;margin:0 auto;padding:16px 16px 80px;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow)}
+.card h2{font-size:17px;margin-bottom:8px}
+.card h3{font-size:15px;margin:10px 0 6px}
+.muted{color:var(--ink-muted);font-size:13px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.grow{flex:1}
+
+/* botões e campos */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid transparent;border-radius:8px;padding:8px 13px;font-weight:600;font-size:14px;white-space:nowrap;background:none}
+.btn-primary{background:var(--primary);color:var(--primary-contrast)}
+.btn-primary:hover{background:var(--primary-dark)}
+.btn-ghost{border-color:var(--line-strong);background:var(--surface)}
+.btn-ghost:hover{background:var(--surface-2)}
+.btn-danger{border-color:var(--danger);color:var(--danger);background:var(--surface)}
+.btn-sm{padding:5px 9px;font-size:13px;border-radius:7px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.icon-btn{border:1px solid transparent;background:none;border-radius:6px;padding:2px 7px;color:var(--ink-muted)}
+.icon-btn:hover{background:var(--surface-2);color:var(--ink);border-color:var(--line)}
+.icon-btn.del:hover{background:var(--danger-bg);color:var(--danger);border-color:var(--danger)}
+input[type=text],input[type=email],input[type=password],input[type=number],input[type=date],select,textarea{border:1px solid var(--line-strong);border-radius:8px;padding:7px 9px;background:var(--surface);min-width:0}
+textarea{width:100%;resize:vertical}
+select{max-width:100%}
+.card{min-width:0;overflow-wrap:anywhere}
+label.f{min-width:0;max-width:100%;display:flex;flex-direction:column;gap:3px;font-size:13px;font-weight:600;color:var(--ink-muted)}
+label.f input,label.f select{color:var(--ink);font-weight:400;font-size:15px}
+
+/* chips */
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}
+.chip{border:1px solid var(--line-strong);background:var(--surface);border-radius:99px;padding:6px 12px;font-weight:600;font-size:13.5px;white-space:nowrap}
+.chip:hover{background:var(--surface-2)}
+.chip.on{background:var(--primary);border-color:var(--primary);color:var(--primary-contrast)}
+.chip.dps.on{background:var(--blue);border-color:var(--blue)}
+.seg{display:inline-flex;border:1px solid var(--line-strong);border-radius:9px;overflow:hidden}
+.seg button{border:none;background:var(--surface);padding:7px 12px;font-weight:600;font-size:13.5px}
+.seg button.on{background:var(--primary);color:var(--primary-contrast)}
+
+/* registo */
+.reg-head{display:flex;flex-direction:column;gap:10px;position:sticky;top:104px;z-index:20}
+.stu-list{display:flex;flex-direction:column;gap:6px}
+.stu{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.stu .n{flex:1;min-width:0}
+.stu .n b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stu .n small{color:var(--ink-muted);font-size:12px}
+.stu .cod{font-size:12px;font-weight:700;color:var(--ink-muted);width:30px;flex:none}
+.lv{display:flex;gap:5px;flex:none}
+.lv button{width:46px;height:40px;border-radius:9px;border:1.5px solid var(--line-strong);background:var(--surface);font-weight:800;font-size:14px;color:var(--ink-muted)}
+.lv button[data-l="1"].on{background:var(--l1-bg);border-color:var(--l1);color:var(--l1)}
+.lv button[data-l="2"].on{background:var(--l2-bg);border-color:var(--l2);color:var(--l2)}
+.lv button[data-l="3"].on{background:var(--l3-bg);border-color:var(--l3);color:var(--l3)}
+.lv button[data-l="4"].on{background:var(--l4-bg);border-color:var(--l4);color:var(--l4)}
+.pct{width:84px;text-align:center;font-weight:700;font-size:16px}
+.bulk{background:var(--surface-2);border-style:dashed}
+
+/* resumo */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table.res{border-collapse:collapse;width:100%;font-size:14px}
+table.res th,table.res td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:center;white-space:nowrap}
+table.res th{background:var(--surface-2);font-size:12.5px;position:sticky;top:0}
+table.res td.nm,table.res th.nm{text-align:left;position:sticky;left:0;background:var(--surface);z-index:1;max-width:190px;overflow:hidden;text-overflow:ellipsis}
+table.res th.nm{background:var(--surface-2);z-index:2}
+.mb{display:inline-flex;flex-direction:column;align-items:center;gap:1px;border:none;background:none;padding:2px 4px;border-radius:7px;min-width:52px}
+.mb:hover{background:var(--surface-2)}
+.badge{display:inline-block;min-width:34px;padding:2px 7px;border-radius:7px;font-weight:800;font-size:13px}
+.b1{background:var(--l1-bg);color:var(--l1)} .b2{background:var(--l2-bg);color:var(--l2)} .b3{background:var(--l3-bg);color:var(--l3)} .b4{background:var(--l4-bg);color:var(--l4)} .b0{background:var(--surface-2);color:var(--ink-muted)}
+.mb small{font-size:11px;color:var(--ink-muted)}
+.mb .ovr{outline:2px solid var(--ink);outline-offset:1px}
+.apr{display:flex;flex-direction:column;gap:8px}
+.apr-item{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--surface)}
+.apr-item b{font-size:14.5px}
+.lvl-line{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}
+.lvl-line span{font-size:12px;border-radius:6px;padding:1px 6px}
+
+/* critérios */
+.disc{border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:10px;background:var(--surface)}
+.dom-row{display:grid;grid-template-columns:1fr 78px 30px;gap:6px;margin:4px 0}
+.dom-row input[type=number]{text-align:right}
+.sum{font-size:12.5px;font-weight:700}
+.sum.bad{color:var(--danger)} .sum.ok{color:var(--ok)}
+.per-row{display:grid;grid-template-columns:1.2fr auto auto auto 30px;gap:8px;margin:6px 0;align-items:end;padding:8px;border:1px solid var(--line);border-radius:10px}
+.per-row label{display:flex;flex-direction:column;gap:2px;font-size:12px}
+.per-row label.ic{flex-direction:row;align-items:center;flex-wrap:wrap;gap:4px}
+.per-row.int{background:var(--surface-2)}
+.warnbox{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn);border-radius:8px;padding:7px 10px;font-size:13px;font-weight:600;margin-top:8px}
+.alu-row{display:grid;grid-template-columns:42px 1fr 30px;gap:6px;margin:3px 0;align-items:center}
+
+/* janela */
+.modal-bg{position:fixed;inset:0;background:rgba(10,20,16,.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:var(--surface);border-radius:14px;max-width:560px;width:100%;max-height:88vh;overflow-y:auto;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.modal h3{font-size:17px;margin-bottom:8px}
+.modal table.res th,.modal table.res td{white-space:normal}
+.modal .row{flex-wrap:nowrap}
+.modal select{width:100%}
+.modal-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#1c2a24;color:#fff;padding:10px 16px;border-radius:10px;z-index:300;font-weight:600;box-shadow:var(--shadow);max-width:92vw}
+
+/* entrada */
+.gate{position:fixed;inset:0;background:var(--bg);z-index:150;display:flex;align-items:center;justify-content:center;padding:16px}
+.gate-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;max-width:400px;width:100%;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px}
+.gate-card input{width:100%}
+.gate-err{color:var(--danger);font-size:13px;min-height:1em}
+.empty{text-align:center;padding:26px 10px;color:var(--ink-muted)}
+
+@media (max-width:700px){
+  .brand .sub,.brand h1{display:none}
+  .topbar{padding:8px 10px;gap:6px}
+  .tabs{top:51px;padding:6px 10px}
+  .reg-head{top:96px}
+  .main{padding:12px 10px 80px}
+  .lv button{width:42px;height:42px}
+  #drivePill span:last-child{display:none}
+  .per-row{grid-template-columns:1fr 1fr;}
+  .per-row input[type=text]{grid-column:1/-1}
+}
+@media print{
+  .topbar,.tabs,.no-print,.toast,.gate{display:none!important}
+  body{background:#fff;color:#000;font-size:11pt}
+  .main{max-width:none;padding:0}
+  .card{box-shadow:none;border:none;padding:0}
+  .tbl-wrap{overflow:visible;border:none}
+  table.res th,table.res td{border:1px solid #888;padding:3px 5px}
+  table.res th,table.res td.nm{position:static}
+  .badge{background:none!important;color:#000!important;padding:0}
+  @page{size:A4 landscape;margin:12mm}
+}
+</style>
+</head>
+<body>
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="brand"><div class="brand-mark">A</div><div><h1 style="font-size:20px">Avaliação</h1><div class="muted">Entra com a mesma conta da Planificação.</div></div></div>
+    <div id="gateBody" class="muted">A preparar…</div>
+  </div>
+</div>
+
+<header class="topbar">
+  <div class="brand"><div class="brand-mark">A</div><div style="min-width:0"><h1>Avaliação</h1><div class="sub" id="brandSub">protótipo</div></div></div>
+  <div class="top-right">
+    <select class="turma-sel" id="turmaSel" aria-label="Turma"></select>
+    <span class="pill" id="drivePill" title="Estado da gravação"><span class="dot"></span><span id="drivePillTxt">a preparar…</span></span>
+    <span class="ver" id="verTag"></span>
+    <button class="avatar" id="btnUser" type="button" title="Conta">?</button>
+  </div>
+</header>
+<nav class="tabs" id="tabs">
+  <button class="tab" data-v="registar" type="button">Registar</button>
+  <button class="tab" data-v="resumo" type="button">Resumo</button>
+  <button class="tab" data-v="turma" type="button">Turma</button>
+  <button class="tab" data-v="criterios" type="button">Critérios</button>
+  <button class="tab" data-v="defs" type="button">Definições</button>
+</nav>
+<main class="main" id="main"></main>
+<script>
+(function(){
+"use strict";
+var SUPABASE_URL = "https://ynbqwvjwbzckpgotjama.supabase.co";
+var SUPABASE_KEY = "sb_publishable_iOoMpE2cG4t6aCXzop8I9w_r7LUUCiF";
+var GOOGLE_CLIENT_ID = "774444020481-v812tdfs5rgs0cll82kp8rmat4jqo7uh.apps.googleusercontent.com";
+var APP_VERSION = "0.3";
+var LS_BASE = "avaliacao_v1";
+var PLAN_BASE = "planificacao_semanal_v1";
+var DATA_FILE = "Avaliacao_Dados.json";
+var SCOPE = "https://www.googleapis.com/auth/drive.file";
+var API = "https://www.googleapis.com/drive/v3", UP = "https://www.googleapis.com/upload/drive/v3";
+var FOLDER_MIME = "application/vnd.google-apps.folder";
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+function uid(p){ return (p||"x")+Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-3); }
+function pad(n){ return (n<10?"0":"")+n; }
+function toISO(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+function today(){ return toISO(new Date()); }
+function fmtD(iso){ if(!iso) return ""; var p=iso.split("-"); return p[2]+"/"+p[1]+"/"+p[0]; }
+function hm(d){ return pad(d.getHours())+":"+pad(d.getMinutes()); }
+function nowISO(){ return new Date().toISOString(); }
+function toast(msg, ms){ var t=document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(function(){ t.remove(); }, ms||2600); }
+function openModal(html){ closeModal(); var bg=document.createElement("div"); bg.className="modal-bg"; bg.id="modalBg"; bg.innerHTML='<div class="modal" role="dialog">'+html+'</div>'; document.body.appendChild(bg);
+  bg.addEventListener("click", function(e){ if(e.target===bg || e.target.closest("[data-close]")) closeModal(); }); }
+function closeModal(){ var m=$("modalBg"); if(m) m.remove(); }
+document.addEventListener("keydown", function(e){ if(e.key==="Escape") closeModal(); });
+
+/* ---------------- modelo de dados ---------------- */
+function D(nome, peso){ return {id:uid("d"), nome:nome, peso:peso}; }
+function defaultDisciplinas(ano){
+  var L=[
+    {nome:"Português", dom:[["Oralidade",25],["Leitura",25],["Escrita",20],["Educação Literária",15],["Consciência linguística",15]]},
+    {nome:"Matemática", dom:[["Compreensão e aplicação",20],["Raciocínio",20],["Resolução de problemas",15],["Comunicação",15],["Pensamento computacional",10],["Representações múltiplas",10],["Motivação",10]]},
+    {nome:"Estudo do Meio", dom:[["Compreensão do meio",20],["Competências científicas e tecnológicas",20],["Desenvolvimento pessoal e identitário",15],["Resolução de problemas",15],["Participação cívica e ética",15],["Comunicação e expressão",15]]},
+    {nome:"Educação Artística", dom:[["Apropriação e reflexão",30],["Interpretação e comunicação",30],["Experimentação e criação",40]]},
+    ano<=2 ? {nome:"Educação Física", dom:[["Perícias e manipulações",30],["Deslocamentos e equilíbrios",30],["Jogos",40]]}
+           : {nome:"Educação Física", dom:[["Ginástica",30],["Jogos",30],["Atividades de exploração da natureza",40]]}
+  ];
+  if(ano>=3) L.push({nome:"Inglês", dom:[["Oralidade",50],["Escrita",50]]});
+  L.push({nome:"Apoio ao Estudo", dom:[["Envolvimento",15],["Planificação",15],["Aplicação de estratégias",20],["Participação e autonomia",20],["Relacionamento",15],["TIC",15]]});
+  return L.map(function(x){ return {id:uid("c"), nome:x.nome, pesoDPS:30, dominios:x.dom.map(function(d){ return D(d[0],d[1]); })}; });
+}
+function defaultDPS(){ return {nome:"Atitudes e valores (DPS)", dominios:[D("Desenvolvimento pessoal e ético",50), D("Participação social e liberdade individual",50)]}; }
+function P(nome, ini, fim, inter){ return {id:uid("p"), nome:nome, inicio:ini, fim:fim, intercalar:inter||""}; }
+function I(nome, ini, fim){ return {id:uid("i"), nome:nome, inicio:ini, fim:fim}; }
+/* datas de referência do calendário escolar 2026/27 (continente); noutros anos usam-se os mesmos dias e meses */
+function calendarioModelo(tipo, ano){
+  var y=ano||anoLetivoInicio(), z=y+1, c={tipo:tipo, inicioAno:y+"-09-14", fimAno:z+"-06-30", acumulado:true, periodos:[],
+    interrupcoes:[I("Natal", y+"-12-16", y+"-12-31"), I("Carnaval", z+"-02-08", z+"-02-10"), I("Páscoa", z+"-03-22", z+"-04-02")]};
+  if(tipo==="periodos") c.periodos=[P("1.º período", y+"-09-14", y+"-12-15"), P("2.º período", z+"-01-04", z+"-03-19"), P("3.º período", z+"-04-05", z+"-06-30")];
+  else if(tipo==="semestres") c.periodos=[P("1.º semestre", y+"-09-14", z+"-01-29"), P("2.º semestre", z+"-02-01", z+"-06-30")];
+  else c.periodos=[P("1.º semestre", y+"-09-14", z+"-01-29", y+"-11-06"), P("2.º semestre", z+"-02-01", z+"-06-30", z+"-04-16")];
+  return c;
+}
+function calNome(){ var t=state.data.definicoes.calendario.tipo; return t==="periodos"? "3 períodos" : t==="semestres"? "2 semestres" : "2 semestres com intercalares"; }
+function anoLetivoInicio(){ var d=new Date(); return d.getMonth()>=7? d.getFullYear() : d.getFullYear()-1; }
+function defaultData(){
+  return {versao:1, atualizadoEm:nowISO(), dono:"",
+    definicoes:{conta:"", pasta:"Planificações", driveLigada:false, driveAuto:true, driveSync:null,
+      calendario:calendarioModelo("semestral"),
+      escala:[{sigla:"I", nome:"Insuficiente", min:0},{sigla:"S", nome:"Suficiente", min:50},{sigla:"B", nome:"Bom", min:70},{sigla:"MB", nome:"Muito Bom", min:90}],
+      niveis:[35,60,80,95]},
+    turmas:[], registos:[], decisoes:{}};
+}
+function novaTurma(nome, ano){ return {id:uid("t"), nome:nome||"A minha turma", ano:ano||1, alunos:[], disciplinas:defaultDisciplinas(ano||1), dps:defaultDPS()}; }
+function normalize(d){
+  var b=defaultData();
+  d=d&&typeof d==="object"? d : b;
+  d.definicoes=Object.assign({}, b.definicoes, d.definicoes||{});
+  var cal=d.definicoes.calendario;
+  if(!cal || !Array.isArray(cal.periodos)) d.definicoes.calendario=calendarioModelo(cal&&cal.tipo||"semestral");
+  cal=d.definicoes.calendario; cal.interrupcoes=cal.interrupcoes||[]; if(!cal.fimAno) cal.fimAno=(+cal.inicioAno.slice(0,4)+1)+"-06-30";
+  if(!Array.isArray(d.definicoes.escala) || d.definicoes.escala.length!==4) d.definicoes.escala=b.definicoes.escala;
+  if(!Array.isArray(d.definicoes.niveis) || d.definicoes.niveis.length!==4) d.definicoes.niveis=b.definicoes.niveis;
+  d.turmas=Array.isArray(d.turmas)? d.turmas : [];
+  d.turmas.forEach(function(t){ t.alunos=t.alunos||[]; t.disciplinas=t.disciplinas||defaultDisciplinas(t.ano||1); t.dps=t.dps||defaultDPS(); });
+  d.registos=Array.isArray(d.registos)? d.registos : [];
+  d.decisoes=d.decisoes&&typeof d.decisoes==="object"? d.decisoes : {};
+  return d;
+}
+
+/* ---------------- estado e gravação local ---------------- */
+var state={sb:null, user:null, data:null, started:false, view:"registar", turmaId:null, disc:null, dom:null, tipo:"obs", dataReg:today(), momentoId:null,
+  drive:{status:"local", folderId:null, fileId:null, owner:"", lastSave:null, saving:false, pending:false, timer:null, since:0, again:false}};
+var LS_KEY=LS_BASE+":local";
+function loadLocal(){ try{ var r=localStorage.getItem(LS_KEY); if(r) return normalize(JSON.parse(r)); }catch(e){} return null; }
+function saveLocal(){ if(!state.data) return; try{ localStorage.setItem(LS_KEY, JSON.stringify(state.data)); }catch(e){} }
+function touch(){ state.data.atualizadoEm=nowISO(); clearTimeout(state.lt); state.lt=setTimeout(saveLocal, 300); scheduleDrive(); }
+window.addEventListener("pagehide", saveLocal);
+document.addEventListener("visibilitychange", function(){ if(document.hidden && state.data){ saveLocal(); if(state.drive.pending) driveSave(false); } });
+function planDefs(){ try{ var r=localStorage.getItem(PLAN_BASE+":"+(state.user&&state.user.email||"").toLowerCase()); if(r){ var o=JSON.parse(r); return o&&o.definicoes||null; } }catch(e){} return null; }
+
+function turma(){ var ts=state.data.turmas; return ts.filter(function(t){ return t.id===state.turmaId; })[0]||ts[0]||null; }
+function discById(t, id){ if(id==="dps") return {id:"dps", nome:t.dps.nome, dominios:t.dps.dominios, pesoDPS:0}; return t.disciplinas.filter(function(c){ return c.id===id; })[0]||null; }
+function escala(){ return state.data.definicoes.escala; }
+function nivelPct(n){ return state.data.definicoes.niveis[n-1]; }
+function mencaoDe(p){ if(p==null) return null; var e=escala(), r=0; for(var i=0;i<e.length;i++){ if(p>=e[i].min) r=i; } return r; }
+/* momentos de avaliação: cada período/semestre dá um momento com menção, e uma intercalar (só qualitativa) se tiver data */
+function momentos(){
+  var out=[];
+  state.data.definicoes.calendario.periodos.forEach(function(p){
+    if(p.intercalar) out.push({id:p.id+"_i", nome:"Intercalar do "+p.nome, tipo:"intercalar", fim:p.intercalar, per:p});
+    out.push({id:p.id, nome:p.nome, tipo:"final", fim:p.fim, per:p});
+  });
+  return out.sort(function(a,b){ return a.fim.localeCompare(b.fim); });
+}
+function momentoAtual(){ var ms=momentos(), t=today(); for(var i=0;i<ms.length;i++){ if(ms[i].fim>=t) return ms[i]; } return ms[ms.length-1]; }
+function intervalo(m){ var cal=state.data.definicoes.calendario; return {ini: cal.acumulado? cal.inicioAno : m.per.inicio, fim:m.fim}; }
+function interrupcaoEm(iso){ return state.data.definicoes.calendario.interrupcoes.filter(function(x){ return iso>=x.inicio && iso<=x.fim; })[0]||null; }
+function avisosCalendario(){
+  var c=state.data.definicoes.calendario, av=[], ps=c.periodos.slice().sort(function(a,b){ return a.inicio.localeCompare(b.inicio); });
+  ps.forEach(function(p,i){
+    if(p.fim<p.inicio) av.push("“"+p.nome+"” acaba antes de começar.");
+    if(p.intercalar && (p.intercalar<p.inicio || p.intercalar>p.fim)) av.push("A intercalar do “"+p.nome+"” está fora das datas desse "+(/semestre/i.test(p.nome)?"semestre":"período")+".");
+    if(i>0 && p.inicio<=ps[i-1].fim) av.push("“"+p.nome+"” começa antes de acabar “"+ps[i-1].nome+"”.");
+  });
+  if(ps.length && ps[0].inicio<c.inicioAno) av.push("O primeiro período começa antes do início do ano letivo.");
+  c.interrupcoes.forEach(function(x){ if(x.fim<x.inicio) av.push("A interrupção “"+x.nome+"” acaba antes de começar."); });
+  return av;
+}
+function addDay(iso){ var d=new Date(iso+"T12:00:00"); d.setDate(d.getDate()+1); return toISO(d); }
+
+/* ---------------- cálculo ---------------- */
+function regsDe(t, aluno, discId, iv){
+  return state.data.registos.filter(function(r){ return r.turma===t.id && r.aluno===aluno && r.disc===discId && r.data>=iv.ini && r.data<=iv.fim; });
+}
+function domScores(t, aluno, disc, iv){
+  var rs=regsDe(t, aluno, disc.id, iv);
+  return disc.dominios.map(function(d){
+    var v=rs.filter(function(r){ return r.dom===d.id; });
+    var avg= v.length? v.reduce(function(s,r){ return s+r.valor; },0)/v.length : null;
+    return {dom:d, n:v.length, pct:avg};
+  });
+}
+function weighted(scores){
+  var sp=0, sv=0, tot=0;
+  scores.forEach(function(s){ tot+= +s.dom.peso||0; if(s.pct!=null){ sp+= +s.dom.peso||0; sv+= s.pct*(+s.dom.peso||0); } });
+  return {pct: sp? sv/sp : null, cobertura: tot? sp/tot : 0};
+}
+function discResult(t, aluno, disc, iv){
+  var c=weighted(domScores(t, aluno, disc, iv));
+  var w=(+disc.pesoDPS||0)/100, dps=null, pct=c.pct;
+  if(w>0){ dps=weighted(domScores(t, aluno, discById(t,"dps"), iv)).pct; if(dps!=null && c.pct!=null) pct=w*dps+(1-w)*c.pct; }
+  return {pct:pct, conh:c.pct, dps:dps, cobertura:c.cobertura};
+}
+function decKey(m, aluno, disc){ return state.turmaId+"|"+m.id+"|"+aluno+"|"+disc; }
+
+/* ---------------- arranque / entrada ---------------- */
+function gateMsg(html){ $("gateBody").innerHTML=html; }
+function showLogin(err){
+  gateMsg('<form id="lf" novalidate style="display:flex;flex-direction:column;gap:8px">'
+    +'<label class="f">Email<input id="lfE" type="email" autocomplete="email" required></label>'
+    +'<label class="f">Password<input id="lfP" type="password" autocomplete="current-password" required></label>'
+    +'<div class="gate-err" id="lfErr">'+esc(err||"")+'</div>'
+    +'<button class="btn btn-primary" type="submit">Entrar</button></form>'
+    +'<p class="muted" style="margin:6px 0 0">Ainda não tens conta ou esqueceste a password? Usa a <a href="../planificacao/">Planificação</a>: a conta é a mesma.</p>');
+  $("lf").addEventListener("submit", function(e){
+    e.preventDefault();
+    var em=$("lfE").value.trim(), pw=$("lfP").value;
+    if(!em||!pw){ $("lfErr").textContent="Escreve o email e a password."; return; }
+    $("lfErr").textContent="A entrar…";
+    state.sb.auth.signInWithPassword({email:em, password:pw}).then(function(r){
+      if(r.error){ $("lfErr").textContent= /invalid/i.test(r.error.message)? "Email ou password errados." : r.error.message; return; }
+      startApp(r.data.user);
+    });
+  });
+}
+function startApp(user){
+  if(state.started) return;
+  state.user=user; state.started=true;
+  var email=(user.email||"").trim().toLowerCase();
+  LS_KEY=LS_BASE+":"+(email||"local");
+  state.data=loadLocal()||normalize(defaultData());
+  state.data.dono=email;
+  var pd=planDefs();
+  if(pd){ if(!state.data.definicoes.conta && pd.conta) state.data.definicoes.conta=pd.conta; if(pd.pasta) state.data.definicoes.pasta=pd.pasta; if(pd.driveLigada && !state.data.definicoes.driveLigada) state.data.definicoes.driveLigada=true; }
+  if(!state.data.definicoes.conta && user.email) state.data.definicoes.conta=user.email;
+  if(!state.data.turmas.length){ state.data.turmas.push(novaTurma("A minha turma", 1)); }
+  state.turmaId=state.data.turmas[0].id;
+  var m=momentoAtual(); state.momentoId=m&&m.id;
+  $("gate").hidden=true;
+  $("btnUser").textContent=(email[0]||"?").toUpperCase(); $("btnUser").title=user.email||"";
+  $("verTag").textContent="v"+APP_VERSION;
+  saveLocal();
+  if(!state.data.turmas[0].alunos.length) state.view="turma";
+  renderAll();
+  if(state.data.definicoes.driveLigada){ if(tokLoad()) driveConnect(false); else renderPill(); }
+}
+function boot(){
+  if(location.hash.indexOf("demo")>-1 || !window.supabase){
+    if(location.hash.indexOf("demo")>-1){ startApp({id:"demo", email:""}); return; }
+    gateMsg("Não consegui carregar o início de sessão. Verifica a internet e recarrega a página."); return;
+  }
+  state.sb=window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {auth:{persistSession:true, autoRefreshToken:true}});
+  state.sb.auth.getSession().then(function(r){ var s=r&&r.data&&r.data.session; if(s&&s.user) startApp(s.user); else showLogin(); }).catch(function(){ showLogin(); });
+}
+
+/* ---------------- desenho geral ---------------- */
+function renderAll(){ renderTurmaSel(); renderTabs(); renderMain(); renderPill(); }
+function renderTurmaSel(){
+  var t=turma();
+  $("turmaSel").innerHTML=state.data.turmas.map(function(x){ return '<option value="'+esc(x.id)+'"'+(t&&x.id===t.id?" selected":"")+'>'+esc(x.nome)+' ('+x.ano+'.º)</option>'; }).join("")+'<option value="__new">+ Nova turma…</option>';
+  $("brandSub").textContent= t? t.nome+" · "+t.alunos.length+" alunos" : "";
+}
+$("turmaSel").addEventListener("change", function(){
+  if(this.value==="__new"){ var t=novaTurma("Nova turma", 1); state.data.turmas.push(t); state.turmaId=t.id; state.view="turma"; touch(); renderAll(); return; }
+  state.turmaId=this.value; state.disc=null; state.dom=null; renderAll();
+});
+function renderTabs(){ document.querySelectorAll(".tab").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-v")===state.view); }); }
+$("tabs").addEventListener("click", function(e){ var b=e.target.closest(".tab"); if(!b) return; state.view=b.getAttribute("data-v"); renderTabs(); renderMain(); window.scrollTo(0,0); });
+function renderMain(){
+  var v=state.view, mn=$("main"); mn.oninput=null; mn.onclick=null;
+  if(v==="registar") renderRegistar(); else if(v==="resumo") renderResumo(); else if(v==="turma") renderTurma(); else if(v==="criterios") renderCriterios(); else renderDefs();
+}
+
+/* ---------------- REGISTAR ---------------- */
+function renderRegistar(){
+  var t=turma(), main=$("main");
+  if(!t.alunos.length){ main.innerHTML='<div class="card empty">Ainda não há alunos nesta turma.<br><br><button class="btn btn-primary" type="button" id="goTurma">Carregar a turma</button></div>'; $("goTurma").onclick=function(){ state.view="turma"; renderTabs(); renderMain(); }; return; }
+  var discs=[{id:"dps", nome:t.dps.nome}].concat(t.disciplinas);
+  if(!state.disc || !discById(t,state.disc)) state.disc=t.disciplinas[0]? t.disciplinas[0].id : "dps";
+  var disc=discById(t, state.disc);
+  if(!state.dom || !disc.dominios.some(function(d){ return d.id===state.dom; })) state.dom=disc.dominios[0]&&disc.dominios[0].id;
+  var e=escala();
+  var h='<div class="card reg-head no-print">'
+    +'<div class="chips" id="discChips">'+discs.map(function(c){ return '<button type="button" class="chip'+(c.id==="dps"?" dps":"")+(c.id===state.disc?" on":"")+'" data-disc="'+esc(c.id)+'">'+esc(c.nome)+'</button>'; }).join("")+'</div>'
+    +'<div class="chips" id="domChips">'+disc.dominios.map(function(d){ return '<button type="button" class="chip'+(d.id===state.dom?" on":"")+'" data-dom="'+esc(d.id)+'">'+esc(d.nome)+'</button>'; }).join("")+'</div>'
+    +'<div class="row"><div class="seg" id="tipoSeg"><button type="button" data-t="obs"'+(state.tipo==="obs"?' class="on"':"")+'>Observação</button><button type="button" data-t="ficha"'+(state.tipo==="ficha"?' class="on"':"")+'>Ficha / teste (%)</button></div>'
+    +'<input type="date" id="regDate" value="'+esc(state.dataReg)+'" aria-label="Data do registo"><span class="grow"></span><span class="muted" id="regCount"></span></div>'+dateWarn(state.dataReg)+'</div>';
+  h+='<div class="stu-list" id="stuList">';
+  if(state.tipo==="obs"){
+    h+='<div class="stu bulk"><span class="cod"></span><div class="n"><b>Marcar os que faltam</b><small>Aplica o nível aos alunos ainda sem registo</small></div><div class="lv" data-bulk="1">'+[1,2,3,4].map(function(l){ return '<button type="button" data-l="'+l+'" title="'+esc(e[l-1].nome)+'">'+esc(e[l-1].sigla)+'</button>'; }).join("")+'</div></div>';
+  }
+  t.alunos.forEach(function(a){
+    if(a.ativo===false) return;
+    var r=findReg(t, a.id);
+    var hist=lastInfo(t, a.id);
+    h+='<div class="stu" data-a="'+esc(a.id)+'"><span class="cod">'+esc(a.cod)+'</span><div class="n"><b>'+esc(a.nome)+'</b><small>'+esc(hist)+'</small></div>';
+    if(state.tipo==="obs") h+='<div class="lv">'+[1,2,3,4].map(function(l){ return '<button type="button" data-l="'+l+'" title="'+esc(e[l-1].nome)+'"'+(r&&r.nivel===l?' class="on"':"")+'>'+esc(e[l-1].sigla)+'</button>'; }).join("")+'</div>';
+    else h+='<input class="pct" type="number" min="0" max="100" step="1" inputmode="numeric" placeholder="%" value="'+(r? Math.round(r.valor) : "")+'" aria-label="Percentagem de '+esc(a.nome)+'">';
+    h+='</div>';
+  });
+  h+='</div>';
+  main.innerHTML=h;
+  updateCount();
+  $("discChips").onclick=function(ev){ var b=ev.target.closest("[data-disc]"); if(!b) return; state.disc=b.getAttribute("data-disc"); state.dom=null; renderRegistar(); };
+  $("domChips").onclick=function(ev){ var b=ev.target.closest("[data-dom]"); if(!b) return; state.dom=b.getAttribute("data-dom"); renderRegistar(); };
+  $("tipoSeg").onclick=function(ev){ var b=ev.target.closest("[data-t]"); if(!b) return; state.tipo=b.getAttribute("data-t"); renderRegistar(); };
+  $("regDate").onchange=function(){ state.dataReg=this.value||today(); renderRegistar(); };
+  $("stuList").addEventListener("click", function(ev){
+    var b=ev.target.closest(".lv button"); if(!b) return;
+    var l=+b.getAttribute("data-l");
+    if(b.parentNode.getAttribute("data-bulk")){
+      var n=0; t.alunos.forEach(function(a){ if(a.ativo!==false && !findReg(t,a.id)){ setReg(t,a.id,{nivel:l, valor:nivelPct(l)}); n++; } });
+      toast(n? n+" alunos marcados com "+escala()[l-1].nome+"." : "Todos os alunos já têm registo."); renderRegistar(); return;
+    }
+    var aid=b.closest(".stu").getAttribute("data-a"), cur=findReg(t,aid);
+    if(cur && cur.nivel===l) delReg(cur); else setReg(t, aid, {nivel:l, valor:nivelPct(l)});
+    var nr=findReg(t,aid); b.closest(".lv").querySelectorAll("button").forEach(function(x){ x.classList.toggle("on", !!nr && nr.nivel===+x.getAttribute("data-l")); });
+    b.closest(".stu").querySelector("small").textContent=lastInfo(t, aid);
+    updateCount();
+  });
+  $("stuList").addEventListener("change", function(ev){
+    var inp=ev.target.closest(".pct"); if(!inp) return;
+    var aid=inp.closest(".stu").getAttribute("data-a"), v=inp.value.trim(), cur=findReg(t,aid);
+    if(v===""){ if(cur) delReg(cur); }
+    else { var n=Math.max(0, Math.min(100, +v.replace(",","."))); if(isNaN(n)) return; inp.value=Math.round(n); setReg(t, aid, {valor:n, nivel:null}); }
+    inp.closest(".stu").querySelector("small").textContent=lastInfo(t, aid);
+    updateCount();
+  });
+}
+function dateWarn(iso){
+  var c=state.data.definicoes.calendario, x=interrupcaoEm(iso);
+  if(x) return '<div class="warnbox">Esta data está na interrupção “'+esc(x.nome)+'”. Confirma se é mesmo esta.</div>';
+  if(iso<c.inicioAno || iso>c.fimAno) return '<div class="warnbox">Esta data está fora do ano letivo.</div>';
+  return "";
+}
+function findReg(t, aid){
+  var tp=state.tipo;
+  return state.data.registos.filter(function(r){ return r.turma===t.id && r.aluno===aid && r.disc===state.disc && r.dom===state.dom && r.data===state.dataReg && r.tipo===tp; })[0]||null;
+}
+function setReg(t, aid, v){
+  var r=findReg(t, aid);
+  if(!r){ r={id:uid("r"), turma:t.id, aluno:aid, disc:state.disc, dom:state.dom, data:state.dataReg, tipo:state.tipo}; state.data.registos.push(r); }
+  r.valor=v.valor; r.nivel=v.nivel; r.em=nowISO(); touch();
+}
+function delReg(r){ state.data.registos=state.data.registos.filter(function(x){ return x!==r; }); touch(); }
+function lastInfo(t, aid){
+  var rs=state.data.registos.filter(function(r){ return r.turma===t.id && r.aluno===aid && r.disc===state.disc && r.dom===state.dom; });
+  if(!rs.length) return "Sem registos neste domínio";
+  var avg=rs.reduce(function(s,r){ return s+r.valor; },0)/rs.length, m=mencaoDe(avg);
+  return rs.length+" registo"+(rs.length>1?"s":"")+" · média "+Math.round(avg)+"% ("+escala()[m].nome+")";
+}
+function updateCount(){
+  var t=turma(), el=$("regCount"); if(!el) return;
+  var n=t.alunos.filter(function(a){ return a.ativo!==false && findReg(t,a.id); }).length, tot=t.alunos.filter(function(a){ return a.ativo!==false; }).length;
+  el.textContent=n+" de "+tot+" registados em "+fmtD(state.dataReg);
+}
+
+/* ---------------- RESUMO ---------------- */
+function renderResumo(){
+  var t=turma(), main=$("main"), ms=momentos();
+  if(!t.alunos.length){ main.innerHTML='<div class="card empty">Carrega primeiro a turma.</div>'; return; }
+  var m=ms.filter(function(x){ return x.id===state.momentoId; })[0]||momentoAtual(); state.momentoId=m.id;
+  var iv=intervalo(m), e=escala();
+  var h='<div class="card no-print"><div class="row"><label class="f grow">Momento de avaliação<select id="momSel">'+ms.map(function(x){ return '<option value="'+esc(x.id)+'"'+(x.id===m.id?" selected":"")+'>'+esc(x.nome)+' — até '+fmtD(x.fim)+(x.tipo==="intercalar"?" (qualitativa)":"")+'</option>'; }).join("")+'</select></label>'
+    +'<button class="btn btn-ghost btn-sm" type="button" id="btnPrint">Imprimir</button><button class="btn btn-ghost btn-sm" type="button" id="btnCsv">Exportar Excel (CSV)</button></div>'
+    +'<p class="muted" style="margin:6px 0 0">Conta os registos de '+fmtD(iv.ini)+' a '+fmtD(iv.fim)+'. '+(m.tipo==="intercalar"? "Nas intercalares a avaliação é só qualitativa: não aparece menção, só o nível de cada disciplina e a apreciação escrita." : "A menção é uma proposta calculada com os pesos dos critérios. Toca numa menção para ver o detalhe ou alterá-la.")+'</p></div>';
+  h+='<div class="card"><h2>'+esc(t.nome)+' · '+esc(m.nome)+'</h2>';
+  if(m.tipo==="final"){
+    h+='<div class="tbl-wrap"><table class="res"><thead><tr><th class="nm">Aluno</th>'+t.disciplinas.map(function(c){ return '<th title="'+esc(c.nome)+'">'+esc(abrev(c.nome))+'</th>'; }).join("")+'</tr></thead><tbody>';
+    t.alunos.forEach(function(a){
+      if(a.ativo===false) return;
+      h+='<tr><td class="nm">'+esc(a.cod)+' '+esc(a.nome)+'</td>';
+      t.disciplinas.forEach(function(c){
+        var r=discResult(t, a.id, c, iv), prop=mencaoDe(r.pct), dk=state.data.decisoes[decKey(m,a.id,c.id)], fin= dk&&dk.mencao!=null? dk.mencao : prop;
+        h+='<td><button type="button" class="mb" data-a="'+esc(a.id)+'" data-c="'+esc(c.id)+'">'+(fin==null? '<span class="badge b0">—</span>' : '<span class="badge b'+(fin+1)+(dk&&dk.mencao!=null?" ovr":"")+'">'+esc(e[fin].sigla)+'</span>')
+          +'<small>'+(r.pct==null? "sem dados" : Math.round(r.pct)+"%"+(r.cobertura<0.5?" ⚠":""))+'</small></button></td>';
+      });
+      h+='</tr>';
+    });
+    h+='</tbody></table></div><p class="muted">⚠ = menos de metade dos domínios com registos. Contorno escuro = menção alterada por ti.</p>';
+  }
+  h+='<h3>Apreciações'+(m.tipo==="intercalar"?" (qualitativas)":"")+'</h3><p class="muted no-print">Escreve aqui a apreciação de cada aluno. Em breve a aplicação vai propor o texto sozinha a partir dos registos.</p><div class="apr">';
+  t.alunos.forEach(function(a){
+    if(a.ativo===false) return;
+    var k=state.turmaId+"|"+m.id+"|"+a.id+"|_apr", txt=(state.data.decisoes[k]&&state.data.decisoes[k].texto)||"";
+    h+='<div class="apr-item"><b>'+esc(a.cod)+' · '+esc(a.nome)+'</b><div class="lvl-line">'+t.disciplinas.map(function(c){ var r=discResult(t,a.id,c,iv), q=mencaoDe(r.pct); return '<span class="b'+(q==null?0:q+1)+'" title="'+esc(c.nome)+'">'+esc(abrev(c.nome))+': '+(q==null?"—":esc(e[q].nome))+'</span>'; }).join("")+'</div>'
+      +'<textarea rows="3" data-apr="'+esc(k)+'" placeholder="Apreciação de '+esc(a.nome)+'…">'+esc(txt)+'</textarea></div>';
+  });
+  h+='</div></div>';
+  main.innerHTML=h;
+  $("momSel").onchange=function(){ state.momentoId=this.value; renderResumo(); };
+  $("btnPrint").onclick=function(){ window.print(); };
+  $("btnCsv").onclick=function(){ exportCsv(t, m, iv); };
+  main.querySelectorAll("[data-apr]").forEach(function(ta){ ta.addEventListener("input", function(){ var k=ta.getAttribute("data-apr"); state.data.decisoes[k]=state.data.decisoes[k]||{}; state.data.decisoes[k].texto=ta.value; touch(); }); });
+  main.querySelectorAll(".mb").forEach(function(b){ b.onclick=function(){ openDetail(t, m, iv, b.getAttribute("data-a"), b.getAttribute("data-c")); }; });
+}
+function abrev(n){ var map={"Português":"Port.","Matemática":"Mat.","Estudo do Meio":"E. Meio","Educação Artística":"E. Art.","Educação Física":"E. Fís.","Inglês":"Ing.","Apoio ao Estudo":"A. Est."}; return map[n]||n; }
+function openDetail(t, m, iv, aid, cid){
+  var a=t.alunos.filter(function(x){ return x.id===aid; })[0], c=discById(t,cid), e=escala();
+  var r=discResult(t, aid, c, iv), prop=mencaoDe(r.pct), k=decKey(m,aid,cid), dk=state.data.decisoes[k];
+  var sc=domScores(t, aid, c, iv), dsc=domScores(t, aid, discById(t,"dps"), iv);
+  var line=function(s){ return '<tr><td style="text-align:left">'+esc(s.dom.nome)+' <span class="muted">('+s.dom.peso+'%)</span></td><td>'+(s.pct==null?"—":Math.round(s.pct)+"%")+'</td><td>'+s.n+'</td></tr>'; };
+  var regs=state.data.registos.filter(function(x){ return x.turma===t.id && x.aluno===aid && (x.disc===cid || x.disc==="dps") && x.data>=iv.ini && x.data<=iv.fim; }).sort(function(x,y){ return y.data.localeCompare(x.data); });
+  openModal('<h3>'+esc(a.nome)+' · '+esc(c.nome)+'</h3>'
+    +'<p>Proposta: <b>'+(prop==null?"sem dados":esc(e[prop].nome)+" ("+Math.round(r.pct)+"%)")+'</b>'+(c.pesoDPS>0 && r.dps!=null? '<br><span class="muted">Conhecimentos '+Math.round(r.conh)+'% × '+(100-c.pesoDPS)+'% + Atitudes '+Math.round(r.dps)+'% × '+c.pesoDPS+'%</span>':"")+'</p>'
+    +'<table class="res"><thead><tr><th style="text-align:left">Domínio</th><th>Média</th><th>Registos</th></tr></thead><tbody>'+sc.map(line).join("")+(c.pesoDPS>0? dsc.map(line).join(""):"")+'</tbody></table>'
+    +'<label class="f" style="margin-top:12px">Menção final<select id="ovSel"><option value="">Usar a proposta'+(prop==null?"":" ("+esc(e[prop].nome)+")")+'</option>'+e.map(function(x,i){ return '<option value="'+i+'"'+(dk&&dk.mencao===i?" selected":"")+'>'+esc(x.nome)+'</option>'; }).join("")+'</select></label>'
+    +'<h3>Registos ('+regs.length+')</h3><div style="max-height:200px;overflow:auto">'+(regs.map(function(x){ var dd=discById(t,x.disc), dm=dd&&dd.dominios.filter(function(z){ return z.id===x.dom; })[0]; return '<div class="row" style="border-bottom:1px solid var(--line);padding:3px 0"><span class="muted" style="width:76px">'+fmtD(x.data)+'</span><span class="grow">'+esc(dm?dm.nome:"?")+(x.disc==="dps"?" (atitudes)":"")+'</span><b>'+(x.nivel? esc(e[x.nivel-1].sigla) : Math.round(x.valor)+"%")+'</b><button class="icon-btn del" type="button" data-del="'+esc(x.id)+'" title="Apagar registo">✕</button></div>'; }).join("")||'<p class="muted">Sem registos neste momento.</p>')+'</div>'
+    +'<div class="modal-foot"><button class="btn btn-primary" type="button" data-close>Fechar</button></div>');
+  $("ovSel").onchange=function(){ var v=this.value; if(v===""){ if(dk) delete dk.mencao; } else { state.data.decisoes[k]=state.data.decisoes[k]||{}; state.data.decisoes[k].mencao=+v; } touch(); };
+  document.querySelectorAll("[data-del]").forEach(function(b){ b.onclick=function(){ var id=b.getAttribute("data-del"); state.data.registos=state.data.registos.filter(function(x){ return x.id!==id; }); touch(); b.parentNode.remove(); toast("Registo apagado."); }; });
+  $("modalBg").addEventListener("click", function(ev){ if(ev.target.id==="modalBg"||ev.target.closest("[data-close]")) renderResumo(); });
+}
+function exportCsv(t, m, iv){
+  var e=escala(), rows=[["N.º","Aluno"].concat(t.disciplinas.map(function(c){ return c.nome; })).concat(["Apreciação"])];
+  t.alunos.forEach(function(a){
+    if(a.ativo===false) return;
+    var r=[a.cod, a.nome];
+    t.disciplinas.forEach(function(c){
+      var x=discResult(t,a.id,c,iv), p=mencaoDe(x.pct), dk=state.data.decisoes[decKey(m,a.id,c.id)], f= dk&&dk.mencao!=null? dk.mencao : p;
+      r.push(m.tipo==="final"? (f==null?"":e[f].nome) : (p==null?"":e[p].nome));
+    });
+    var k=state.turmaId+"|"+m.id+"|"+a.id+"|_apr"; r.push((state.data.decisoes[k]&&state.data.decisoes[k].texto)||"");
+    rows.push(r);
+  });
+  var csv="﻿"+rows.map(function(r){ return r.map(function(v){ v=String(v==null?"":v); return /[;"\n]/.test(v)? '"'+v.replace(/"/g,'""')+'"' : v; }).join(";"); }).join("\r\n");
+  var url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"})), aEl=document.createElement("a");
+  aEl.href=url; aEl.download=(t.nome+" - "+m.nome).replace(/[\\/:*?"<>|]/g,"-")+".csv"; document.body.appendChild(aEl); aEl.click(); setTimeout(function(){ URL.revokeObjectURL(url); aEl.remove(); },1500);
+}
+
+/* ---------------- TURMA ---------------- */
+function renderTurma(){
+  var t=turma(), main=$("main");
+  var h='<div class="card"><h2>Turma</h2><div class="row"><label class="f grow">Nome<input type="text" id="tNome" value="'+esc(t.nome)+'"></label><label class="f">Ano<select id="tAno">'+[1,2,3,4].map(function(n){ return '<option value="'+n+'"'+(t.ano===n?" selected":"")+'>'+n+'.º ano</option>'; }).join("")+'</select></label></div>'
+    +'<h3>Alunos ('+t.alunos.filter(function(a){ return a.ativo!==false; }).length+')</h3>'
+    +'<p class="muted">Cola a lista de nomes, um por linha (pela ordem do número de turma). Os nomes ficam só neste aparelho e na tua Drive.</p>'
+    +'<textarea id="tCola" rows="5" placeholder="Ana Silva&#10;Bruno Costa&#10;…"></textarea><div class="row" style="margin-top:6px"><button class="btn btn-primary btn-sm" type="button" id="tAdd">Adicionar à turma</button></div>'
+    +'<div id="aluList" style="margin-top:10px">'+t.alunos.map(function(a,i){ return a.ativo===false? "" : '<div class="alu-row"><span class="muted" style="font-weight:700">'+esc(a.cod)+'</span><input type="text" data-an="'+esc(a.id)+'" value="'+esc(a.nome)+'"><button class="icon-btn del" type="button" data-ad="'+esc(a.id)+'" title="Retirar da turma">✕</button></div>'; }).join("")+'</div></div>'
+    +'<div class="card"><h2>Calendário da escola</h2><div class="row"><span class="grow">'+esc(calNome())+': '+momentos().map(function(m){ return esc(m.nome); }).join(" · ")+'</span><button class="btn btn-ghost btn-sm" type="button" id="tCal">Mudar</button></div></div>'
+    +'<div class="card"><h2>Outras ações</h2><div class="row"><button class="btn btn-ghost btn-sm" type="button" id="tNova">+ Nova turma</button>'+(state.data.turmas.length>1? '<button class="btn btn-danger btn-sm" type="button" id="tDel">Apagar esta turma</button>':"")+'</div></div>';
+  main.innerHTML=h;
+  $("tNome").oninput=function(){ t.nome=this.value; touch(); renderTurmaSel(); };
+  $("tAno").onchange=function(){
+    var n=+this.value, mudar=t.ano!==n; t.ano=n; touch(); renderTurmaSel();
+    if(mudar && confirm("Queres repor os critérios habituais do "+n+".º ano (por exemplo, Inglês só existe no 3.º e 4.º)? Os registos já feitos mantêm-se.")){ t.disciplinas=defaultDisciplinas(n); touch(); toast("Critérios do "+n+".º ano aplicados."); }
+  };
+  $("tAdd").onclick=function(){
+    var nomes=$("tCola").value.split(/\r?\n/).map(function(s){ return s.replace(/^\s*\d+[\s.)\-–]+/,"").replace(/\t.*$/,"").trim(); }).filter(Boolean);
+    if(!nomes.length){ toast("Cola primeiro os nomes."); return; }
+    nomes.forEach(function(n){ t.alunos.push({id:uid("a"), cod:"", nome:n, ativo:true}); });
+    recode(t); touch(); renderTurma(); renderTurmaSel(); toast(nomes.length+" alunos adicionados.");
+  };
+  main.querySelectorAll("[data-an]").forEach(function(inp){ inp.oninput=function(){ var a=t.alunos.filter(function(x){ return x.id===inp.getAttribute("data-an"); })[0]; a.nome=inp.value; touch(); }; });
+  main.querySelectorAll("[data-ad]").forEach(function(b){ b.onclick=function(){ var a=t.alunos.filter(function(x){ return x.id===b.getAttribute("data-ad"); })[0]; if(!confirm("Retirar "+a.nome+" da turma? Os registos ficam guardados.")) return; a.ativo=false; touch(); renderTurma(); renderTurmaSel(); }; });
+  $("tCal").onclick=function(){ state.view="defs"; renderTabs(); renderMain(); window.scrollTo(0,0); };
+  $("tNova").onclick=function(){ var n=novaTurma("Nova turma",1); state.data.turmas.push(n); state.turmaId=n.id; touch(); renderAll(); };
+  if($("tDel")) $("tDel").onclick=function(){ if(!confirm("Apagar a turma “"+t.nome+"” e todos os seus registos? Não dá para desfazer.")) return; state.data.registos=state.data.registos.filter(function(r){ return r.turma!==t.id; }); state.data.turmas=state.data.turmas.filter(function(x){ return x!==t; }); state.turmaId=state.data.turmas[0].id; touch(); renderAll(); };
+}
+function recode(t){ var n=0; t.alunos.forEach(function(a){ n++; if(!a.cod) a.cod="A"+pad(n); }); }
+
+/* ---------------- CRITÉRIOS ---------------- */
+function renderCriterios(){
+  var t=turma(), main=$("main");
+  var block=function(c, isDps){
+    var sum=c.dominios.reduce(function(s,d){ return s+(+d.peso||0); },0);
+    return '<div class="disc" data-c="'+esc(isDps?"dps":c.id)+'"><div class="row">'+(isDps? '<b class="grow">'+esc(c.nome)+'</b>' : '<input type="text" class="grow" data-f="nome" value="'+esc(c.nome)+'" style="font-weight:700">')
+      +(isDps?"":'<label class="muted">Peso das atitudes <input type="number" data-f="pesoDPS" value="'+(+c.pesoDPS||0)+'" min="0" max="100" style="width:64px">%</label><button class="icon-btn del" type="button" data-delc="1" title="Apagar disciplina">✕</button>')+'</div>'
+      +c.dominios.map(function(d){ return '<div class="dom-row" data-d="'+esc(d.id)+'"><input type="text" data-df="nome" value="'+esc(d.nome)+'"><input type="number" data-df="peso" value="'+(+d.peso||0)+'" min="0" max="100"><button class="icon-btn del" type="button" data-deld="1" title="Apagar domínio">✕</button></div>'; }).join("")
+      +'<div class="row"><button class="btn btn-ghost btn-sm" type="button" data-addd="1">+ Domínio</button><span class="grow"></span><span class="sum '+(sum===100?"ok":"bad")+'">Soma: '+sum+'%'+(sum===100?"":" (deve dar 100%)")+'</span></div></div>';
+  };
+  main.innerHTML='<div class="card"><h2>Critérios de avaliação · '+esc(t.nome)+'</h2><p class="muted">Domínios e pesos de cada disciplina. Começa com valores habituais no 1.º ciclo: ajusta-os aos critérios aprovados no teu agrupamento. O “peso das atitudes” é a parte de Desenvolvimento Pessoal e Social que entra em cada disciplina (muitas escolas usam 30%).</p>'
+    +block(t.dps, true)+t.disciplinas.map(function(c){ return block(c,false); }).join("")
+    +'<div class="row"><button class="btn btn-ghost btn-sm" type="button" id="addDisc">+ Disciplina</button><span class="grow"></span><button class="btn btn-ghost btn-sm" type="button" id="resetCrit">Repor critérios habituais</button></div></div>';
+  var get=function(el){ var id=el.closest(".disc").getAttribute("data-c"); return id==="dps"? t.dps : discById(t,id); };
+  main.oninput=function(ev){
+    var el=ev.target; if(!el.closest(".disc")) return; var c=get(el); if(!c) return;
+    if(el.getAttribute("data-f")==="nome"){ c.nome=el.value; }
+    else if(el.getAttribute("data-f")==="pesoDPS"){ c.pesoDPS=Math.max(0,Math.min(100,+el.value||0)); }
+    else if(el.getAttribute("data-df")){ var d=c.dominios.filter(function(x){ return x.id===el.closest(".dom-row").getAttribute("data-d"); })[0]; if(el.getAttribute("data-df")==="nome") d.nome=el.value; else { d.peso=+el.value||0; var s=el.closest(".disc").querySelector(".sum"), sum=c.dominios.reduce(function(a,x){ return a+(+x.peso||0); },0); s.className="sum "+(sum===100?"ok":"bad"); s.textContent="Soma: "+sum+"%"+(sum===100?"":" (deve dar 100%)"); } }
+    touch();
+  };
+  main.onclick=function(ev){
+    var b=ev.target.closest("button"); if(!b || !b.closest(".disc")) return;
+    var c=get(b);
+    if(b.hasAttribute("data-addd")){ c.dominios.push(D("Novo domínio",0)); touch(); renderCriterios(); }
+    else if(b.hasAttribute("data-deld")){ var id=b.closest(".dom-row").getAttribute("data-d"); if(!confirm("Apagar este domínio? Os registos dele deixam de contar.")) return; c.dominios=c.dominios.filter(function(x){ return x.id!==id; }); touch(); renderCriterios(); }
+    else if(b.hasAttribute("data-delc")){ if(!confirm("Apagar a disciplina “"+c.nome+"”?")) return; t.disciplinas=t.disciplinas.filter(function(x){ return x!==c; }); touch(); renderCriterios(); }
+  };
+  $("addDisc").onclick=function(){ t.disciplinas.push({id:uid("c"), nome:"Nova disciplina", pesoDPS:30, dominios:[D("Domínio",100)]}); touch(); renderCriterios(); };
+  $("resetCrit").onclick=function(){ if(!confirm("Repor os domínios e pesos habituais do "+t.ano+".º ano? As alterações feitas aqui perdem-se e os registos de domínios apagados deixam de contar.")) return; t.disciplinas=defaultDisciplinas(t.ano); t.dps=defaultDPS(); touch(); renderCriterios(); };
+}
+
+/* ---------------- DEFINIÇÕES ---------------- */
+function renderDefs(){
+  var d=state.data.definicoes, cal=d.calendario, e=d.escala, main=$("main");
+  var ms=momentos();
+  var av=avisosCalendario();
+  main.innerHTML='<div class="card"><h2>Calendário da escola</h2>'
+    +'<div class="row"><label class="f">Organização<select id="calTipo"><option value="periodos"'+(cal.tipo==="periodos"?" selected":"")+'>3 períodos (sem intercalares)</option><option value="semestral"'+(cal.tipo==="semestral"?" selected":"")+'>2 semestres com intercalares</option><option value="semestres"'+(cal.tipo==="semestres"?" selected":"")+'>2 semestres sem intercalares</option></select></label>'
+    +'<label class="f">Início do ano letivo<input type="date" id="calIni" value="'+esc(cal.inicioAno)+'"></label>'
+    +'<label class="f">Fim das aulas<input type="date" id="calFim" value="'+esc(cal.fimAno)+'"></label></div>'
+    +'<p class="muted">As datas vêm do calendário escolar oficial de 2026/27; acerta-as às da tua escola. As intercalares são só qualitativas.</p>'
+    +'<h3>'+(cal.tipo==="periodos"?"Períodos":"Semestres")+'</h3>'
+    +cal.periodos.map(function(p){ return '<div class="per-row" data-p="'+esc(p.id)+'"><input type="text" data-pf="nome" value="'+esc(p.nome)+'" aria-label="Nome"><label class="muted">Início<input type="date" data-pf="inicio" value="'+esc(p.inicio)+'"></label><label class="muted">Fim<input type="date" data-pf="fim" value="'+esc(p.fim)+'"></label>'
+      +'<label class="muted ic"><input type="checkbox" data-pint="1"'+(p.intercalar?" checked":"")+'> Intercalar'+(p.intercalar? '<input type="date" data-pf="intercalar" value="'+esc(p.intercalar)+'">':"")+'</label><button class="icon-btn del" type="button" data-pdel="1" title="Apagar">✕</button></div>'; }).join("")
+    +'<div class="row" style="margin-top:6px"><button class="btn btn-ghost btn-sm" type="button" id="perAdd">+ '+(cal.tipo==="periodos"?"Período":"Semestre")+'</button></div>'
+    +'<h3>Interrupções letivas</h3>'
+    +cal.interrupcoes.map(function(x){ return '<div class="per-row int" data-i="'+esc(x.id)+'"><input type="text" data-if="nome" value="'+esc(x.nome)+'" aria-label="Nome"><label class="muted">De<input type="date" data-if="inicio" value="'+esc(x.inicio)+'"></label><label class="muted">a<input type="date" data-if="fim" value="'+esc(x.fim)+'"></label><span></span><button class="icon-btn del" type="button" data-idel="1" title="Apagar">✕</button></div>'; }).join("")
+    +'<div class="row" style="margin-top:6px"><button class="btn btn-ghost btn-sm" type="button" id="intAdd">+ Interrupção</button></div>'
+    +'<h3>Registos que contam para cada momento</h3><select id="calAc"><option value="1"'+(cal.acumulado?" selected":"")+'>Todos, desde o início do ano letivo</option><option value="0"'+(!cal.acumulado?" selected":"")+'>Só os desse período ou semestre</option></select>'
+    +(av.length? '<div class="warnbox">'+av.map(esc).join("<br>")+'</div>' : "")
+    +'</div>'
+    +'<div class="card"><h2>Escala das menções</h2><p class="muted">Percentagem mínima de cada menção e o valor que conta cada nível registado na aula.</p>'
+    +e.map(function(x,i){ return '<div class="row" style="margin:4px 0"><span class="badge b'+(i+1)+'" style="width:44px;text-align:center">'+esc(x.sigla)+'</span><span style="width:110px">'+esc(x.nome)+'</span><label class="muted">a partir de <input type="number" data-emin="'+i+'" value="'+x.min+'" min="0" max="100" style="width:64px"'+(i===0?" disabled":"")+'>%</label><label class="muted">nível vale <input type="number" data-niv="'+i+'" value="'+d.niveis[i]+'" min="0" max="100" style="width:64px">%</label></div>'; }).join("")+'</div>'
+    +'<div class="card"><h2>Google Drive</h2><p class="muted">Os dados da avaliação ficam num ficheiro próprio (“'+DATA_FILE+'”) na pasta “'+esc(d.pasta)+'” da tua Drive, separado das planificações. Os nomes dos alunos nunca saem deste aparelho e da tua Drive.</p>'
+    +'<div class="row"><span class="muted">Conta: <b>'+esc(d.conta||"—")+'</b></span><span class="grow"></span>'+(state.drive.status==="ok"? '<span class="pill ok"><span class="dot"></span>Ligada</span>' : '<button class="btn btn-primary btn-sm" type="button" id="drvGo">Entrar com Google</button>')+'</div>'
+    +(state.drive.msg? '<p class="muted" style="color:var(--danger)">'+esc(state.drive.msg)+'</p>':"")+'</div>'
+    +'<div class="card"><h2>Conta</h2><div class="row"><span class="muted">'+esc(state.user&&state.user.email||"")+'</span><span class="grow"></span><a class="btn btn-ghost btn-sm" href="../planificacao/">Ir para a Planificação</a><button class="btn btn-ghost btn-sm" type="button" id="btnOut">Sair</button></div></div>';
+  $("calTipo").onchange=function(){ if(!confirm("Trocar pelo modelo “"+this.options[this.selectedIndex].text+"”? As datas atuais são substituídas pelas do calendário oficial (os registos mantêm-se).")){ this.value=cal.tipo; return; } d.calendario=calendarioModelo(this.value, +cal.inicioAno.slice(0,4)); state.momentoId=momentoAtual().id; touch(); renderDefs(); };
+  $("calIni").onchange=function(){ cal.inicioAno=this.value; touch(); renderDefs(); };
+  $("calFim").onchange=function(){ cal.fimAno=this.value; touch(); };
+  $("calAc").onchange=function(){ cal.acumulado=this.value==="1"; touch(); };
+  main.querySelectorAll(".per-row[data-p]").forEach(function(row){
+    var p=cal.periodos.filter(function(x){ return x.id===row.getAttribute("data-p"); })[0];
+    row.querySelectorAll("[data-pf]").forEach(function(inp){ inp.addEventListener("change", function(){ p[inp.getAttribute("data-pf")]=inp.value; touch(); renderDefs(); }); });
+    row.querySelector("[data-pint]").onchange=function(){
+      if(this.checked){ var a=new Date(p.inicio+"T12:00:00"), b=new Date(p.fim+"T12:00:00"); p.intercalar=toISO(new Date((a.getTime()+b.getTime())/2)); }
+      else { if(!confirm("Retirar a intercalar do “"+p.nome+"”? As apreciações escritas nela deixam de aparecer.")){ this.checked=true; return; } p.intercalar=""; }
+      touch(); renderDefs();
+    };
+    row.querySelector("[data-pdel]").onclick=function(){ if(cal.periodos.length<2) return; if(!confirm("Apagar “"+p.nome+"”?")) return; cal.periodos=cal.periodos.filter(function(x){ return x!==p; }); touch(); renderDefs(); };
+  });
+  main.querySelectorAll(".per-row[data-i]").forEach(function(row){
+    var x=cal.interrupcoes.filter(function(z){ return z.id===row.getAttribute("data-i"); })[0];
+    row.querySelectorAll("[data-if]").forEach(function(inp){ inp.addEventListener("change", function(){ x[inp.getAttribute("data-if")]=inp.value; touch(); renderDefs(); }); });
+    row.querySelector("[data-idel]").onclick=function(){ if(!confirm("Apagar a interrupção “"+x.nome+"”?")) return; cal.interrupcoes=cal.interrupcoes.filter(function(z){ return z!==x; }); touch(); renderDefs(); };
+  });
+  $("perAdd").onclick=function(){ var last=cal.periodos[cal.periodos.length-1], ini=last? addDay(last.fim) : cal.inicioAno; cal.periodos.push(P((cal.periodos.length+1)+".º "+(cal.tipo==="periodos"?"período":"semestre"), ini, ini, "")); touch(); renderDefs(); };
+  $("intAdd").onclick=function(){ cal.interrupcoes.push(I("Interrupção", today(), today())); touch(); renderDefs(); };
+  main.querySelectorAll("[data-emin]").forEach(function(inp){ inp.onchange=function(){ e[+inp.getAttribute("data-emin")].min=+inp.value||0; touch(); }; });
+  main.querySelectorAll("[data-niv]").forEach(function(inp){ inp.onchange=function(){ var i=+inp.getAttribute("data-niv"); d.niveis[i]=+inp.value||0; state.data.registos.forEach(function(r){ if(r.nivel===i+1) r.valor=d.niveis[i]; }); touch(); }; });
+  if($("drvGo")) $("drvGo").onclick=function(){ driveConnect(true); };
+  $("btnOut").onclick=logout;
+}
+function logout(){ saveLocal(); if(state.sb) state.sb.auth.signOut().then(function(){ location.reload(); }); else location.reload(); }
+$("btnUser").onclick=function(){ state.view="defs"; renderTabs(); renderMain(); };
+
+/* ---------------- GOOGLE DRIVE ---------------- */
+var auth={token:null, exp:0, lastTry:0};
+function tokKey(){ return "planificacao_gtok:"+((state.user&&state.user.email)||"local").toLowerCase(); }
+function tokSave(){ try{ if(auth.token && Date.now()<auth.exp) localStorage.setItem(tokKey(), JSON.stringify({t:auth.token, e:auth.exp})); else localStorage.removeItem(tokKey()); }catch(e){} }
+function tokLoad(){ try{ var o=JSON.parse(localStorage.getItem(tokKey())||"null"); if(o && o.t && Date.now()<o.e){ auth.token=o.t; auth.exp=o.e; return true; } }catch(e){} return false; }
+function waitGIS(){ return new Promise(function(res,rej){ var n=0; (function chk(){ if(window.google&&google.accounts&&google.accounts.oauth2) res(); else if(++n>60) rej({code:"nogis"}); else setTimeout(chk,150); })(); }); }
+function getToken(interactive){
+  if(auth.token && Date.now()<auth.exp) return Promise.resolve(auth.token);
+  if(!interactive) return Promise.reject({code:"auth"});
+  return waitGIS().then(function(){ return new Promise(function(res,rej){
+    var d=state.data.definicoes;
+    var cl=google.accounts.oauth2.initTokenClient({client_id:GOOGLE_CLIENT_ID, scope:SCOPE, login_hint:d.conta||undefined,
+      callback:function(r){ if(r&&r.access_token){ auth.token=r.access_token; auth.exp=Date.now()+((+r.expires_in||3600)-120)*1000; tokSave(); res(auth.token); } else rej({code:(r&&r.error)||"auth"}); },
+      error_callback:function(err){ rej({code:(err&&err.type)||"auth"}); }});
+    cl.requestAccessToken({prompt:"", login_hint:d.conta||undefined});
+  }); });
+}
+function api(method, url, body, headers, as){
+  if(!navigator.onLine) return Promise.reject({code:"offline"});
+  return getToken(false).then(function(tok){ return fetch(url,{method:method, headers:Object.assign({Authorization:"Bearer "+tok}, headers||{}), body:body}); })
+  .then(function(r){
+    if(r.status===401){ auth.token=null; tokSave(); throw {code:"auth"}; }
+    if(!r.ok) return r.text().then(function(t){ var m=""; try{ m=JSON.parse(t).error.message; }catch(e){ m=t.slice(0,160); } throw {code:"http", status:r.status, message:m}; });
+    if(as==="text") return r.text();
+    return r.status===204? null : r.json();
+  });
+}
+function qv(s){ return String(s).replace(/\\/g,"\\\\").replace(/'/g,"\\'"); }
+function driveErr(e){
+  var c=e&&e.code;
+  if(c==="nogis") return "Não consegui carregar a Google. Verifica a internet.";
+  if(c==="popup_closed"||c==="popup_failed_to_open") return "A janela da Google fechou ou foi bloqueada. Permite janelas pop-up e tenta outra vez.";
+  if(c==="access_denied") return "Não deste autorização para usar a Drive.";
+  if(c==="auth") return "A sessão da Google terminou. Carrega em “Entrar com Google”.";
+  if(c==="offline") return "Sem internet. Fica guardado neste aparelho e vai para a Drive quando voltar a ligação.";
+  if(c==="mismatch") return "Entraste na Google com outra conta ("+state.drive.owner+").";
+  if(c==="http") return "A Drive respondeu com erro ("+e.status+"). "+(e.message||"");
+  return "Falhou a ligação à Drive.";
+}
+function renderPill(){
+  var p=$("drivePill"), t=$("drivePillTxt"), dr=state.drive, d=state.data&&state.data.definicoes; if(!d) return;
+  p.className="pill";
+  if(dr.saving||dr.status==="busy"){ p.classList.add("busy"); t.textContent="a guardar…"; return; }
+  if(dr.status==="ok"){ p.classList.add(dr.pending?"warn":"ok"); t.textContent= dr.pending? "por enviar" : "Drive · "+(dr.lastSave? hm(dr.lastSave) : "ligada"); return; }
+  if(dr.status==="error"){ p.classList.add("err"); t.textContent="erro na Drive"; return; }
+  p.classList.add("warn"); t.textContent= d.driveLigada? "ligar à Drive" : "só neste aparelho";
+}
+$("drivePill").onclick=function(){ if(state.drive.status==="ok") driveSave(true); else if(state.data.definicoes.driveLigada) driveConnect(true); else { state.view="defs"; renderTabs(); renderMain(); } };
+function ensureFolder(){
+  var name=state.data.definicoes.pasta||"Planificações";
+  var q="name = '"+qv(name)+"' and mimeType = '"+FOLDER_MIME+"' and trashed = false";
+  return api("GET", API+"/files?fields=files(id,name)&q="+encodeURIComponent(q)).then(function(r){
+    if(r.files&&r.files.length) return r.files[0].id;
+    return api("POST", API+"/files?fields=id", JSON.stringify({name:name, mimeType:FOLDER_MIME}), {"Content-Type":"application/json"}).then(function(x){ return x.id; });
+  }).then(function(id){ state.drive.folderId=id; return id; });
+}
+function findFile(){
+  var q="name = '"+DATA_FILE+"' and '"+qv(state.drive.folderId)+"' in parents and trashed = false";
+  return api("GET", API+"/files?orderBy=modifiedTime desc&fields=files(id,modifiedTime)&q="+encodeURIComponent(q)).then(function(r){ return (r.files||[])[0]||null; });
+}
+function createFile(meta, content){
+  var bnd="aval"+Math.random().toString(36).slice(2);
+  var body=new Blob(["--"+bnd+"\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n"+JSON.stringify(meta)+"\r\n--"+bnd+"\r\nContent-Type: application/json\r\n\r\n", content, "\r\n--"+bnd+"--"]);
+  return api("POST", UP+"/files?uploadType=multipart&fields=id", body, {"Content-Type":"multipart/related; boundary="+bnd});
+}
+function driveConnect(interactive){
+  var d=state.data.definicoes, dr=state.drive;
+  dr.status="busy"; dr.msg=""; renderPill();
+  return getToken(interactive).then(function(){ return api("GET", API+"/about?fields=user(emailAddress)"); })
+  .then(function(ab){
+    dr.owner=(ab&&ab.user&&ab.user.emailAddress)||"";
+    if(d.conta && dr.owner && d.conta.toLowerCase()!==dr.owner.toLowerCase()) throw {code:"mismatch"};
+    if(!d.conta) d.conta=dr.owner;
+    return ensureFolder();
+  }).then(function(){ d.driveLigada=true; return findFile(); })
+  .then(function(f){
+    dr.fileId=f? f.id : null;
+    if(!f){ dr.status="ok"; return driveSave(false); }
+    return api("GET", API+"/files/"+f.id+"?alt=media", null, null, "text").then(function(txt){
+      var remote=normalize(JSON.parse(txt));
+      dr.status="ok";
+      if(String(remote.atualizadoEm||"") > String(state.data.atualizadoEm||"")){
+        remote.definicoes.conta=d.conta; remote.definicoes.driveLigada=true; remote.definicoes.pasta=d.pasta;
+        state.data=remote; saveLocal();
+        if(!state.data.turmas.some(function(x){ return x.id===state.turmaId; })) state.turmaId=state.data.turmas[0]&&state.data.turmas[0].id;
+        renderAll(); toast("Carreguei a tua avaliação da Drive.");
+      } else if(String(remote.atualizadoEm||"") < String(state.data.atualizadoEm||"")) return driveSave(false);
+    });
+  }).then(function(){ dr.lastSave=dr.lastSave||new Date(); renderPill(); if(state.view==="defs") renderDefs(); })
+  .catch(function(e){
+    if(e&&e.code==="auth"&&!interactive){ dr.status="local"; renderPill(); return; }
+    dr.status="error"; dr.msg=driveErr(e); renderPill(); if(interactive) toast(dr.msg, 5000); if(state.view==="defs") renderDefs();
+  });
+}
+function scheduleDrive(){
+  var d=state.data.definicoes, dr=state.drive;
+  if(!d.driveLigada || dr.status!=="ok") return;
+  if(!dr.pending) dr.since=Date.now();
+  dr.pending=true; renderPill();
+  clearTimeout(dr.timer);
+  dr.timer=setTimeout(function(){ driveSave(false); }, (Date.now()-dr.since>45000)? 0 : 4000);
+}
+function driveSave(manual){
+  var dr=state.drive; saveLocal();
+  if(dr.status!=="ok"){ if(manual) toast("Guardado neste aparelho."); return Promise.resolve(); }
+  if(dr.saving){ dr.again=true; return Promise.resolve(); }
+  clearTimeout(dr.timer); dr.saving=true; renderPill();
+  var json=JSON.stringify(state.data);
+  var p= dr.fileId? api("PATCH", UP+"/files/"+dr.fileId+"?uploadType=media&fields=id", new Blob([json],{type:"application/json"}), {"Content-Type":"application/json"})
+                  : (dr.folderId? Promise.resolve(dr.folderId) : ensureFolder()).then(function(fid){ return createFile({name:DATA_FILE, parents:[fid], mimeType:"application/json"}, json); }).then(function(r){ dr.fileId=r.id; });
+  return p.then(function(){ dr.saving=false; dr.pending=false; dr.lastSave=new Date(); renderPill(); if(manual) toast("Guardado na Drive."); })
+  .catch(function(e){ dr.saving=false; if(e&&e.code==="auth"){ dr.status="local"; } else { dr.status="error"; dr.msg=driveErr(e); } renderPill(); if(manual) toast(driveErr(e),5000); })
+  .then(function(){ if(dr.again){ dr.again=false; return driveSave(false); } });
+}
+setInterval(function(){ if(state.data && state.drive.pending && state.drive.status==="ok" && !state.drive.saving) driveSave(false); }, 60000);
+document.addEventListener("pointerdown", function(e){
+  if(!state.started) return; var d=state.data.definicoes, dr=state.drive;
+  if(!d.driveLigada || dr.status==="ok" || dr.status==="busy" || dr.saving) return;
+  if(e.target.closest("input,textarea,select,.lv,#drivePill,#drvGo,.modal")) return;
+  if(auth.token && Date.now()<auth.exp){ driveConnect(false); return; }
+  if(Date.now()-auth.lastTry<90000) return; auth.lastTry=Date.now(); driveConnect(true);
+}, true);
+
+window.__aval={state:state, startApp:startApp, discResult:discResult, intervalo:intervalo, momentos:momentos};
+boot();
+})();
+
+</script>
+</body>
+</html>
