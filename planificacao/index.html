@@ -305,7 +305,9 @@ table.plan th{background:var(--head-fill);font-weight:700;text-align:center;padd
   #drivePill .dot{width:10px;height:10px}
   .doc-btn{font-size:0;padding:6px 8px;gap:0}
   .doc-btn svg{width:18px;height:18px}
-  .tsep,#btnInstall{display:none}
+  .tsep,#btnInstall,#btnImport,#btnRedo{display:none}
+  .brand{display:none}
+  .top-right{max-width:none;flex:1;justify-content:flex-end}
   .ibtn,.avatar{width:32px;height:32px;flex:none}
   /* coluna lateral vira gaveta */
   .shell{flex-direction:row}
@@ -430,7 +432,7 @@ mark{background:var(--accent-bg);color:inherit;border-radius:3px}
 /* ---------- impressão (compacta, sem cabeçalho/rodapé do navegador) ---------- */
 #printArea{display:none}
 #measure{position:fixed;left:-20000px;top:0;width:283mm;background:#fff;visibility:hidden}
-#printArea,#measure{color:#111;font-family:"Times New Roman",Tinos,serif}
+#printArea,#measure,.pdf-render{color:#111;font-family:"Times New Roman",Tinos,serif}
 .p-sheet{width:297mm;height:210mm;padding:7mm;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden;page-break-after:always;break-after:page;background:#fff}
 .p-sheet.long{height:auto;min-height:210mm;overflow:visible}
 .p-sheet:last-child{page-break-after:auto;break-after:auto}
@@ -473,6 +475,11 @@ mark{background:var(--accent-bg);color:inherit;border-radius:3px}
 .wk-arrows button:hover:not(:disabled){background:#dce6f2}
 .wk-arrows button:disabled{opacity:.35;cursor:default}
 @media (max-width:760px){.wkn input{height:30px;width:42px;font-size:15px}.wk-arrows button{width:26px;height:15px;font-size:9px}}
+.xb-tag{font:800 11px/1 var(--font-ui);letter-spacing:.02em;padding:3px 4px;border-radius:4px;color:#fff}
+.xb-word .xb-tag{background:#2b5797;font-size:13px;padding:2px 5px}
+.xb-pdf .xb-tag{background:#c62828;font-size:9.5px;padding:3px 3px}
+.xb-print{color:#1f3d6b}
+.xb-imp{color:#2b5797}
 /* ecrã de entrada */
 .splash{position:fixed;inset:0;z-index:99999;background:#eaf4fd;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity .45s ease}
 .splash picture,.splash img{width:100%;height:100%;display:block}
@@ -521,7 +528,7 @@ body.splash-auth .splash-go{display:none}
   <div class="top-right">
     <span class="pill" id="drivePill" title="Estado da gravação"><span class="dot"></span><span id="drivePillTxt">a preparar…</span></span>
     <button class="ibtn" id="btnFind" type="button" title="Procurar semana por data" aria-label="Procurar semana"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></button>
-    <button class="btn btn-accent btn-sm doc-btn" id="btnDoc" type="button" title="Importar de Word, guardar em Word, PDF ou imprimir"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M8 13h8M8 17h5"/></svg> Documento ▾</button>
+    <button class="ibtn xb xb-imp" id="btnImport" type="button" title="Importar de Word (trazer páginas de um .docx)" aria-label="Importar de Word"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M12 11v6M9 14l3 3 3-3"/></svg></button><button class="ibtn xb xb-word" id="btnWord" type="button" title="Guardar em Word (.docx)" aria-label="Guardar em Word"><span class="xb-tag">W</span></button><button class="ibtn xb xb-pdf" id="btnPdf" type="button" title="Guardar em PDF" aria-label="Guardar em PDF"><span class="xb-tag">PDF</span></button><button class="ibtn xb xb-print" id="btnPrint" type="button" title="Imprimir" aria-label="Imprimir"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/></svg></button>
     <span class="tsep"></span>
     <button class="ibtn" id="btnUndo" type="button" title="Voltar atrás (Ctrl+Z)" aria-label="Voltar atrás" disabled><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
     <button class="ibtn" id="btnRedo" type="button" title="Avançar (Ctrl+Y)" aria-label="Avançar" disabled><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button>
@@ -584,7 +591,7 @@ body.splash-auth .splash-go{display:none}
         <li>Abre <b>Configurações</b> (menu da esquerda) e preenche a escola, o logótipo, o ano letivo, a turma e o teu nome.</li>
         <li>Na mesma página, escreve o email da tua conta Google e carrega em <b>Entrar com Google</b> para guardar tudo na tua Drive.</li>
         <li>Volta a <b>Planificação da semana</b> e escreve diretamente na tabela.</li>
-        <li>Quando terminares, carrega em <b>Documento ▾</b> (no topo) e escolhe Word ou PDF/imprimir.</li>
+        <li>Quando terminares, carrega no topo em <b>W</b> (Word), <b>PDF</b> ou na <b>impressora</b> (imprimir).</li>
       </ol>
       <p>Tudo é guardado sozinho enquanto escreves. Não precisas de carregar em "Guardar".</p>
     </details>
@@ -631,7 +638,7 @@ body.splash-auth .splash-go{display:none}
 
     <details class="hs"><summary>📥 Importar de um documento Word</summary>
       <ol>
-        <li>Carrega em <b>Documento ▾</b> (no topo) → <b>Importar de Word</b>.</li>
+        <li>Carrega no ícone <b>Importar de Word</b> no topo (a folha com a seta para baixo). No telemóvel, usa o computador para importar.</li>
         <li>Escolhe o ficheiro <b>.docx</b>. Aparece a lista das páginas (cada tabela de planificação é uma página/semana).</li>
         <li>Marca <b>só a página que queres</b>, várias, ou <b>Todas</b>.</li>
         <li>Escolhe o destino: <b>a semana aberta</b> (troca os textos e mantém as datas e as aulas) ou <b>semanas novas</b> (uma por página, com as datas do documento).</li>
@@ -683,8 +690,8 @@ body.splash-auth .splash-go{display:none}
 
     <details class="hs"><summary>🖨️ Imprimir, PDF e Word</summary>
       <ul>
-        <li><b>Documento ▾ → PDF ou imprimir</b> abre a janela de impressão. Para PDF, escolhe a impressora <b>Guardar como PDF</b>. A folha já sai deitada (A4 horizontal).</li>
-        <li><b>Documento ▾ → Guardar em Word</b> descarrega um ficheiro .docx que podes abrir e alterar no Word.</li>
+        <li><b>PDF</b> (ícone vermelho) cria e descarrega o PDF (A4 deitado), também no telemóvel.</li><li>O ícone da <b>impressora</b> abre a janela de impressão. A folha já sai deitada (A4 horizontal).</li>
+        <li><b>W</b> (ícone azul) descarrega um ficheiro .docx que podes abrir e alterar no Word.</li>
         <li>Podes exportar <b>só esta semana</b> ou <b>todas as semanas</b> (uma por folha).</li>
         <li>Com a Drive ligada, podes também <b>guardar uma cópia na Drive</b> (Word e PDF).</li>
       </ul>
@@ -773,7 +780,7 @@ var GOOGLE_CLIENT_ID = "774444020481-v812tdfs5rgs0cll82kp8rmat4jqo7uh.apps.googl
 if(SUPABASE_URL.indexOf("__")===0) SUPABASE_URL="";
 if(SUPABASE_KEY.indexOf("__")===0) SUPABASE_KEY="";
 if(GOOGLE_CLIENT_ID.indexOf("__")===0) GOOGLE_CLIENT_ID="";
-var APP_VERSION = "1.17", APP_DATE = "11/10/2026";
+var APP_VERSION = "1.18", APP_DATE = "11/10/2026";
 var LS_BASE = "planificacao_semanal_v1";
 /* Se a aplicação mudar de endereço, escrever aqui o novo (ex.: "https://novo-endereco.netlify.app"). Aparece um aviso a todos. */
 var MOVED_TO = "";
@@ -2004,6 +2011,7 @@ function clientId(){
 }
 function driveErr(e){
   var c=e&&e.code;
+  if(c==="pdflib") return "Não consegui preparar o PDF (sem internet?). Tenta outra vez ou usa Imprimir → Guardar como PDF.";
   if(c==="noclient") return "Falta configurar o acesso à Google (ID de cliente). Vê “Configuração técnica”, mais abaixo.";
   if(c==="nogis") return "Não consegui carregar o início de sessão da Google. Verifica a internet e recarrega a página.";
   if(c==="popup_closed"||c==="popup_failed_to_open") return "A janela da Google fechou ou foi bloqueada. Permite janelas pop-up para este site e tenta outra vez.";
@@ -2429,15 +2437,18 @@ function downloadBytes(filename, bytes, mime){
 function openExport(kind){
   var s=week(), d=state.data.definicoes, ws=sortedWeeks();
   var driveOk = d.driveLigada && state.drive.status==="ok" && !state.drive.mismatch;
-  openModal('<h3>'+(kind==="docx"?"Guardar em Word":"Imprimir ou guardar em PDF")+'</h3>'
+  if(kind==="print") driveOk=false;
+  openModal('<h3>'+(kind==="docx"?"Guardar em Word": kind==="pdf"? "Guardar em PDF" : "Imprimir")+'</h3>'
     +'<label class="choice"><input type="radio" name="exScope" value="one" checked><div><b>Só esta semana</b><span>'+esc(weekLabel(s))+'</span></div></label>'
     +'<label class="choice"><input type="radio" name="exScope" value="all"><div><b>Todas as semanas de “'+esc(plan().nome)+'”</b><span>'+ws.length+' semana(s), uma por página, da mais antiga para a mais recente.</span></div></label>'
     +(kind==="docx"
       ? '<label class="choice"><input type="checkbox" id="exDl" checked><div><b>Descarregar para o computador</b><span>Fica na pasta Transferências.</span></div></label>'
-      : '<label class="choice"><input type="checkbox" id="exDl" checked><div><b>Abrir a janela de impressão</b><span>Para PDF, escolhe a impressora “Guardar como PDF”. A folha já sai deitada (A4 horizontal).</span></div></label>')
-    +'<label class="choice"><input type="checkbox" id="exDrive"'+(driveOk?"":" disabled")+'><div><b>Guardar uma cópia na Drive</b><span>'+(driveOk? "Na pasta “"+esc(d.pasta)+"”." : "Entra primeiro com a Google em “Configurações”.")+'</span></div></label>'
+      : kind==="pdf"
+      ? '<label class="choice"><input type="checkbox" id="exDl" checked><div><b>Descarregar o PDF</b><span>A4 deitado, uma semana por página. Fica na pasta Transferências.</span></div></label>'
+      : '<input type="checkbox" id="exDl" checked hidden><p class="side-help" style="margin:4px 0 8px">Abre a janela de impressão. A folha já sai deitada (A4 horizontal).</p>')
+    +(kind==="print"? '<input type="checkbox" id="exDrive" hidden>' : '<label class="choice"><input type="checkbox" id="exDrive"'+(driveOk?"":" disabled")+'><div><b>Guardar uma cópia na Drive</b><span>'+(driveOk? "Na pasta “"+esc(d.pasta)+"”." : "Entra primeiro com a Google em “Configurações”.")+'</span></div></label>')
     +'<div class="progress" id="exProg"></div>'
-    +'<div class="modal-foot"><button class="btn btn-ghost" type="button" data-close>Fechar</button><button class="btn btn-primary" type="button" id="exGo">'+(kind==="docx"?"Criar Word":"Continuar")+'</button></div>');
+    +'<div class="modal-foot"><button class="btn btn-ghost" type="button" data-close>Fechar</button><button class="btn btn-primary" type="button" id="exGo">'+(kind==="docx"?"Criar Word": kind==="pdf"? "Criar PDF" : "Imprimir")+'</button></div>');
   $("exGo").onclick=function(){
     var all=document.querySelector('input[name=exScope]:checked').value==="all";
     var list= all? ws.slice().reverse() : [s];
@@ -2445,13 +2456,42 @@ function openExport(kind){
     if(!dl && !dv){ toast("Escolhe pelo menos uma opção."); return; }
     $("exGo").disabled=true;
     var prog=function(m){ var p=$("exProg"); if(p) p.textContent=m; };
+    if(kind==="print"){ closeModal(); doPrint(list); return; }
     runExport(kind, list, dl, dv, prog).then(function(msg){
-      if(kind==="pdf" && dl){ closeModal(); doPrint(list); if(msg) toast(msg,4000); return; }
       prog(msg); if($("exGo")) $("exGo").disabled=false; toast(msg, 4000);
     }).catch(function(e){
       prog(driveErr(e)); if($("exGo")) $("exGo").disabled=false;
     });
   };
+}
+/* ---------- PDF feito aqui mesmo (funciona também no telemóvel) ---------- */
+var PDF_LIBS=["https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js","https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"];
+function loadScript(src){ return new Promise(function(res,rej){ var sc=document.createElement("script"); sc.src=src; sc.onload=res; sc.onerror=function(){ rej({code:"pdflib"}); }; document.head.appendChild(sc); }); }
+function pdfLibs(){
+  if(window.html2canvas && window.jspdf) return Promise.resolve();
+  return loadScript(PDF_LIBS[0]).then(function(){ return loadScript(PDF_LIBS[1]); });
+}
+function buildPdf(weeks, prog){
+  return pdfLibs().then(function(){
+    var box=document.createElement("div");
+    box.id="pdfBox"; box.style.cssText="position:fixed;left:-30000px;top:0;width:297mm;background:#fff;z-index:-1";
+    box.className="pdf-render"; box.innerHTML=printHTML(weeks); document.body.appendChild(box);
+    var sheets=[].slice.call(box.querySelectorAll(".p-sheet"));
+    var pdf=new window.jspdf.jsPDF({orientation:"landscape", unit:"mm", format:"a4", compress:true});
+    var chain=Promise.resolve();
+    sheets.forEach(function(sh, i){
+      chain=chain.then(function(){
+        if(prog) prog("A criar o PDF… página "+(i+1)+" de "+sheets.length);
+        return window.html2canvas(sh, {scale:2.2, backgroundColor:"#ffffff", useCORS:true, logging:false});
+      }).then(function(cv){
+        if(i>0) pdf.addPage("a4","landscape");
+        var W=297, H=210, h=W*cv.height/cv.width, w=W;
+        if(h>H){ w=W*H/h; h=H; }
+        pdf.addImage(cv.toDataURL("image/jpeg",0.92), "JPEG", (W-w)/2, 0, w, h, undefined, "FAST");
+      });
+    });
+    return chain.then(function(){ box.remove(); return pdf.output("blob"); }, function(e){ box.remove(); throw e; });
+  });
 }
 function runExport(kind, weeks, dl, dv, prog){
   var base=fileBase(weeks), docx=buildDocx(weeks), fid=state.drive.folderId;
@@ -2472,6 +2512,7 @@ function runExport(kind, weeks, dl, dv, prog){
       .then(function(){ done.push("PDF guardado na Drive"); if(tmpId) api("DELETE", API+"/files/"+tmpId).catch(function(){}); },
             function(e){ if(tmpId) api("DELETE", API+"/files/"+tmpId).catch(function(){}); throw e; });
   }
+  if(dl) p=p.then(function(){ prog("A criar o PDF…"); return buildPdf(weeks, prog); }).then(function(blob){ downloadBytes(base+".pdf", blob, "application/pdf"); done.push("PDF descarregado"); });
   return p.then(function(){ return done.join(". ")+(done.length?".":""); });
 }
 
@@ -2551,7 +2592,10 @@ $("btnUndo").onclick=doUndo; $("btnRedo").onclick=doRedo;
   });
 })();
 
-$("btnDoc").onclick=openDocMenu;
+$("btnImport").onclick=function(){ openImport(); };
+$("btnWord").onclick=function(){ if(!week()){ toast("Abre primeiro uma semana."); return; } openExport("docx"); };
+$("btnPdf").onclick=function(){ if(!week()){ toast("Abre primeiro uma semana."); return; } openExport("pdf"); };
+$("btnPrint").onclick=function(){ if(!week()){ toast("Abre primeiro uma semana."); return; } openExport("print"); };
 $("btnCfg").onclick=function(){ state.view= state.view==="defs"? "semana" : "defs"; renderMain(); renderWeeks(); window.scrollTo(0,0); };
 function sideOpen(v){ document.body.classList.toggle("side-open", v); }
 $("btnMenu").onclick=function(){ sideOpen(!document.body.classList.contains("side-open")); };
