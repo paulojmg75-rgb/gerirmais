@@ -137,6 +137,7 @@ button{cursor:pointer}
 .tools .sep{margin:0 2px}
 .tools .fit{flex:none;padding:3px 8px;font-size:12px}
 .trash{font-size:16px;padding:3px 8px;flex:none}
+.app-ver{font-size:11.5px;font-weight:600;color:var(--ink-muted);border:1px solid var(--line);border-radius:99px;padding:2px 8px;white-space:nowrap;flex:none;cursor:default}
 .top-export{display:flex;gap:6px}
 .cfg-head{display:flex;flex-direction:column;gap:10px;max-width:880px;width:100%}
 .cfg-head h2{font-size:24px}
@@ -772,6 +773,7 @@ var GOOGLE_CLIENT_ID = "774444020481-v812tdfs5rgs0cll82kp8rmat4jqo7uh.apps.googl
 if(SUPABASE_URL.indexOf("__")===0) SUPABASE_URL="";
 if(SUPABASE_KEY.indexOf("__")===0) SUPABASE_KEY="";
 if(GOOGLE_CLIENT_ID.indexOf("__")===0) GOOGLE_CLIENT_ID="";
+var APP_VERSION = "1.17", APP_DATE = "11/10/2026";
 var LS_BASE = "planificacao_semanal_v1";
 /* Se a aplicação mudar de endereço, escrever aqui o novo (ex.: "https://novo-endereco.netlify.app"). Aparece um aviso a todos. */
 var MOVED_TO = "";
@@ -1235,6 +1237,7 @@ function renderWeek(){
     +'<button class="btn btn-ghost btn-sm" type="button" id="compact" title="Tira as linhas em branco desta semana">Compactar</button>'
     +'<span class="fit" id="fitInfo">…</span>'
     +'<span class="grow"></span>'
+    +'<span class="app-ver" title="Versão da aplicação '+APP_VERSION+' de '+APP_DATE+'. Quando publicares uma atualização, este número muda.">v'+APP_VERSION+'</span>'
     +'<button class="icon-btn del trash" type="button" id="delWeek" title="Eliminar esta semana" aria-label="Eliminar esta semana">🗑</button>'
     +'</div>';
 
@@ -1815,6 +1818,7 @@ function renderDefs(){
     +'<div class="row"><button class="btn btn-ghost btn-sm" type="button" id="cfgLogout">Sair desta conta</button></div></div>';
   h+='<div class="panel" id="cfg-app"><h2>Aplicação</h2>'
     +'<p>Endereço: <span class="kv">'+esc(location.origin)+'</span></p>'
+    +'<p class="side-help" style="margin:0 0 8px">Versão <b>'+APP_VERSION+'</b> · '+APP_DATE+'</p>'
     +'<div class="row">'+(standalone? '<button class="btn btn-ghost btn-sm" type="button" id="cfgRefresh">⟳ Atualizar a aplicação</button>' : '<button class="btn btn-ghost btn-sm" type="button" id="cfgInstall">📲 Instalar (ícone no ambiente de trabalho / telemóvel)</button>')+'</div>'
     +'<p>Se um dia a aplicação mudar de endereço: aqui em <b>Cópias</b> carrega em <b>Exportar tudo</b>, abre o novo endereço, cria conta com o mesmo email e usa <b>Importar cópia</b>.</p></div>';
   $("main").innerHTML=h;
