@@ -145,6 +145,7 @@ table.res th.nm{background:var(--surface-2);z-index:2}
 .apr{display:flex;flex-direction:column;gap:8px}
 .apr-item{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--surface)}
 .apr-item b{font-size:14.5px}
+.prop-tag{font-size:12px;font-weight:700;color:var(--warn);margin-top:4px}
 .lvl-line{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}
 .lvl-line span{font-size:12px;border-radius:6px;padding:1px 6px}
 
@@ -233,7 +234,7 @@ table.res th.nm{background:var(--surface-2);z-index:2}
 var SUPABASE_URL = "https://ynbqwvjwbzckpgotjama.supabase.co";
 var SUPABASE_KEY = "sb_publishable_iOoMpE2cG4t6aCXzop8I9w_r7LUUCiF";
 var GOOGLE_CLIENT_ID = "774444020481-v812tdfs5rgs0cll82kp8rmat4jqo7uh.apps.googleusercontent.com";
-var APP_VERSION = "0.3";
+var APP_VERSION = "0.5";
 var LS_BASE = "avaliacao_v1";
 var PLAN_BASE = "planificacao_semanal_v1";
 var DATA_FILE = "Avaliacao_Dados.json";
@@ -552,19 +553,20 @@ function renderResumo(){
     });
     h+='</tbody></table></div><p class="muted">⚠ = menos de metade dos domínios com registos. Contorno escuro = menção alterada por ti.</p>';
   }
-  h+='<h3>Apreciações'+(m.tipo==="intercalar"?" (qualitativas)":"")+'</h3><p class="muted no-print">Escreve aqui a apreciação de cada aluno. Em breve a aplicação vai propor o texto sozinha a partir dos registos.</p><div class="apr">';
+  h+='<div class="row"><h3 class="grow">Apreciações'+(m.tipo==="intercalar"?" (qualitativas)":"")+'</h3><button class="btn btn-primary btn-sm no-print" type="button" id="btnPropor">✨ Propor textos</button></div><p class="muted no-print">Carrega em <b>Propor textos</b> e a aplicação escreve uma proposta para cada aluno a partir dos registos. Depois lê, corrige o que quiseres e fica guardado. Também podes escrever tudo à mão.</p><div class="apr">';
   t.alunos.forEach(function(a){
     if(a.ativo===false) return;
     var k=state.turmaId+"|"+m.id+"|"+a.id+"|_apr", txt=(state.data.decisoes[k]&&state.data.decisoes[k].texto)||"";
     h+='<div class="apr-item"><b>'+esc(a.cod)+' · '+esc(a.nome)+'</b><div class="lvl-line">'+t.disciplinas.map(function(c){ var r=discResult(t,a.id,c,iv), q=mencaoDe(r.pct); return '<span class="b'+(q==null?0:q+1)+'" title="'+esc(c.nome)+'">'+esc(abrev(c.nome))+': '+(q==null?"—":esc(e[q].nome))+'</span>'; }).join("")+'</div>'
-      +'<textarea rows="3" data-apr="'+esc(k)+'" placeholder="Apreciação de '+esc(a.nome)+'…">'+esc(txt)+'</textarea></div>';
+      +'<textarea rows="3" data-apr="'+esc(k)+'" placeholder="Apreciação de '+esc(a.nome)+'…">'+esc(txt)+'</textarea>'+(state.data.decisoes[k]&&state.data.decisoes[k].proposto? '<div class="prop-tag no-print">Texto proposto'+(state.data.decisoes[k].proposto==="ia"?" pela inteligência artificial":" (modelo simples)")+' — revê antes de usar</div>':"")+'</div>';
   });
   h+='</div></div>';
   main.innerHTML=h;
   $("momSel").onchange=function(){ state.momentoId=this.value; renderResumo(); };
   $("btnPrint").onclick=function(){ window.print(); };
   $("btnCsv").onclick=function(){ exportCsv(t, m, iv); };
-  main.querySelectorAll("[data-apr]").forEach(function(ta){ ta.addEventListener("input", function(){ var k=ta.getAttribute("data-apr"); state.data.decisoes[k]=state.data.decisoes[k]||{}; state.data.decisoes[k].texto=ta.value; touch(); }); });
+  main.querySelectorAll("[data-apr]").forEach(function(ta){ ta.addEventListener("input", function(){ var k=ta.getAttribute("data-apr"); state.data.decisoes[k]=state.data.decisoes[k]||{}; state.data.decisoes[k].texto=ta.value; if(state.data.decisoes[k].proposto){ delete state.data.decisoes[k].proposto; var tg=ta.parentNode.querySelector('.prop-tag'); if(tg) tg.remove(); } touch(); }); });
+  $("btnPropor").onclick=function(){ openPropor(t, m, iv); };
   main.querySelectorAll(".mb").forEach(function(b){ b.onclick=function(){ openDetail(t, m, iv, b.getAttribute("data-a"), b.getAttribute("data-c")); }; });
 }
 function abrev(n){ var map={"Português":"Port.","Matemática":"Mat.","Estudo do Meio":"E. Meio","Educação Artística":"E. Art.","Educação Física":"E. Fís.","Inglês":"Ing.","Apoio ao Estudo":"A. Est."}; return map[n]||n; }
@@ -583,6 +585,114 @@ function openDetail(t, m, iv, aid, cid){
   $("ovSel").onchange=function(){ var v=this.value; if(v===""){ if(dk) delete dk.mencao; } else { state.data.decisoes[k]=state.data.decisoes[k]||{}; state.data.decisoes[k].mencao=+v; } touch(); };
   document.querySelectorAll("[data-del]").forEach(function(b){ b.onclick=function(){ var id=b.getAttribute("data-del"); state.data.registos=state.data.registos.filter(function(x){ return x.id!==id; }); touch(); b.parentNode.remove(); toast("Registo apagado."); }; });
   $("modalBg").addEventListener("click", function(ev){ if(ev.target.id==="modalBg"||ev.target.closest("[data-close]")) renderResumo(); });
+}
+
+/* ---------------- TEXTO AUTOMÁTICO DAS APRECIAÇÕES ---------------- */
+var NIVEL_TXT=["insuficiente","suficiente","bom","muito bom"];
+/* resumo anónimo de um aluno: só o código e níveis por domínio (nunca o nome) */
+function perfilAluno(t, a, iv){
+  var e=escala(), out={codigo:a.cod, disciplinas:[], atitudes:[]};
+  t.disciplinas.forEach(function(c){
+    var sc=domScores(t, a.id, c, iv).filter(function(x){ return x.pct!=null; });
+    if(!sc.length) return;
+    var r=discResult(t, a.id, c, iv);
+    out.disciplinas.push({disciplina:c.nome, nivel: r.pct==null? null : NIVEL_TXT[mencaoDe(r.pct)], dominios: sc.map(function(x){ return {dominio:x.dom.nome, nivel:NIVEL_TXT[mencaoDe(x.pct)]}; })});
+  });
+  domScores(t, a.id, discById(t,"dps"), iv).forEach(function(x){ if(x.pct!=null) out.atitudes.push({dominio:x.dom.nome, nivel:NIVEL_TXT[mencaoDe(x.pct)]}); });
+  return out;
+}
+function juntar(l){ return l.length<2? (l[0]||"") : l.slice(0,-1).join(", ")+" e "+l[l.length-1]; }
+/* modelo simples, sem inteligência artificial (usado quando o servidor ainda não está ativo) */
+/* modelo simples (sem inteligência artificial): frases por domínio, sem género e sem nomes */
+var FR={
+  "oralidade":["exprime-se oralmente com clareza","precisa de desenvolver a expressão oral"],
+  "leitura":["lê com fluência e boa compreensão","precisa de praticar mais a leitura para ganhar fluência"],
+  "escrita":["escreve com correção","precisa de melhorar a ortografia e a organização das frases na escrita"],
+  "educação literária":["mostra gosto pela leitura dos textos trabalhados","precisa de ler mais em casa para desenvolver o gosto pela leitura"],
+  "consciência linguística":["identifica bem os sons e as regras da língua","precisa de consolidar o conhecimento dos sons e das regras da língua"],
+  "compreensão e aplicação":["compreende e aplica bem os conteúdos trabalhados","precisa de consolidar os conteúdos trabalhados"],
+  "raciocínio":["revela bom raciocínio","precisa de desenvolver o raciocínio matemático"],
+  "resolução de problemas":["resolve problemas com autonomia","precisa de apoio na resolução de problemas"],
+  "comunicação":["explica com clareza como pensou","precisa de aprender a explicar como pensou"],
+  "pensamento computacional":["segue e cria sequências de passos com facilidade","precisa de apoio a seguir sequências de passos"],
+  "representações múltiplas":["usa bem desenhos, esquemas e números para representar ideias","precisa de apoio a representar ideias com desenhos e esquemas"],
+  "motivação":["mostra gosto pela matemática","precisa de ganhar mais confiança na matemática"]
+};
+var AT={4:["Demonstra grande empenho e respeita as regras da sala de aula, participando com entusiasmo nas atividades.","Revela muito empenho e um comportamento exemplar, colaborando sempre com os colegas."],
+  3:["Revela empenho e um comportamento adequado, participando com interesse nas atividades.","Participa com interesse nas atividades e cumpre as regras da sala de aula."],
+  2:["Participa nas atividades, embora nem sempre com a atenção e o empenho desejáveis.","Cumpre, de forma geral, as regras da sala de aula, mas precisa de manter a atenção durante mais tempo."],
+  1:["Precisa de melhorar a atenção, o empenho e o cumprimento das regras da sala de aula.","Revela dificuldade em manter a atenção e em cumprir as regras, aspetos que deve melhorar."]};
+var FECHO={inter:{bom:["Deve continuar com o mesmo empenho.","Está a fazer um percurso positivo; deve continuar assim."], fraco:["Com trabalho regular em casa e na escola, poderá progredir.","Com mais apoio e treino diário, poderá melhorar os resultados."]},
+  fim:{bom:["Fez um percurso muito positivo neste período.","Parabéns pelo trabalho realizado."], fraco:["No próximo período deve reforçar o estudo e o treino diário para progredir.","Com mais empenho e apoio em casa, poderá melhorar no próximo período."]}};
+var NV={"insuficiente":1,"suficiente":2,"bom":3,"muito bom":4};
+function pick(arr, seed){ var h=0; for(var i=0;i<seed.length;i++) h=(h*31+seed.charCodeAt(i))>>>0; return arr[h%arr.length]; }
+function juntarFracos(l){ if(l.length<2) return l[0]||""; var b=l[1].replace(/^precisa de /,""); return l[0]+" e de "+b; }
+function cap(t){ return t.charAt(0).toUpperCase()+t.slice(1); }
+function textoLocal(p, intercalar){
+  if(!p.disciplinas.length && !p.atitudes.length) return "";
+  var frases=[], soma=0, n=0, outrasBoas=[], outrasFracas=[];
+  if(p.atitudes.length){ var m=Math.round(p.atitudes.reduce(function(a,x){ return a+NV[x.nivel]; },0)/p.atitudes.length); frases.push(pick(AT[m], p.codigo)); }
+  p.disciplinas.forEach(function(d){
+    var fortes=[], fracos=[], genFracos=[];
+    d.dominios.forEach(function(x){ var k=x.dominio.toLowerCase(), v=NV[x.nivel]; soma+=v; n++; var f=FR[k];
+      if(v>=3){ if(f) fortes.push(f[0]); }
+      else { if(f) fracos.push(f[1]); else genFracos.push(k); } });
+    var dn=NV[d.nivel]||2;
+    if(d.disciplina==="Português"||d.disciplina==="Matemática"){
+      if(!fortes.length && !fracos.length){ (dn>=3? outrasBoas : outrasFracas).push(d.disciplina); return; }
+      var t="Em "+d.disciplina+", ";
+      if(fortes.length) t+=fortes.slice(0,2).join("; ")+(fracos.length? ", mas "+fracos[0] : "");
+      else t+=juntarFracos(fracos.slice(0,2));
+      frases.push(t+".");
+    } else (dn>=3? outrasBoas : outrasFracas).push(d.disciplina);
+  });
+  if(outrasBoas.length) frases.push("Revela "+(outrasBoas.length>1?"também ":"")+"bom desempenho em "+juntar(outrasBoas)+".");
+  if(outrasFracas.length) frases.push("Em "+juntar(outrasFracas)+" deve empenhar-se mais para progredir.");
+  var media=n? soma/n : 3, f=FECHO[intercalar?"inter":"fim"][media>=2.75?"bom":"fraco"];
+  frases.push(pick(f, p.codigo+"x"));
+  return frases.map(cap).join(" ");
+}
+function pedirIA(perfis, m){
+  if(!state.sb || !state.user || state.user.id==="demo") return Promise.reject({code:"sem_sessao"});
+  return state.sb.auth.getSession().then(function(r){
+    var tok=r&&r.data&&r.data.session&&r.data.session.access_token; if(!tok) throw {code:"sem_sessao"};
+    return fetch(SUPABASE_URL+"/functions/v1/apreciacoes", {method:"POST", headers:{"Content-Type":"application/json", "Authorization":"Bearer "+tok, "apikey":SUPABASE_KEY},
+      body:JSON.stringify({momento: m.tipo==="intercalar"? "intercalar" : "final", ano: turma().ano, exemplos: state.data.definicoes.exemplosApr||"", alunos: perfis})});
+  }).then(function(res){
+    return res.json().catch(function(){ return {}; }).then(function(j){ if(!res.ok || !j.textos) throw {code: j.error||("http"+res.status)}; return j.textos; });
+  });
+}
+function openPropor(t, m, iv){
+  var alunos=t.alunos.filter(function(a){ return a.ativo!==false; });
+  var kOf=function(a){ return state.turmaId+"|"+m.id+"|"+a.id+"|_apr"; };
+  var vazios=alunos.filter(function(a){ var d=state.data.decisoes[kOf(a)]; return !(d&&d.texto&&d.texto.trim()); }).length;
+  openModal('<h3>Propor textos — '+esc(m.nome)+'</h3>'
+    +'<p>A aplicação escreve uma proposta de apreciação para cada aluno, a partir dos níveis registados'+(m.tipo==="intercalar"?" (só qualitativa, sem menções)":"")+'.</p>'
+    +'<p class="muted">Para a inteligência artificial vão só o código do aluno (A01, A02…) e os níveis de cada domínio. <b>Os nomes nunca saem deste aparelho.</b></p>'
+    +'<label class="row" style="margin:6px 0"><input type="radio" name="pp" value="vazios" checked> Só para os alunos sem texto ('+vazios+')</label>'
+    +'<label class="row" style="margin:6px 0"><input type="radio" name="pp" value="todos"> Para todos ('+alunos.length+'), substituindo o que já está escrito</label>'
+    +'<div class="muted" id="ppMsg" style="min-height:1.2em;margin-top:6px"></div>'
+    +'<div class="modal-foot"><button class="btn btn-ghost" type="button" data-close>Cancelar</button><button class="btn btn-primary" type="button" id="ppGo">✨ Propor</button></div>');
+  $("ppGo").onclick=function(){
+    var todos=document.querySelector('input[name=pp]:checked').value==="todos";
+    var alvo=alunos.filter(function(a){ var d=state.data.decisoes[kOf(a)]; return todos || !(d&&d.texto&&d.texto.trim()); });
+    if(!alvo.length){ $("ppMsg").textContent="Todos os alunos já têm texto."; return; }
+    var perfis=alvo.map(function(a){ return perfilAluno(t, a, iv); });
+    var semDados=perfis.filter(function(p){ return !p.disciplinas.length && !p.atitudes.length; }).length;
+    this.disabled=true; $("ppMsg").textContent="A escrever as propostas…";
+    var aplicar=function(textos, origem){
+      var n=0;
+      alvo.forEach(function(a){ var tx=textos[a.cod]; if(!tx) return; var k=kOf(a); state.data.decisoes[k]=state.data.decisoes[k]||{}; state.data.decisoes[k].texto=tx; state.data.decisoes[k].proposto=origem; n++; });
+      touch(); closeModal(); renderResumo();
+      toast(n+" propostas escritas"+(origem==="local"?" com o modelo simples":"")+". Revê cada uma."+(semDados? " "+semDados+" sem registos ficaram em branco.":""), 5000);
+    };
+    pedirIA(perfis.filter(function(p){ return p.disciplinas.length||p.atitudes.length; }), m).then(function(textos){ aplicar(textos, "ia"); })
+    .catch(function(err){
+      var textos={}; perfis.forEach(function(p){ textos[p.codigo]=textoLocal(p, m.tipo==="intercalar"); });
+      aplicar(textos, "local");
+      if(err && err.code!=="sem_sessao") setTimeout(function(){ toast("A inteligência artificial ainda não está ativa no servidor; usei o modelo simples.", 5000); }, 5200);
+    });
+  };
 }
 function exportCsv(t, m, iv){
   var e=escala(), rows=[["N.º","Aluno"].concat(t.disciplinas.map(function(c){ return c.nome; })).concat(["Apreciação"])];
@@ -685,6 +795,7 @@ function renderDefs(){
     +'</div>'
     +'<div class="card"><h2>Escala das menções</h2><p class="muted">Percentagem mínima de cada menção e o valor que conta cada nível registado na aula.</p>'
     +e.map(function(x,i){ return '<div class="row" style="margin:4px 0"><span class="badge b'+(i+1)+'" style="width:44px;text-align:center">'+esc(x.sigla)+'</span><span style="width:110px">'+esc(x.nome)+'</span><label class="muted">a partir de <input type="number" data-emin="'+i+'" value="'+x.min+'" min="0" max="100" style="width:64px"'+(i===0?" disabled":"")+'>%</label><label class="muted">nível vale <input type="number" data-niv="'+i+'" value="'+d.niveis[i]+'" min="0" max="100" style="width:64px">%</label></div>'; }).join("")+'</div>'
+    +'<div class="card"><h2>Texto automático das apreciações</h2><p class="muted">Cola aqui uma ou duas apreciações verdadeiras, <b>sem nomes</b>, para os textos propostos saírem no estilo da tua escola.</p><textarea id="exApr" rows="4" placeholder="Ex.: Revela interesse pelas atividades e participa de forma adequada. Lê com fluência…">'+esc(d.exemplosApr||"")+'</textarea></div>'
     +'<div class="card"><h2>Google Drive</h2><p class="muted">Os dados da avaliação ficam num ficheiro próprio (“'+DATA_FILE+'”) na pasta “'+esc(d.pasta)+'” da tua Drive, separado das planificações. Os nomes dos alunos nunca saem deste aparelho e da tua Drive.</p>'
     +'<div class="row"><span class="muted">Conta: <b>'+esc(d.conta||"—")+'</b></span><span class="grow"></span>'+(state.drive.status==="ok"? '<span class="pill ok"><span class="dot"></span>Ligada</span>' : '<button class="btn btn-primary btn-sm" type="button" id="drvGo">Entrar com Google</button>')+'</div>'
     +(state.drive.msg? '<p class="muted" style="color:var(--danger)">'+esc(state.drive.msg)+'</p>':"")+'</div>'
@@ -714,6 +825,7 @@ function renderDefs(){
   main.querySelectorAll("[data-niv]").forEach(function(inp){ inp.onchange=function(){ var i=+inp.getAttribute("data-niv"); d.niveis[i]=+inp.value||0; state.data.registos.forEach(function(r){ if(r.nivel===i+1) r.valor=d.niveis[i]; }); touch(); }; });
   if($("drvGo")) $("drvGo").onclick=function(){ driveConnect(true); };
   $("btnOut").onclick=logout;
+  $("exApr").oninput=function(){ d.exemplosApr=this.value; touch(); };
 }
 function logout(){ saveLocal(); if(state.sb) state.sb.auth.signOut().then(function(){ location.reload(); }); else location.reload(); }
 $("btnUser").onclick=function(){ state.view="defs"; renderTabs(); renderMain(); };
