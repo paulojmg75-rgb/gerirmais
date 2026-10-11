@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="Agenda do professor: calendário, horário, tarefas, notas e contactos. Os dados ficam no aparelho e na Drive do professor.">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=gm2">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=gm2">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=gm2">
+<link rel="manifest" href="manifest.webmanifest?v=gm2">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#6b3fa0">
@@ -307,7 +307,7 @@ a.btn{text-decoration:none;color:inherit}
 var SUPABASE_URL = "https://ynbqwvjwbzckpgotjama.supabase.co";
 var SUPABASE_KEY = "sb_publishable_iOoMpE2cG4t6aCXzop8I9w_r7LUUCiF";
 var GOOGLE_CLIENT_ID = "774444020481-v812tdfs5rgs0cll82kp8rmat4jqo7uh.apps.googleusercontent.com";
-var APP_VERSION = "0.7";
+var APP_VERSION = "0.8";
 var LS_BASE = "agenda_v1", PLAN_BASE = "planificacao_semanal_v1", AVAL_BASE = "avaliacao_v1";
 var DATA_FILE = "Agenda_Dados.json";
 var SCOPE = "https://www.googleapis.com/auth/drive.file";
@@ -775,7 +775,7 @@ function baixarIcs(evs, nome){
 }
 /* 2) avisos no próprio aparelho, enquanto a agenda estiver aberta (ou em segundo plano) */
 var swReg=null;
-if("serviceWorker" in navigator && location.protocol==="https:") navigator.serviceWorker.register("sw.js").then(function(r){ swReg=r; }).catch(function(){});
+if("serviceWorker" in navigator && location.protocol==="https:") navigator.serviceWorker.register("sw.js").then(function(r){ swReg=r; try{ r.update(); }catch(e){} }).catch(function(){});
 function avisosLigados(){ return state.data && state.data.definicoes.avisos && window.Notification && Notification.permission==="granted"; }
 function notificar(titulo, corpo, tag){
   try{
