@@ -461,9 +461,42 @@ mark{background:var(--accent-bg);color:inherit;border-radius:3px}
 .fit.bad{color:var(--danger);border-color:var(--danger);background:var(--danger-bg)}
 .fsbox{display:flex;align-items:center;gap:3px}
 .fsbox span{min-width:46px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums;font-size:13px}
+/* ecrã de entrada */
+.splash{position:fixed;inset:0;z-index:99999;background:#eaf4fd;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity .45s ease}
+.splash picture,.splash img{width:100%;height:100%;display:block}
+.splash img{object-fit:cover;object-position:center}
+.splash .splash-go{position:absolute;left:50%;bottom:7%;transform:translateX(-50%);background:#1d4f91;color:#fff;border:0;border-radius:999px;padding:14px 34px;font:600 17px/1 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 6px 18px rgba(16,50,100,.3);cursor:pointer;animation:splashPulse 2s ease-in-out infinite}
+.splash.out{opacity:0;pointer-events:none}
+@keyframes splashPulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.05)}}
+@media (max-width:760px){.splash .splash-go{bottom:15%}}
+@media print{.splash{display:none!important}}
+body.splash-on:not(.splash-auth) .gate{visibility:hidden}
+body.splash-auth .gate{z-index:100000;background:rgba(10,35,80,.42);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+body.splash-auth .gate-card{box-shadow:0 18px 50px rgba(5,25,60,.35)}
+body.splash-auth .splash-go{display:none}
 </style>
 
 <body>
+<div class="splash" id="splash" role="button" tabindex="0" aria-label="Entrar na aplicação">
+  <picture>
+    <source media="(max-width:760px), (orientation:portrait) and (max-width:1100px)" srcset="splash-telemovel.jpg">
+    <img src="splash-pc.jpg" alt="gerirmais.com · Planificação">
+  </picture>
+  <button class="splash-go" type="button">Entrar</button>
+</div>
+<script>
+(function(){
+  var sp=document.getElementById("splash"), b=document.body;
+  function hasSess(){ try{ for(var i=0;i<localStorage.length;i++){ if(/^sb-.*-auth-token$/.test(localStorage.key(i)||"")) return true; } }catch(e){} return false; }
+  var h=location.hash||"", skip=/gTest/.test(h);
+  try{ if(!skip && sessionStorage.getItem("splashVisto")==="1" && hasSess() && !/type=recovery/.test(h)) skip=true; sessionStorage.setItem("splashVisto","1"); }catch(e){}
+  if(skip){ sp.parentNode.removeChild(sp); return; }
+  b.classList.add("splash-on");
+  function go(){ if(window.__splashGo) window.__splashGo(); else { b.classList.remove("splash-on"); sp.parentNode&&sp.parentNode.removeChild(sp); } }
+  sp.addEventListener("click",go);
+  document.addEventListener("keydown",function k(e){ if(!document.getElementById("splash")||b.classList.contains("splash-auth")){ document.removeEventListener("keydown",k); return; } if(e.key==="Enter"||e.key===" "){ e.preventDefault(); go(); } });
+})();
+</script>
 <header class="topbar">
   <button class="ibtn menu-btn" id="btnMenu" type="button" aria-label="Menu" title="Menu">☰</button>
   <div class="brand">
@@ -2062,11 +2095,29 @@ function driveLogout(){
 function scheduleDrive(){
   var d=state.data.definicoes;
   if(!d.driveLigada || state.drive.status!=="ok") return;
-  state.drive.pending=true; renderDrivePill();
+  var dr=state.drive;
+  if(!dr.pending) dr.since=Date.now();
+  dr.pending=true; renderDrivePill();
   if(!d.driveAuto) return;
-  clearTimeout(state.drive.timer);
-  state.drive.timer=setTimeout(function(){ driveSave(false); }, 20000);
+  clearTimeout(dr.timer);
+  /* grava 4 s depois de parar de escrever; se estiver sempre a escrever, grava no máximo a cada 45 s */
+  var wait = (Date.now()-(dr.since||Date.now()) > 45000) ? 0 : 4000;
+  dr.timer=setTimeout(function(){ driveSave(false); }, wait);
 }
+/* rede de segurança: a cada 60 s, se houver alterações por enviar (ou se a última gravação falhou), tenta de novo */
+setInterval(function(){
+  if(!state.data || !state.drive) return;
+  var d=state.data.definicoes, dr=state.drive;
+  saveLocal();
+  if(!d.driveLigada || !d.driveAuto || dr.saving || dr.mismatch || !dr.pending) return;
+  if(dr.status==="error" && auth.token && Date.now()<auth.exp) dr.status="ok";
+  if(dr.status==="ok") driveSave(false);
+}, 60000);
+window.addEventListener("online", function(){
+  var dr=state.drive; if(!state.data || !dr || !dr.pending) return;
+  if(dr.status==="error" && auth.token && Date.now()<auth.exp) dr.status="ok";
+  if(dr.status==="ok") driveSave(false);
+});
 function driveSave(manual){
   var d=state.data.definicoes, dr=state.drive;
   saveLocal();
@@ -2311,7 +2362,9 @@ function doPrint(weeks){
   if(!left) return go();
   imgs.forEach(function(im){ if(im.complete){ if(--left===0) go(); } else im.onload=im.onerror=function(){ if(--left===0) go(); }; });
 }
-window.addEventListener("afterprint", function(){ $("printArea").innerHTML=""; if(state.oldTitle) document.title=state.oldTitle; });
+/* No Android o "afterprint" dispara logo, antes da pré-visualização estar pronta:
+   não apagar a folha aqui (fica escondida no ecrã e é substituída na impressão seguinte). */
+window.addEventListener("afterprint", function(){ setTimeout(function(){ if(state.oldTitle) document.title=state.oldTitle; }, 1500); });
 
 /* =========================================================
    EXPORTAR (Word / PDF)
@@ -2434,7 +2487,11 @@ $("btnUndo").onclick=doUndo; $("btnRedo").onclick=doRedo;
     else if(android) steps='<ol class="inst"><li>Abre este site no <b>Chrome</b>.</li><li>Carrega nos <b>três pontos ⋮</b> no canto superior direito.</li><li>Escolhe <b>Instalar aplicação</b> ou <b>Adicionar ao ecrã principal</b>.</li><li>Confirma. O ícone aparece no ecrã do telemóvel.</li></ol>';
     else if(safariMac) steps='<ol class="inst"><li>No Safari, abre o menu <b>Ficheiro</b>.</li><li>Escolhe <b>Adicionar à Dock…</b> e confirma.</li></ol>';
     else if(firefox) steps='<p>O Firefox não cria ícones de aplicações. Abre este site no <b>Google Chrome</b> ou no <b>Microsoft Edge</b> e carrega outra vez no botão <b>📲</b>.</p>';
-    else steps='<ol class="inst"><li>Usa o <b>Google Chrome</b> ou o <b>Microsoft Edge</b>.</li><li>Na barra de endereço, à direita, carrega no ícone de <b>instalar</b> (um ecrã com uma seta ⬇️), ou abre o menu <b>⋮</b> → <b>Transmitir, guardar e partilhar</b> → <b>Instalar página como aplicação…</b></li><li>Carrega em <b>Instalar</b>. Fica um ícone no ambiente de trabalho e no menu Iniciar.</li></ol><p>Se o botão não aparecer, recarrega a página (Ctrl+F5) e tenta de novo.</p>';
+    else steps='<ol class="inst"><li>Usa o <b>Google Chrome</b> ou o <b>Microsoft Edge</b>.</li><li>Na barra de endereço, à direita, carrega no ícone de <b>instalar</b> (um ecrã com uma seta ⬇️), ou abre o menu <b>⋮</b> → <b>Transmitir, guardar e partilhar</b> → <b>Instalar página como aplicação…</b></li><li>Carrega em <b>Instalar</b>. Fica um ícone no ambiente de trabalho e no menu Iniciar.</li></ol><p>Se o botão não aparecer, recarrega a página (Ctrl+F5) e tenta de novo.</p>'
+      +'<h4 style="margin:14px 0 6px">Apagaste o ícone do ambiente de trabalho e já não deixa instalar?</h4>'
+      +'<p>Apagar o ícone não desinstala a aplicação: ela continua instalada no Chrome, por isso não volta a aparecer "Instalar". Para recriar o ícone:</p>'
+      +'<ol class="inst"><li>No Chrome, escreve na barra de endereço <b>chrome://apps</b> e carrega em Enter.</li><li>Clica com o <b>botão direito</b> em <b>Planificação</b>.</li><li>Escolhe <b>Criar atalhos…</b>, marca <b>Ambiente de trabalho</b> e carrega em <b>Criar</b>.</li></ol>'
+      +'<p>No <b>Edge</b>: escreve <b>edge://apps</b>, carrega nos <b>⋯</b> da Planificação e escolhe <b>Fixar no ambiente de trabalho</b> (ou <b>Criar atalho no ambiente de trabalho</b>).</p>';
     openModal('<h3>Criar ícone da aplicação</h3><p>Assim abres a Planificação com um clique, como qualquer outro programa, sem procurar o site.</p>'+steps+'<div class="modal-foot"><button class="btn btn-primary" type="button" data-close>Percebi</button></div>');
   });
 })();
@@ -2546,6 +2603,8 @@ $("planSel").onchange=function(e){
   state.planId=e.target.value; state.semanaId=null; state.view="semana"; renderAll();
 };
 window.addEventListener("beforeunload", saveLocal);
+window.addEventListener("pagehide", saveLocal);
+document.addEventListener("focusout", function(){ if(state.data){ clearTimeout(state.localTimer); saveLocal(); } });
 document.addEventListener("visibilitychange", function(){ if(document.hidden && state.data){ saveLocal(); if(state.drive.pending && state.data.definicoes.driveAuto) driveSave(false); } });
 try{ document.execCommand("defaultParagraphSeparator", false, "div"); }catch(e){}
 
@@ -2562,6 +2621,21 @@ function authMsg(e){
   if(/same.*password|different from the old/i.test(m)) return "A nova password tem de ser diferente da anterior.";
   if(/failed to fetch|network/i.test(m)) return "Sem ligação à internet.";
   return m||"Algo correu mal. Tenta outra vez.";
+}
+function splashClose(){
+  var sp=$("splash"); document.body.classList.remove("splash-on","splash-auth");
+  if(sp){ sp.classList.add("out"); setTimeout(function(){ if(sp.parentNode) sp.parentNode.removeChild(sp); },500); }
+}
+window.__splashGo=function(){
+  if(state.started && !state.recovering){ splashClose(); return; }
+  document.body.classList.add("splash-auth");
+  var g=$("gate"); if(g.hidden || !g.innerHTML) gate(firstMode());
+  var f=g.querySelector("input"); if(f) setTimeout(function(){ try{ f.focus(); }catch(e){} },50);
+};
+function firstMode(){
+  try{ if(localStorage.getItem("planificacao_jaEntrou")) return "login";
+    for(var i=0;i<localStorage.length;i++){ if((localStorage.key(i)||"").indexOf(LS_BASE+":")===0) return "login"; } }catch(e){}
+  return "signup";
 }
 function siteURL(){ return location.origin+location.pathname; }
 function gate(mode, info){
@@ -2600,7 +2674,7 @@ function gate(mode, info){
   if($("gForgot2")) $("gForgot2").onclick=function(){ gate("forgot"); };
   if($("gBack")) $("gBack").onclick=function(){ gate("login"); };
   var f=$("gForm"); if(!f) return;
-  var first=f.querySelector("input"); if(first) first.focus();
+  var first=f.querySelector("input"); if(first && !(document.body.classList.contains("splash-on") && !document.body.classList.contains("splash-auth"))) first.focus();
   f.addEventListener("submit", function(e){
     e.preventDefault();
     var err=$("gErr"), btn=f.querySelector("button[type=submit]");
@@ -2635,6 +2709,8 @@ function gate(mode, info){
 function startApp(user){
   if(state.started && state.user && user && state.user.id===user.id){ $("gate").hidden=true; document.body.classList.remove("locked"); return; }
   state.user=user; state.started=true;
+  try{ localStorage.setItem("planificacao_jaEntrou","1"); }catch(e){}
+  if(document.body.classList.contains("splash-auth")) splashClose();
   var email=(user.email||"").trim().toLowerCase();
   LS_KEY = LS_BASE+":"+(email||user.id||"local");
   state.data = loadLocal();
@@ -2679,8 +2755,8 @@ window.__plan = {startApp:function(u){ return startApp(u); }, showRecover:functi
     state.sb.auth.getSession().then(function(r){
       var s=r && r.data && r.data.session;
       if(state.recovering) return;
-      if(s && s.user) startApp(s.user); else gate("login");
-    }).catch(function(){ gate("login"); });
+      if(s && s.user) startApp(s.user); else gate(firstMode());
+    }).catch(function(){ gate(firstMode()); });
   } else {
     gate("login");
   }
