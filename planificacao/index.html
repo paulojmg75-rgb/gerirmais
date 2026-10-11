@@ -1929,7 +1929,7 @@ function driveStatusHTML(){
   if(dr.status==="ok") return '<div class="banner ok"><span class="grow">Ligada à Drive de <b>'+esc(dr.owner)+'</b>, pasta <b>'+esc(d.pasta)+'</b>.'+(dr.lastSave? ' Última gravação às '+hm(dr.lastSave)+'.' : "")+'</span>'+(dr.folderId? '<a class="btn btn-ghost btn-sm" href="https://drive.google.com/drive/folders/'+esc(dr.folderId)+'" target="_blank" rel="noopener">Abrir pasta</a>':"")+'</div>';
   if(dr.status==="error") return '<div class="banner err"><span class="grow">'+esc(dr.msg)+'</span></div>';
   if(dr.status==="busy") return '<div class="banner"><span class="grow">A falar com a Google…</span></div>';
-  return '<div class="banner"><span class="grow">'+(d.driveLigada? "Por segurança, a Google pede para entrares de novo em cada sessão. Carrega em “Entrar com Google”." : "Ainda não está ligada à Drive. Até lá, tudo fica guardado neste computador.")+'</span></div>';
+  return '<div class="banner"><span class="grow">'+(d.driveLigada? "A ligação à Drive é retomada sozinha ao primeiro clique na aplicação (pode abrir e fechar uma pequena janela da Google). Se não acontecer, carrega em “Entrar com Google”." : "Ainda não está ligada à Drive. Até lá, tudo fica guardado neste computador.")+'</span></div>';
 }
 function loadLogo(file){
   var fr=new FileReader();
@@ -1972,7 +1972,26 @@ function askConfirm(title, text, okLabel, fn){
 var SCOPE="https://www.googleapis.com/auth/drive.file";
 var API="https://www.googleapis.com/drive/v3", UP="https://www.googleapis.com/upload/drive/v3";
 var FOLDER_MIME="application/vnd.google-apps.folder";
-var auth={client:null, token:null, exp:0, gisReady:false};
+var auth={client:null, token:null, exp:0, gisReady:false, lastTry:0};
+/* guarda o acesso da Google (válido ~1 hora) para não pedir de novo ao recarregar ou reabrir a app */
+function tokKey(){ return "planificacao_gtok:"+((state.user&&state.user.email)||"local").toLowerCase(); }
+function tokSave(){ try{ if(auth.token && Date.now()<auth.exp) localStorage.setItem(tokKey(), JSON.stringify({t:auth.token, e:auth.exp})); else localStorage.removeItem(tokKey()); }catch(e){} }
+function tokLoad(){ try{ var o=JSON.parse(localStorage.getItem(tokKey())||"null"); if(o && o.t && Date.now()<o.e){ auth.token=o.t; auth.exp=o.e; return true; } }catch(e){} return false; }
+/* liga à Drive sozinho: sem janela se o acesso guardado ainda valer; senão aproveita o primeiro clique (o navegador só deixa abrir a janela da Google depois de um clique) */
+function driveAuto(gesture){
+  if(!state.data || !state.started) return;
+  var d=state.data.definicoes, dr=state.drive;
+  if(!d.driveLigada || dr.mismatch || dr.saving || dr.status==="busy") return;
+  if(dr.status==="ok" && auth.token && Date.now()<auth.exp) return;
+  if(auth.token && Date.now()<auth.exp){ driveConnect(false); return; }
+  if(!gesture || Date.now()-auth.lastTry<90000) return;
+  auth.lastTry=Date.now(); driveConnect(true);
+}
+document.addEventListener("pointerdown", function(e){
+  if(!state.started || document.body.classList.contains("splash-on")) return;
+  if(e.target.closest(".ed,input,textarea,select,[contenteditable],#drivePill,#drvConnect,#drvSwitch,#drvUseOwner,.modal,.gate")) return;
+  driveAuto(true);
+}, true);
 
 function clientId(){
   var c=GOOGLE_CLIENT_ID;
@@ -2005,7 +2024,7 @@ function getToken(interactive, forceChoose){
       var d=state.data.definicoes;
       auth.client=google.accounts.oauth2.initTokenClient({
         client_id:clientId(), scope:SCOPE, login_hint:d.conta||undefined,
-        callback:function(r){ if(r && r.access_token){ auth.token=r.access_token; auth.exp=Date.now()+((+r.expires_in||3600)-120)*1000; res(auth.token); } else rej({code:(r&&r.error)||"auth"}); },
+        callback:function(r){ if(r && r.access_token){ auth.token=r.access_token; auth.exp=Date.now()+((+r.expires_in||3600)-120)*1000; tokSave(); res(auth.token); } else rej({code:(r&&r.error)||"auth"}); },
         error_callback:function(err){ rej({code:(err&&err.type)||"auth", message:err&&err.message}); }
       });
       auth.client.requestAccessToken({prompt: forceChoose? "select_account" : "", login_hint:d.conta||undefined});
@@ -2018,7 +2037,7 @@ function api(method, url, body, headers, as){
     var h=Object.assign({Authorization:"Bearer "+tok}, headers||{});
     return fetch(url,{method:method, headers:h, body:body});
   }).then(function(r){
-    if(r.status===401){ auth.token=null; throw {code:"auth"}; }
+    if(r.status===401){ auth.token=null; tokSave(); throw {code:"auth"}; }
     if(!r.ok) return r.text().then(function(t){ var m=""; try{ m=JSON.parse(t).error.message; }catch(e){ m=t.slice(0,160); } throw {code:"http", status:r.status, message:m}; });
     if(as==="buf") return r.arrayBuffer();
     if(as==="text") return r.text();
@@ -2110,7 +2129,7 @@ function driveConnect(interactive, choose){
 function driveLogout(){
   var d=state.data.definicoes;
   try{ if(auth.token && window.google) google.accounts.oauth2.revoke(auth.token, function(){}); }catch(e){}
-  auth.token=null; auth.exp=0;
+  auth.token=null; auth.exp=0; tokSave();
   d.driveLigada=false; state.drive={status:"local", msg:"", folderId:null, fileId:null, owner:"", lastSave:null, saving:false, timer:null, pending:false, mismatch:false};
   saveLocal(); renderDrivePill(); renderMain(); toast("Sessão da Google terminada neste computador.");
 }
@@ -2659,7 +2678,7 @@ function splashClose(){
   if(sp){ sp.classList.add("out"); setTimeout(function(){ if(sp.parentNode) sp.parentNode.removeChild(sp); },500); }
 }
 window.__splashGo=function(){
-  if(state.started && !state.recovering){ splashClose(); return; }
+  if(state.started && !state.recovering){ splashClose(); driveAuto(true); return; }
   document.body.classList.add("splash-auth");
   var g=$("gate"); if(g.hidden || !g.innerHTML) gate(firstMode());
   var f=g.querySelector("input"); if(f) setTimeout(function(){ try{ f.focus(); }catch(e){} },50);
@@ -2760,10 +2779,10 @@ function startApp(user){
   $("userBox").hidden=false; $("userEmail").textContent=user.email||"sem conta";
   $("userAv").textContent=((user.email||"?").trim()[0]||"?").toUpperCase(); $("userAv").title=(user.email||"Sem conta")+" · clica para sair";
   renderAll();
-  if(state.data.definicoes.driveLigada) renderDrivePill();
+  if(state.data.definicoes.driveLigada){ renderDrivePill(); if(tokLoad()) driveConnect(false); }
 }
 $("btnLogout").onclick=function(){
-  saveLocal();
+  saveLocal(); try{ localStorage.removeItem(tokKey()); }catch(e){}
   if(state.sb) state.sb.auth.signOut().then(function(){ location.reload(); }); else location.reload();
 };
 $("drivePill").addEventListener("click", function(){
