@@ -1,0 +1,2561 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Planificação semanal para professores: tabela editável, cabeçalho com logótipo da escola, gravação na Google Drive, Word e PDF.">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#1f4f8f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Planificação">
+<title>Planificação Semanal</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Source+Sans+3:wght@400;500;600;700&family=Tinos:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Layout: barra de topo · coluna das semanas à esquerda · folha A4 deitada editável ao centro, tal como sai no Word */
+:root{
+  --bg:#eef1f5; --surface:#ffffff; --surface-2:#e4e9f0; --paper:#ffffff;
+  --ink:#16202e; --ink-muted:#5a6676; --line:#d3dae4; --line-strong:#b4bfcd;
+  --primary:#1f4f8f; --primary-dark:#163a6a; --primary-contrast:#ffffff;
+  --accent:#f2c230; --accent-ink:#3d2f00; --accent-bg:#fdf3cf;
+  --ok:#2c7a4b; --ok-bg:#e2f3e8; --warn:#9a5b00; --warn-bg:#fbefd9; --danger:#b23a2e; --danger-bg:#f8e3e0;
+  --head-fill:#dce6f2; --state-fill:#f1f1f1;
+  --shadow:0 1px 2px rgba(18,32,52,.06),0 10px 28px -14px rgba(18,32,52,.28);
+  --font-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --font-ui:'Source Sans 3','Segoe UI',Helvetica,Arial,sans-serif;
+  --font-doc:'Tinos','Times New Roman',Times,serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1622; --surface:#172131; --surface-2:#1f2b3e; --paper:#fbfbf9;
+    --ink:#e8edf4; --ink-muted:#9fadc0; --line:#2b3a50; --line-strong:#3c4e68;
+    --primary:#6b9be0; --primary-dark:#4c7cc4; --primary-contrast:#0b1422;
+    --accent:#f2c230; --accent-ink:#2a2000; --accent-bg:#3a3010;
+    --ok:#6cc893; --ok-bg:#183326; --warn:#f0b35a; --warn-bg:#3a2b12; --danger:#f08a7e; --danger-bg:#3d1f1b;
+    --head-fill:#dce6f2; --state-fill:#f1f1f1;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px -14px rgba(0,0,0,.6);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1622; --surface:#172131; --surface-2:#1f2b3e; --paper:#fbfbf9;
+  --ink:#e8edf4; --ink-muted:#9fadc0; --line:#2b3a50; --line-strong:#3c4e68;
+  --primary:#6b9be0; --primary-dark:#4c7cc4; --primary-contrast:#0b1422;
+  --accent:#f2c230; --accent-ink:#2a2000; --accent-bg:#3a3010;
+  --ok:#6cc893; --ok-bg:#183326; --warn:#f0b35a; --warn-bg:#3a2b12; --danger:#f08a7e; --danger-bg:#3d1f1b;
+  --head-fill:#dce6f2; --state-fill:#f1f1f1;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px -14px rgba(0,0,0,.6);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-ui);font-size:14.5px;line-height:1.45}
+h1,h2,h3{font-family:var(--font-display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---------- topo ---------- */
+.topbar{display:flex;align-items:center;gap:12px;padding:10px 18px;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:30;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand-mark{width:34px;height:34px;border-radius:8px;background:var(--primary);color:var(--primary-contrast);display:grid;place-items:center;font-family:var(--font-display);font-weight:800;font-size:17px;flex:none;overflow:hidden}
+.brand-mark.has-logo{background:#fff;border:1px solid var(--line)}
+.brand-mark img{max-width:30px;max-height:30px;object-fit:contain}
+.brand h1{font-size:18px;font-weight:800;line-height:1.1}
+.brand .sub{font-size:12px;color:var(--ink-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-right{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;border:1px solid var(--line-strong);color:var(--ink-muted);background:var(--surface);white-space:nowrap}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:var(--ink-muted)}
+.pill.ok{color:var(--ok);border-color:var(--ok);background:var(--ok-bg)} .pill.ok .dot{background:var(--ok)}
+.pill.warn{color:var(--warn);border-color:var(--warn);background:var(--warn-bg)} .pill.warn .dot{background:var(--warn)}
+.pill.err{color:var(--danger);border-color:var(--danger);background:var(--danger-bg)} .pill.err .dot{background:var(--danger)}
+.pill.busy .dot{animation:pulse 1s infinite alternate}
+@keyframes pulse{from{opacity:1}to{opacity:.2}}
+
+/* ---------- botões ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid transparent;border-radius:8px;padding:8px 13px;font-weight:600;font-size:13.5px;white-space:nowrap;background:none}
+.btn-primary{background:var(--primary);color:var(--primary-contrast)}
+.btn-primary:hover{background:var(--primary-dark)}
+.btn-accent{background:var(--accent);color:var(--accent-ink)}
+.btn-accent:hover{filter:brightness(.95)}
+.btn-ghost{border-color:var(--line-strong);background:var(--surface)}
+.btn-ghost:hover{background:var(--surface-2)}
+.btn-danger{border-color:var(--danger);color:var(--danger);background:var(--surface)}
+.btn-danger:hover{background:var(--danger-bg)}
+.btn-sm{padding:5px 9px;font-size:12.5px;border-radius:7px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.icon-btn{border:1px solid transparent;background:none;border-radius:6px;padding:2px 6px;font-size:13px;line-height:1.3;color:var(--ink-muted)}
+.icon-btn:hover{background:var(--surface-2);color:var(--ink);border-color:var(--line)}
+.icon-btn.del:hover{background:var(--danger-bg);color:var(--danger);border-color:var(--danger)}
+
+/* ---------- estrutura ---------- */
+.shell{display:flex;min-height:calc(100% - 56px)}
+.side{width:268px;flex:none;background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;gap:0}
+.side-block{padding:14px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.side-label{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-muted);display:flex;justify-content:space-between;align-items:center}
+.plan-row-top{display:grid;grid-template-columns:1.2fr 1fr;gap:6px;align-items:stretch}
+.plan-row-top select{min-width:0;font-size:12.5px;padding:6px 4px;height:auto}
+.nav-week{border:1px solid var(--line-strong);background:var(--surface);border-radius:8px;padding:5px 8px;font-size:12px;font-weight:700;line-height:1.2;color:var(--ink);text-align:center;white-space:normal}
+.nav-week:hover{background:var(--surface-2)}
+.nav-week.active{background:var(--primary);border-color:var(--primary);color:var(--primary-contrast)}
+.side select,.side input{width:100%;border:1px solid var(--line-strong);border-radius:8px;padding:7px 9px;background:var(--bg)}
+.week-list{display:flex;flex-direction:column;gap:2px;max-height:110px;overflow-y:auto;scrollbar-width:thin}
+.week-item{display:flex;flex-direction:row;align-items:baseline;justify-content:space-between;gap:8px;text-align:left;border:1px solid transparent;background:none;border-radius:8px;padding:6px 10px;min-height:34px}
+.week-item:hover{background:var(--surface-2)}
+.week-item.active{background:var(--surface-2);border-color:var(--line-strong)}
+.week-item .w1{font-weight:700;font-size:13.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.week-item .w2{font-size:11.5px;color:var(--ink-muted);white-space:nowrap}
+.snip-list{display:flex;flex-direction:column;gap:5px;max-height:330px;overflow-y:auto}
+.snip{display:flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:8px;padding:5px 6px 5px 10px;background:var(--bg)}
+.snip .t{flex:1;min-width:0;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.side-help{font-size:12px;color:var(--ink-muted)}
+.side-nav{display:flex;flex-direction:column;gap:2px;padding:10px 14px}
+.side-nav button{text-align:left;border:none;background:none;padding:7px 8px;border-radius:7px;font-weight:600;color:var(--ink-muted)}
+.side-nav button:hover,.side-nav button.active{background:var(--surface-2);color:var(--ink)}
+
+.main{flex:1;min-width:0;padding:18px 22px 60px;display:flex;flex-direction:column;gap:14px}
+
+/* barra de ferramentas */
+.tools{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:5px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:6px 8px;scrollbar-width:thin;position:sticky;top:calc(env(safe-area-inset-top,0px) + 58px);z-index:20;box-shadow:var(--shadow)}
+.tools .grp{display:flex;gap:4px;align-items:center}
+.tools .sep{width:1px;align-self:stretch;background:var(--line);margin:0 4px}
+.fmt{min-width:32px;height:32px;border:1px solid var(--line);border-radius:7px;background:var(--surface);font-weight:700}
+.fmt:hover{background:var(--surface-2)}
+.tools .grow{flex:1}
+.tools .grp{flex:none}
+.tools .fmt{min-width:30px;height:30px}
+.tools .btn-sm{padding:5px 8px}
+.tools .sep{margin:0 2px}
+.tools .fit{flex:none;padding:3px 8px;font-size:12px}
+.trash{font-size:16px;padding:3px 8px;flex:none}
+.top-export{display:flex;gap:6px}
+.cfg-head{display:flex;flex-direction:column;gap:10px;max-width:880px;width:100%}
+.cfg-head h2{font-size:24px}
+.cfg-nav{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line-strong);background:var(--surface);border-radius:99px;padding:6px 12px;font-size:13px;font-weight:600}
+.chip:hover{background:var(--surface-2)}
+.panel{scroll-margin-top:70px}
+.ibtn{width:34px;height:34px;display:inline-grid;place-items:center;border:1px solid var(--line-strong);border-radius:8px;background:var(--surface);color:var(--ink);padding:0}
+.ibtn:hover:not([disabled]){background:var(--surface-2)}
+.ibtn.on{background:var(--primary);color:var(--primary-contrast);border-color:var(--primary)}
+.ibtn[hidden]{display:none!important}
+.ibtn.spin svg{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ibtn[disabled]{opacity:.4;cursor:not-allowed}
+#btnInstall{width:34px;height:34px;padding:0}
+.doc-btn{gap:6px}
+.doc-btn svg{flex:none}
+.tsep{width:1px;height:24px;background:var(--line)}
+.btn-xs{padding:3px 10px;font-size:12px;border-radius:7px;text-transform:none;letter-spacing:0}
+.side-label .cnt{color:var(--ink-muted);font-weight:600;margin-left:4px}
+.doc-menu{display:flex;flex-direction:column;gap:8px}
+.dm{display:flex;gap:12px;align-items:center;text-align:left;border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:12px 14px}
+.dm:hover:not([disabled]){background:var(--surface-2);border-color:var(--line-strong)}
+.dm[disabled]{opacity:.5;cursor:not-allowed}
+.dm-i{font-size:22px}
+.dm b{display:block}
+.dm small{color:var(--ink-muted);font-size:12.5px}
+.fw-list{display:flex;flex-direction:column;gap:4px;max-height:300px;overflow-y:auto}
+.imp-sec{display:flex;flex-direction:column;gap:6px;padding-top:6px}
+.imp-h{display:flex;justify-content:space-between;align-items:center}
+.imp-list{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto}
+.inst{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.top-export[hidden]{display:none!important}
+
+.banner{border:1px solid var(--line-strong);border-radius:10px;padding:10px 14px;background:var(--surface);font-size:13.5px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.banner .grow{flex:1;min-width:220px}
+.banner.warn{border-color:var(--warn);background:var(--warn-bg);color:var(--warn)}
+.banner.err{border-color:var(--danger);background:var(--danger-bg);color:var(--danger)}
+.banner.ok{border-color:var(--ok);background:var(--ok-bg);color:var(--ok)}
+.banner b{color:inherit}
+
+/* ---------- a folha ---------- */
+.sheet-wrap{overflow-x:auto;border-radius:6px}
+.sheet{background:var(--paper);color:#111;min-width:980px;padding:26px 30px 18px;box-shadow:var(--shadow);border:1px solid #c9ced6;font-family:var(--font-doc);display:flex;flex-direction:column;gap:10px;color-scheme:light}
+.doc-head{display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;border-bottom:2px solid #1f3d6b;padding-bottom:8px;cursor:pointer}
+.doc-head:hover{background:#f6f8fb}
+.doc-logo{width:120px;height:56px;display:grid;place-items:center;border:1px dashed #9aa6b6;border-radius:6px;font-family:var(--font-ui);font-size:11px;color:#6a7686;text-align:center;line-height:1.2}
+.doc-logo.has{border:none}
+.doc-logo img{max-width:120px;max-height:56px;object-fit:contain}
+.doc-escola{font-weight:700;font-size:16px;color:#1f3d6b;line-height:1.2}
+.doc-agr{font-size:12px;color:#444}
+.doc-right{text-align:right;font-size:12.5px;line-height:1.35;color:#222}
+.doc-right b{font-size:14px;color:#1f3d6b}
+.ph{color:#a0461e;font-style:italic}
+.week-title{text-align:center;font-weight:700;font-size:14px;color:#111;margin:2px 0 0}
+
+table.plan{border-collapse:collapse;width:100%;table-layout:fixed;font-size:13px}
+table.plan td,table.plan th{border:1px solid #555;vertical-align:top;padding:0}
+table.plan th{background:var(--head-fill);font-weight:700;text-align:center;padding:4px 6px 6px}
+.col-tools{display:flex;justify-content:space-between;align-items:center;gap:2px;font-family:var(--font-ui);font-weight:400;margin-bottom:3px}
+.col-tools .icon-btn{color:#4b586a;padding:1px 5px;font-size:12px}
+.col-tools .icon-btn:hover{background:#c7d4e6;border-color:#9fb1c9;color:#111}
+.col-tools select{font-size:11.5px;border:1px solid #9fb1c9;border-radius:5px;background:#fff;color:#222;padding:1px 2px;max-width:92px}
+.day-name,.day-date,.day-aula{width:100%;border:1px solid transparent;background:transparent;text-align:center;font-family:var(--font-doc);color:#111;border-radius:4px;padding:1px 2px}
+.day-name{font-weight:700;font-size:14px}
+.day-date{font-weight:700;font-size:13px}
+.day-name:hover,.day-date:hover,.day-aula:hover,.day-name:focus,.day-date:focus,.day-aula:focus{border-color:#9fb1c9;background:#fff}
+.aula-row td{text-align:center;font-weight:700;padding:3px 4px}
+.aula-wrap{display:flex;align-items:center;justify-content:center;gap:2px}
+.aula-wrap .day-aula{width:52px;font-weight:700;font-size:13px}
+.band td{background:#eef2f7;padding:2px 6px}
+.band-wrap{display:flex;align-items:center;gap:6px}
+.band input{flex:1;border:1px dashed transparent;background:transparent;font-family:var(--font-doc);font-weight:700;font-size:13px;color:#111;padding:2px 4px;border-radius:4px}
+.band input::placeholder{color:#8692a2;font-weight:400;font-style:italic}
+.band input:hover,.band input:focus{border-color:#9fb1c9;background:#fff}
+.cell{position:relative}
+.cell.estado{background:var(--state-fill)}
+.estado-tag{text-align:center;font-weight:700;font-size:14px;padding:6px 4px 0;color:#7a1f14;letter-spacing:.02em}
+.ed{min-height:120px;padding:6px 7px 18px;outline:none;font-family:var(--font-doc);font-size:13px;line-height:1.35;color:#111;word-wrap:break-word;overflow-wrap:anywhere}
+.ed:focus{box-shadow:inset 0 0 0 2px #f2c230;background:#fffdf3}
+.ed div{min-height:1em}
+.ed:empty::before{content:attr(data-ph);color:#9aa3af;font-style:italic}
+.cell-copy{position:absolute;right:3px;bottom:2px;font-family:var(--font-ui);font-size:11px;border:1px solid #c9d2de;background:#fff;color:#4b586a;border-radius:5px;padding:0 5px;opacity:0;transition:opacity .15s}
+.cell:hover .cell-copy,.cell:focus-within .cell-copy{opacity:1}
+.cell-copy:hover{background:#fdf3cf;border-color:#d9b02a;color:#111}
+.notes{display:grid;gap:0;border:1px solid #555;border-top:none}
+.note{border-right:1px solid #555;min-width:0;display:flex;flex-direction:column}
+.note:last-child{border-right:none}
+.note-head{display:flex;align-items:center;gap:4px;padding:3px 5px 0}
+.note-head input{flex:1;min-width:0;border:1px solid transparent;background:transparent;font-family:var(--font-doc);font-weight:700;font-size:13px;color:#111;padding:2px 3px;border-radius:4px}
+.note-head input:hover,.note-head input:focus{border-color:#9fb1c9;background:#fff}
+.note .ed{min-height:80px}
+.note-head .icon-btn{color:#4b586a}
+.doc-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:1px solid #1f3d6b;padding-top:5px;font-size:12px;color:#333;cursor:pointer}
+.doc-foot:hover{background:#f6f8fb}
+.sheet-add{display:flex;gap:8px;flex-wrap:wrap;font-family:var(--font-ui)}
+.sheet-add .btn-ghost{background:#fff;color:#1f3d6b;border-color:#b6c3d4}
+.sheet-add .btn-ghost:hover{background:#eef2f7}
+
+/* ---------- definições ---------- */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:14px;max-width:880px;width:100%}
+.panel h2{font-size:20px}
+.panel h3{font-size:15px;color:var(--primary)}
+.panel p{margin:0;color:var(--ink-muted);font-size:13.5px;max-width:68ch}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 16px}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-size:12.5px;font-weight:600;color:var(--ink-muted)}
+.field input,.field select{border:1px solid var(--line-strong);border-radius:8px;padding:8px 10px;background:var(--bg);width:100%}
+.field .help{font-size:12px;color:var(--ink-muted)}
+.logo-box{display:flex;gap:16px;align-items:center;flex-wrap:wrap;border:1px dashed var(--line-strong);border-radius:12px;padding:12px;background:var(--bg)}
+.logo-prev{width:160px;height:84px;background:#fff;border:1px solid var(--line);border-radius:8px;display:grid;place-items:center;overflow:hidden;color:#6a7686;font-size:12px}
+.logo-prev img{max-width:150px;max-height:76px;object-fit:contain}
+.file-btn{position:relative;overflow:hidden}
+.file-btn input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.plan-row{display:flex;gap:8px;align-items:center;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.plan-row input{flex:1;min-width:0;border:1px solid var(--line-strong);border-radius:7px;padding:6px 8px;background:var(--surface)}
+.kv{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;background:var(--surface-2);padding:1px 6px;border-radius:5px}
+
+/* ---------- modais ---------- */
+.modal{position:fixed;inset:0;background:rgba(10,16,26,.55);display:none;align-items:center;justify-content:center;padding:16px;z-index:100}
+.modal.open{display:flex}
+.modal-box{background:var(--surface);border-radius:14px;padding:20px 22px;width:min(560px,100%);max-height:92vh;overflow-y:auto;display:flex;flex-direction:column;gap:12px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.modal-box h3{font-size:19px}
+.modal-box p{margin:0;color:var(--ink-muted);font-size:13.5px}
+.modal-foot{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;padding-top:8px;border-top:1px solid var(--line)}
+.choice{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer}
+.choice:hover{background:var(--surface-2)}
+.choice input{margin-top:3px}
+.choice b{display:block}
+.choice span{font-size:12.5px;color:var(--ink-muted)}
+.snip-ed{min-height:140px;border:1px solid var(--line-strong);border-radius:8px;padding:8px 10px;background:#fff;color:#111;font-family:var(--font-doc);font-size:14px;outline:none}
+.snip-ed:focus{border-color:var(--primary)}
+.progress{font-size:13px;color:var(--ink-muted);min-height:18px}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,10px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:600;font-size:13.5px;opacity:0;pointer-events:none;transition:all .2s;z-index:200;max-width:min(520px,calc(100% - 32px));text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* área escondida para gerar PDF sem Drive */
+#pdfStage{position:fixed;left:-20000px;top:0;width:1100px;background:#fff}
+
+@media (max-width:860px){
+  .shell{flex-direction:column}
+  .side{width:100%;border-right:none;border-bottom:1px solid var(--line)}
+  .week-list{max-height:110px}
+  .snip-list{max-height:160px}
+  .main{padding:14px 16px 50px}
+  .tools{top:auto;position:static}
+  .topbar{padding:10px 16px}
+}
+
+/* ---------- entrada (conta) ---------- */
+body.locked{overflow:hidden}
+.gate{position:fixed;inset:0;z-index:300;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px 16px;overflow-y:auto}
+.gate-card{width:min(420px,100%);background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:26px 24px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:14px}
+.gate-brand{display:flex;gap:12px;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.gate-brand h1{font-size:20px;font-weight:800}
+.gate-brand .sub{font-size:12.5px;color:var(--ink-muted)}
+.gate-card h2{font-size:18px}
+.gate-card form{display:flex;flex-direction:column;gap:12px}
+.gate-p{margin:0;color:var(--ink-muted);font-size:13.5px}
+.gate-err{color:var(--danger);font-size:13px;font-weight:600;min-height:18px}
+.gate-go{padding:11px 14px;font-size:15px}
+.gate-links{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.linkish{border:none;background:none;color:var(--primary);font-weight:600;padding:4px 0;text-decoration:underline;text-underline-offset:3px}
+.undo-grp{display:flex;gap:4px}
+.help-fab{position:fixed;right:20px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:350;width:56px;height:56px;border-radius:50%;border:none;background:var(--primary);color:var(--primary-contrast);font-family:var(--font-display);font-weight:800;font-size:26px;box-shadow:0 8px 24px rgba(18,32,52,.35);transition:transform .15s}
+.help-fab:hover{transform:scale(1.08)}
+.help-fab{touch-action:none;cursor:grab;user-select:none}
+.help-fab.dragging{cursor:grabbing;transform:scale(1.12);opacity:.85;transition:none}
+.help-fab.open{background:var(--accent);color:var(--accent-ink)}
+.help-panel{position:fixed;top:0;right:0;bottom:0;z-index:360;width:min(440px,100%);background:var(--surface);border-left:1px solid var(--line);box-shadow:-12px 0 40px rgba(18,32,52,.25);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+.help-panel[hidden]{display:none!important}
+.help-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:16px 18px 10px;border-bottom:1px solid var(--line)}
+.help-head h2{font-size:22px}
+.help-sub{font-size:12.5px;color:var(--ink-muted)}
+.help-search{margin:12px 18px 6px;border:1px solid var(--line-strong);border-radius:9px;padding:9px 12px;background:var(--bg);width:calc(100% - 36px)}
+.help-body{flex:1;overflow-y:auto;padding:6px 18px 30px;display:flex;flex-direction:column;gap:6px}
+.hs{border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.hs[hidden]{display:none}
+.hs summary{cursor:pointer;padding:10px 12px;font-weight:700;font-size:14px;list-style-position:inside}
+.hs[open] summary{border-bottom:1px solid var(--line)}
+.hs ul,.hs ol{margin:8px 0;padding:0 14px 0 34px;font-size:13.5px;display:flex;flex-direction:column;gap:5px}
+.hs p{margin:8px 14px;font-size:13.5px;color:var(--ink)}
+.kbd-t{margin:8px 12px 10px;font-size:13px;border-collapse:collapse}
+.kbd-t td{padding:4px 8px;border-bottom:1px solid var(--line)}
+kbd{font-family:ui-monospace,Consolas,monospace;font-size:12px;border:1px solid var(--line-strong);border-bottom-width:2px;border-radius:5px;padding:0 5px;background:var(--surface)}
+.tip{background:var(--accent-bg);border-radius:8px;padding:6px 10px}
+.help-none{color:var(--ink-muted);font-size:13.5px;text-align:center}
+mark{background:var(--accent-bg);color:inherit;border-radius:3px}
+@media print{.help-fab,.help-panel{display:none!important}}
+
+.color-wrap{position:relative;display:inline-flex}
+.color-btn{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:0 6px}
+.color-btn .ca{font-weight:800;line-height:1}
+.color-btn .cbar{width:18px;height:4px;border-radius:2px;background:#c0392b}
+.palette{position:fixed;z-index:400;background:var(--surface);border:1px solid var(--line-strong);border-radius:12px;padding:10px;box-shadow:var(--shadow);display:grid;grid-template-columns:repeat(8,24px);gap:6px;width:max-content}
+.palette[hidden]{display:none!important}
+.sw{width:24px;height:24px;border-radius:6px;border:1px solid rgba(0,0,0,.18);padding:0}
+.sw:hover{transform:scale(1.12);box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--primary)}
+.pal-row{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:8px;padding-top:6px;border-top:1px solid var(--line);font-size:12.5px}
+.pal-x{border:1px solid var(--line-strong);background:var(--surface);border-radius:6px;padding:3px 8px;font-size:12.5px}
+.pal-custom{display:flex;align-items:center;gap:6px;cursor:pointer;color:var(--ink-muted)}
+.pal-custom input{width:28px;height:24px;border:none;padding:0;background:none;cursor:pointer}
+.avatar{width:34px;height:34px;border-radius:50%;border:none;background:var(--primary);color:var(--primary-contrast);font-weight:800;font-size:15px;display:grid;place-items:center;padding:0}
+.userbox{position:relative}
+.usermenu{position:absolute;right:0;top:calc(100% + 8px);z-index:60;background:var(--surface);border:1px solid var(--line-strong);border-radius:12px;box-shadow:var(--shadow);padding:12px;min-width:220px;display:flex;flex-direction:column;gap:6px;color:var(--ink)}
+.usermenu[hidden]{display:none!important}
+.um-lbl{font-size:11.5px;color:var(--ink-muted)}
+.um-email{font-weight:700;font-size:13.5px;word-break:break-all}
+.userbox-old{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-muted)}
+.userbox span{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#drivePill{cursor:pointer}
+/* ---------- impressão (compacta, sem cabeçalho/rodapé do navegador) ---------- */
+#printArea{display:none}
+#measure{position:fixed;left:-20000px;top:0;width:283mm;background:#fff;visibility:hidden}
+#printArea,#measure{color:#111;font-family:"Times New Roman",Tinos,serif}
+.p-sheet{width:297mm;height:210mm;padding:7mm;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden;page-break-after:always;break-after:page;background:#fff}
+.p-sheet.long{height:auto;min-height:210mm;overflow:visible}
+.p-sheet:last-child{page-break-after:auto;break-after:auto}
+.p-body{flex:1;min-height:0}
+.p-head{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:3mm;border-bottom:1.2px solid #1f3d6b;padding-bottom:1mm;margin-bottom:1.5mm;height:10mm;font-size:8.5pt;line-height:1.15;flex:none}
+.p-left{display:flex;align-items:center;gap:3mm;min-width:0}
+.p-logo img{max-height:9mm;max-width:30mm;object-fit:contain;display:block}
+.p-esc{flex:1;min-width:0}.p-esc b{font-size:10.5pt;color:#1f3d6b}.p-esc span{color:#444}
+.p-mid{text-align:center;white-space:nowrap}.p-mid b{color:#1f3d6b}
+.p-right{text-align:right;font-weight:700;white-space:nowrap;justify-self:end}
+.p-foot{display:flex;justify-content:space-between;border-top:.8px solid #1f3d6b;margin-top:1mm;padding-top:.6mm;font-size:7pt;color:#333;height:4mm;flex:none}
+.p-plan{width:100%;border-collapse:collapse;table-layout:fixed}
+.p-plan th,.p-plan td{border:.8px solid #444;vertical-align:top;padding:.5mm 1.6mm}
+.p-plan th{background:#dce6f2;text-align:center;-webkit-print-color-adjust:exact;print-color-adjust:exact;line-height:1.1}
+.p-plan td div{min-height:1em}
+.p-band{background:#eef2f7;font-weight:700;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.p-est{background:#f1f1f1;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.p-tag{text-align:center;font-weight:700;color:#7a1f14;margin:1mm 0 2mm}
+.p-notes{display:flex}.p-notes > div{flex:1;padding:.5mm 1.6mm}.p-notes > div + div{border-left:.8px solid #444}
+@media print{
+  @page{size:A4 landscape;margin:0}
+  html,body{background:#fff!important;margin:0!important;padding:0!important}
+  body > *:not(#printArea){display:none!important}
+  #printArea{display:block}
+}
+.ed{font-size:var(--doc-fs,13.3px)!important;line-height:var(--doc-lh,1.25)!important}
+.fit{font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:99px;border:1px solid var(--line-strong);white-space:nowrap}
+.fit.ok{color:var(--ok);border-color:var(--ok);background:var(--ok-bg)}
+.fit.bad{color:var(--danger);border-color:var(--danger);background:var(--danger-bg)}
+.fsbox{display:flex;align-items:center;gap:3px}
+.fsbox span{min-width:46px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums;font-size:13px}
+</style>
+
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark" id="brandMark">P</div>
+    <div style="min-width:0">
+      <h1>Planificação Semanal</h1>
+      <div class="sub" id="brandSub">—</div>
+    </div>
+  </div>
+  <div class="top-right">
+    <span class="pill" id="drivePill" title="Estado da gravação"><span class="dot"></span><span id="drivePillTxt">a preparar…</span></span>
+    <button class="ibtn" id="btnFind" type="button" title="Procurar semana por data" aria-label="Procurar semana"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></button>
+    <button class="btn btn-accent btn-sm doc-btn" id="btnDoc" type="button" title="Importar de Word, guardar em Word, PDF ou imprimir"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M8 13h8M8 17h5"/></svg> Documento ▾</button>
+    <span class="tsep"></span>
+    <button class="ibtn" id="btnUndo" type="button" title="Voltar atrás (Ctrl+Z)" aria-label="Voltar atrás" disabled><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
+    <button class="ibtn" id="btnRedo" type="button" title="Avançar (Ctrl+Y)" aria-label="Avançar" disabled><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button>
+    <button class="ibtn" id="btnRefresh" type="button" title="Atualizar a página (carrega a versão mais recente)" aria-label="Atualizar a página" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
+    <button class="ibtn" id="btnSaveNow" type="button" title="Guardar agora" aria-label="Guardar agora"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg></button>
+    <button class="ibtn" id="btnCfg" type="button" title="Configurações" aria-label="Configurações" data-nav="defs"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+    <button class="btn btn-ghost btn-sm" id="btnInstall" type="button" title="Criar um ícone da aplicação no ambiente de trabalho ou no telemóvel">📲</button>
+    <div class="userbox" id="userBox" hidden><button class="avatar" id="userAv" type="button" aria-haspopup="true" title="A tua conta">?</button><div class="usermenu" id="userMenu" hidden><div class="um-lbl">Sessão iniciada como</div><div class="um-email" id="userEmail"></div><button class="btn btn-ghost btn-sm" id="btnLogout" type="button">Sair</button></div></div>
+  </div>
+</header>
+
+<div class="shell">
+  <aside class="side">
+    <div class="side-block">
+      <div class="side-label">Planificação</div>
+      <div class="plan-row-top">
+        <select id="planSel" aria-label="Escolher a planificação"></select>
+        <button type="button" class="nav-week" data-nav="semana" id="navSemana" title="Voltar à planificação da semana">📅 Planificação da semana</button>
+      </div>
+    </div>
+    <div class="side-block">
+      <div class="side-label"><span>Semanas <span id="weekCount" class="cnt"></span></span><button class="btn btn-primary btn-xs" id="btnNewWeek" type="button" title="Criar a semana seguinte">+ Nova</button></div>
+      <div class="week-list" id="weekList"></div>
+    </div>
+    <div class="side-block">
+      <div class="side-label"><span>Textos frequentes</span><button class="icon-btn" id="btnNewSnip" type="button" title="Criar texto frequente">+ novo</button></div>
+      <div class="snip-list" id="snipList"></div>
+    </div>
+    <div class="side-block">
+      <div class="side-label"><span>Semanas frequentes</span><button class="icon-btn" id="btnNewModel" type="button" title="Guardar a semana aberta como esqueleto">+ guardar</button></div>
+      <div class="snip-list" id="modelList"></div>
+    </div>
+    <button type="button" data-nav="defs" id="navDefs" hidden></button>
+  </aside>
+
+  <main class="main" id="main"></main>
+</div>
+
+<!-- modal genérico -->
+<div class="modal" id="modal" role="dialog" aria-modal="true">
+  <div class="modal-box" id="modalBox"></div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<div id="printArea"></div>
+<div id="measure" aria-hidden="true"></div>
+<div class="gate" id="gate" hidden></div>
+<button class="help-fab" id="helpFab" type="button" aria-label="Ajuda" title="Ajuda (F1) · arrasta para mudar de sítio">?</button>
+<aside class="help-panel" id="helpPanel" hidden aria-label="Ajuda">
+  <div class="help-head">
+    <div><h2>Ajuda</h2><div class="help-sub">Tudo o que podes fazer na Planificação Semanal</div></div>
+    <button class="icon-btn" type="button" id="helpClose" aria-label="Fechar ajuda">✕</button>
+  </div>
+  <input type="search" id="helpSearch" class="help-search" placeholder="Procurar na ajuda… (ex.: cor, feriado, PDF)">
+  <div class="help-body" id="helpBody">
+
+    <details class="hs" open><summary>🚀 Primeiros passos</summary>
+      <p class="tip">💡 Este botão <b>?</b> pode ser <b>arrastado</b> para qualquer sítio do ecrã se estiver a tapar alguma coisa.</p>
+      <ol>
+        <li>Abre <b>Configurações</b> (menu da esquerda) e preenche a escola, o logótipo, o ano letivo, a turma e o teu nome.</li>
+        <li>Na mesma página, escreve o email da tua conta Google e carrega em <b>Entrar com Google</b> para guardar tudo na tua Drive.</li>
+        <li>Volta a <b>Planificação da semana</b> e escreve diretamente na tabela.</li>
+        <li>Quando terminares, carrega em <b>Documento ▾</b> (no topo) e escolhe Word ou PDF/imprimir.</li>
+      </ol>
+      <p>Tudo é guardado sozinho enquanto escreves. Não precisas de carregar em "Guardar".</p>
+    </details>
+
+    <details class="hs"><summary>✏️ Escrever e colar na tabela</summary>
+      <ul>
+        <li>Clica numa célula e escreve. <b>Enter</b> muda de linha.</li>
+        <li>Podes <b>colar</b> (Ctrl+V) texto do Word, de um email ou da internet. Ficam o negrito, o itálico, o sublinhado e as cores; o resto da formatação estranha é limpa.</li>
+        <li><b>N</b> = negrito, <b>I</b> = itálico, <b>S</b> = sublinhado. Também funciona com <b>Ctrl+B</b>, <b>Ctrl+I</b> e <b>Ctrl+U</b>.</li>
+        <li><b>Limpar</b> tira a formatação do texto selecionado.</li>
+      </ul>
+    </details>
+
+    <details class="hs"><summary>🎨 Dar cor ao texto</summary>
+      <ol>
+        <li>Seleciona o texto dentro de uma célula.</li>
+        <li>Carrega no botão <b>A</b> (com o risco colorido por baixo).</li>
+        <li>Escolhe uma das 16 cores, ou <b>Outra…</b> para qualquer cor.</li>
+      </ol>
+      <p><b>Sem cor</b> volta a pôr o texto a preto. As cores aparecem no ecrã, no Word e no PDF.</p>
+    </details>
+
+    <details class="hs"><summary>🗓️ Semanas frequentes (esqueletos)</summary>
+      <ul>
+        <li>Abre uma semana bem organizada e, na coluna da esquerda, em <b>Semanas frequentes</b>, carrega em <b>+ guardar</b>. Dá-lhe um nome (ex.: "Semana tipo").</li>
+        <li>Podes guardar só a estrutura (células vazias) ou também os textos.</li>
+        <li><b>Usar</b> aplica o esqueleto à semana aberta (as datas e as aulas mantêm-se) ou cria uma semana nova com ele.</li>
+        <li>Em <b>+ Nova</b> semana, as semanas frequentes também aparecem como opção.</li>
+      </ul>
+    </details>
+
+    <details class="hs"><summary>🔍 Procurar uma semana</summary>
+      <p>Carrega na <b>lupa</b> no topo. Escolhe um dia no calendário e abre logo a semana desse dia, ou escreve uma data (ex.: 21.09) ou o número de uma aula. Na coluna da esquerda aparecem as 3 semanas mais recentes; para ver as outras, desliza a lista.</p>
+    </details>
+
+    <details class="hs"><summary>📌 Textos frequentes (frases que repetes)</summary>
+      <ul>
+        <li>Na coluna da esquerda estão frases prontas, como a rotina de entrada ou a reflexão de Cidadania.</li>
+        <li>Clica numa célula e depois em <b>Inserir</b>: o texto aparece onde está o cursor.</li>
+        <li><b>+ novo</b> cria um texto teu. Se tiveres texto selecionado numa célula, ele já aparece lá dentro.</li>
+        <li><b>✎</b> edita ou apaga um texto frequente.</li>
+      </ul>
+    </details>
+
+    <details class="hs"><summary>📥 Importar de um documento Word</summary>
+      <ol>
+        <li>Carrega em <b>Documento ▾</b> (no topo) → <b>Importar de Word</b>.</li>
+        <li>Escolhe o ficheiro <b>.docx</b>. Aparece a lista das páginas (cada tabela de planificação é uma página/semana).</li>
+        <li>Marca <b>só a página que queres</b>, várias, ou <b>Todas</b>.</li>
+        <li>Escolhe o destino: <b>a semana aberta</b> (troca os textos e mantém as datas e as aulas) ou <b>semanas novas</b> (uma por página, com as datas do documento).</li>
+      </ol>
+      <p>Documentos sem tabela: o texto da página escolhida vai para a célula ou bloco que indicares. Ficheiros .doc antigos: abre no Word e guarda como .docx. Se não gostares do resultado, carrega na seta <b>↶</b> (voltar).</p>
+    </details>
+
+    <details class="hs"><summary>📋 Copiar para outros dias</summary>
+      <p>Passa o rato por cima de uma célula: aparece <b>copiar ⇉</b> no canto. Escolhe os dias e se queres <b>acrescentar</b> no fim ou <b>substituir</b> o que lá estiver.</p>
+    </details>
+
+    <details class="hs"><summary>📅 Semanas</summary>
+      <ul>
+        <li><b>+ Nova</b> (ao lado de "Semanas") cria a semana seguinte. Podes copiar a semana anterior (com os textos), só a estrutura, ou começar em branco.</li>
+        <li>As datas avançam sozinhas e o <b>número das aulas continua</b> a partir da semana anterior.</li>
+        <li>Clica numa semana da lista à esquerda para a abrir.</li>
+        <li><b>Eliminar semana</b> está na barra de ferramentas (pede confirmação).</li>
+      </ul>
+    </details>
+
+    <details class="hs"><summary>🧩 Colunas, linhas e blocos</summary>
+      <ul>
+        <li><b>+ Coluna</b> acrescenta um dia. Em cada coluna: <b>◀ ▶</b> mover, <b>⧉</b> duplicar, <b>✕</b> remover.</li>
+        <li>Muda o nome do dia, a data e o n.º da aula clicando neles.</li>
+        <li>No menu de cada coluna marca o dia como <b>Feriado, Greve, Interrupção letiva, Visita de estudo, Reunião ou Formação</b>. Fica cinzento e não conta aula.</li>
+        <li><b>Renumerar aulas</b> numera os dias seguidos a partir da 1.ª coluna.</li>
+        <li><b>+ Linha</b> divide a tabela (por exemplo "Manhã" e "Tarde"). Dá-lhe um título se quiseres.</li>
+        <li><b>+ Bloco no fundo</b> acrescenta caixas como "Trabalho de Casa" ou "Atividades de Recurso".</li>
+      </ul>
+    </details>
+
+    <details class="hs"><summary>🔠 Tamanho da letra e caber numa folha</summary>
+      <ul>
+        <li><b>A− / A+</b> muda o tamanho da letra (no ecrã, no Word e no PDF).</li>
+        <li><b>Caber numa folha</b> (ligado): se a semana tiver muito texto, a letra encolhe sozinha no Word e no PDF para tudo caber numa folha.</li>
+        <li>O aviso verde diz se cabe e com que letra. Se ficar vermelho, usa <b>Compactar</b> ou encurta algumas frases.</li>
+        <li><b>Compactar</b> tira linhas em branco, pode juntar tópicos seguidos e aperta o espaço entre linhas.</li>
+        <li>Em <b>Configurações</b> escolhes também o espaço entre linhas: apertado, normal ou largo.</li>
+      </ul>
+    </details>
+
+    <details class="hs"><summary>↩️ Voltar atrás e avançar</summary>
+      <ul>
+        <li>A seta <b>↶</b> (no topo) volta atrás na última alteração. Podes carregar várias vezes.</li>
+        <li>A seta <b>↷</b> avança outra vez.</li>
+        <li>Atalhos: <b>Ctrl+Z</b> volta atrás, <b>Ctrl+Y</b> avança. Dentro de uma célula, o Ctrl+Z desfaz só a escrita dessa célula.</li>
+      </ul>
+    </details>
+
+    <details class="hs"><summary>🖨️ Imprimir, PDF e Word</summary>
+      <ul>
+        <li><b>Documento ▾ → PDF ou imprimir</b> abre a janela de impressão. Para PDF, escolhe a impressora <b>Guardar como PDF</b>. A folha já sai deitada (A4 horizontal).</li>
+        <li><b>Documento ▾ → Guardar em Word</b> descarrega um ficheiro .docx que podes abrir e alterar no Word.</li>
+        <li>Podes exportar <b>só esta semana</b> ou <b>todas as semanas</b> (uma por folha).</li>
+        <li>Com a Drive ligada, podes também <b>guardar uma cópia na Drive</b> (Word e PDF).</li>
+      </ul>
+    </details>
+
+    <details class="hs"><summary>☁️ Google Drive</summary>
+      <ul>
+        <li>Em <b>Configurações</b>, escreve o email Google e carrega em <b>Entrar com Google</b>.</li>
+        <li>Na primeira vez a Google mostra "app não verificada": carrega em <b>Avançadas → Aceder a planificacao-semanal.netlify.app → Continuar</b>.</li>
+        <li>Fica tudo numa pasta <b>Planificações</b> da tua Drive. A aplicação só vê os ficheiros que ela própria criou.</li>
+        <li>Por segurança, a Google pede para entrares de novo em cada sessão: carrega no aviso amarelo do topo ou em "Entrar com Google".</li>
+        <li><b>Trocar de conta Google</b> está na mesma página.</li>
+        <li>Noutro computador: entra com a tua conta, liga a Drive e a planificação é carregada sozinha.</li>
+      </ul>
+    </details>
+
+    <details class="hs"><summary>🔐 Conta, password e segurança</summary>
+      <ul>
+        <li>Cada pessoa tem a sua conta (email e password). Ninguém vê as planificações dos outros.</li>
+        <li><b>Esqueci-me da password</b> (no ecrã de entrada) envia um link para criares outra. Procura também no Spam.</li>
+        <li>Num computador partilhado, carrega em <b>Sair</b> (canto superior direito) quando terminares.</li>
+      </ul>
+    </details>
+
+    <details class="hs"><summary>📚 Várias turmas ou planificações</summary>
+      <p>No topo da coluna esquerda escolhe <b>+ Nova planificação…</b>. Cada uma tem as suas semanas. Mudar o nome ou apagar: em <b>Configurações</b>, secção "Planificações".</p>
+    </details>
+
+    <details class="hs"><summary>📲 Ícone no ambiente de trabalho ou telemóvel</summary>
+      <p>Carrega no botão <b>📲</b> (no topo). No computador (Chrome ou Edge) aparece logo a pergunta para instalar; no telemóvel aparecem os passos: no iPhone é <b>Partilhar → Adicionar ao ecrã principal</b>, no Android é <b>⋮ → Instalar aplicação</b>. Depois abres a Planificação com um clique, como um programa.</p>
+    </details>
+
+    <details class="hs"><summary>🧯 Recuperar trabalho perdido</summary>
+      <p>Em <b>Configurações → Recuperar trabalho</b>:</p>
+      <ul>
+        <li><b>Procurar neste computador</b>: cópias guardadas no navegador (também de contas antigas).</li>
+        <li><b>Versões anteriores na Drive</b>: a Drive guarda as versões dos últimos 30 dias. Carrega em <b>Ver</b> para saber quantas semanas tem cada versão e depois em <b>Recuperar</b>.</li>
+        <li><b>Abrir ficheiro de cópia (.json)</b> ou <b>Importar cópia</b>: se descarregaste uma cópia.</li>
+        <li><b>⬇️ Exportar tudo</b> (em Configurações → Cópias) descarrega uma cópia completa. Faz isto de vez em quando.</li>
+      </ul>
+      <p>Nunca crie outra conta se esquecer a password: use <b>Esqueci-me da password</b>.</p>
+    </details>
+
+    <details class="hs"><summary>🔄 Atualizar a aplicação</summary>
+      <p>Quando abres a Planificação pelo ícone (sem barra de endereço), aparece no topo o botão <b>⟳</b>. Carrega nele para atualizar a página e carregar a versão mais recente. O teu trabalho é guardado antes. No navegador, usa <b>Ctrl+F5</b>.</p>
+    </details>
+
+    <details class="hs"><summary>⌨️ Atalhos de teclado</summary>
+      <table class="kbd-t">
+        <tr><td><kbd>Ctrl</kbd>+<kbd>B</kbd> / <kbd>I</kbd> / <kbd>U</kbd></td><td>Negrito / itálico / sublinhado</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>V</kbd></td><td>Colar</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd></td><td>Voltar atrás</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>Y</kbd></td><td>Avançar</td></tr>
+        <tr><td><kbd>F1</kbd></td><td>Abrir esta ajuda</td></tr>
+        <tr><td><kbd>Esc</kbd></td><td>Fechar janelas e a ajuda</td></tr>
+      </table>
+    </details>
+
+    <details class="hs"><summary>🛟 Problemas frequentes</summary>
+      <ul>
+        <li><b>"Acesso bloqueado" na Google:</b> fala com quem gere o site. A app tem de estar publicada na Google.</li>
+        <li><b>A janela da Google não abre:</b> permite janelas pop-up para este site (ícone na barra de endereço).</li>
+        <li><b>Não recebi o email:</b> espera 2 minutos e procura no Spam ou Promoções.</li>
+        <li><b>O PDF sai com data e endereço no topo:</b> na janela de impressão, em "Mais definições", desliga "Cabeçalhos e rodapés".</li>
+        <li><b>Apaguei algo sem querer:</b> usa a seta <b>↶</b> no topo.</li>
+        <li><b>O site parece desatualizado:</b> recarrega com <b>Ctrl+F5</b>.</li>
+      </ul>
+    </details>
+
+    <p class="help-none" id="helpNone" hidden>Nada encontrado. Experimenta outra palavra.</p>
+  </div>
+</aside>
+
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   CONSTANTES E ESTADO
+   ========================================================= */
+/* ---- CONFIGURAÇÃO (preencher uma vez) ---- */
+var SUPABASE_URL = "https://ynbqwvjwbzckpgotjama.supabase.co";
+var SUPABASE_KEY = "sb_publishable_iOoMpE2cG4t6aCXzop8I9w_r7LUUCiF";
+var GOOGLE_CLIENT_ID = "774444020481-v812tdfs5rgs0cll82kp8rmat4jqo7uh.apps.googleusercontent.com";
+if(SUPABASE_URL.indexOf("__")===0) SUPABASE_URL="";
+if(SUPABASE_KEY.indexOf("__")===0) SUPABASE_KEY="";
+if(GOOGLE_CLIENT_ID.indexOf("__")===0) GOOGLE_CLIENT_ID="";
+var LS_BASE = "planificacao_semanal_v1";
+/* Se a aplicação mudar de endereço, escrever aqui o novo (ex.: "https://novo-endereco.netlify.app"). Aparece um aviso a todos. */
+var MOVED_TO = "";
+var LS_KEY = LS_BASE;
+var DRIVE = "Google Drive";
+var DATA_FILE = "Planificacao_Dados.json";
+var DIAS_PT = ["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"];
+var ESTADOS = ["","Feriado","Greve","Interrupção letiva","Visita de estudo","Reunião","Formação"];
+
+var state = {
+  data:null, view:"semana", planId:null, semanaId:null,
+  lastEd:null, lastRange:null,
+  mcp:null, downloads:null,
+  drive:{status:"local", msg:"", folderId:null, fileId:null, owner:"", lastSave:null, saving:false, timer:null, pending:false, mismatch:false},
+  user:null, sb:null, started:false, recovering:false,
+  localTimer:null
+};
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+function uid(p){ return (p||"x")+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function nowISO(){ return new Date().toISOString(); }
+function toast(msg, ms){ var t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(function(){ t.classList.remove("show"); }, ms||2800); }
+function pad(n){ return String(n).padStart(2,"0"); }
+function parseISO(iso){ if(!iso) return null; var p=iso.split("-"); return new Date(+p[0], +p[1]-1, +p[2], 12); }
+function toISO(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+function addDays(iso,n){ var d=parseISO(iso); if(!d) return ""; d.setDate(d.getDate()+n); return toISO(d); }
+function fmtPt(iso){ var d=parseISO(iso); return d? pad(d.getDate())+"."+pad(d.getMonth()+1)+"."+d.getFullYear() : ""; }
+function fmtShort(iso){ var d=parseISO(iso); return d? pad(d.getDate())+"."+pad(d.getMonth()+1) : ""; }
+function weekdayName(iso){ var d=parseISO(iso); return d? DIAS_PT[d.getDay()] : ""; }
+function hm(d){ return pad(d.getHours())+":"+pad(d.getMinutes()); }
+
+/* =========================================================
+   DADOS INICIAIS
+   ========================================================= */
+function starterWeek(){
+  var t=new Date(); t.setHours(12); t.setDate(t.getDate()-((t.getDay()+6)%7));
+  var mon=toISO(t), rot="<div>- Receção dos alunos;</div><div>- Marcação das presenças;</div><div>- Apresentação do plano de trabalho do dia;</div><div><br></div>";
+  var s={id:uid("s"), linhas:[{id:"L1",titulo:""}], dias:[], notas:[{id:uid("n"),titulo:"Atividades de Recurso/Estudo/Outras:",html:""},{id:uid("n"),titulo:"Trabalho de Casa:",html:""}]};
+  for(var k=0;k<5;k++){ var dt=addDays(mon,k); s.dias.push({id:uid("d"), nome:weekdayName(dt), data:dt, aula:String(k+1), estado:"", cel:{L1:rot}}); }
+  return s;
+}
+function defaultData(){
+  var plan={id:uid("p"), nome:"A minha turma", semanas:[starterWeek()]};
+  return {
+    app:"Planificação Semanal", versao:1, atualizadoEm:"2000-01-01T00:00:00.000Z",
+    definicoes:{
+      escola:"", agrupamento:"", anoLetivo:"2026/2027", turma:"",
+      docente:"", titulo:"Planificação Semanal",
+      logo:null, logoW:0, logoH:0, tamanhoLetra:10, entrelinha:1.1, caberPagina:true,
+      conta:"", pasta:"Planificações", driveLigada:false, driveAuto:true
+    },
+    planificacoes:[plan],
+    textos:[
+      {id:uid("t"), titulo:"Rotina de entrada", html:"<div>- Receção dos alunos;</div><div>- Marcação das presenças;</div><div>- Apresentação do plano de trabalho do dia;</div>"},
+      {id:uid("t"), titulo:"Apoio ao Estudo", html:"<div><b>Apoio ao Estudo</b></div><div>- Revisão de conteúdos;</div><div>- Esclarecimento de dúvidas existentes;</div>"},
+      {id:uid("t"), titulo:"Cidadania — reflexão do dia", html:"<div><b>Cidadania e desenvolvimento</b></div><div>- Reflexão sobre o trabalho, participação, cooperação, empenho e comportamento do dia.</div>"},
+      {id:uid("t"), titulo:"Trabalho semanal para o Estudo", html:"<div><b>Trabalho semanal para o Estudo:</b></div><div>- Segunda-feira – </div><div>- Terça-feira – </div><div>- Quinta-feira – </div><div>- Sexta-feira – </div>"}
+    ]
+  };
+}
+function normalize(d){
+  var def=defaultData();
+  d.definicoes=Object.assign({}, def.definicoes, d.definicoes||{});
+  if(!Array.isArray(d.planificacoes)||!d.planificacoes.length) d.planificacoes=def.planificacoes;
+  if(!Array.isArray(d.textos)) d.textos=def.textos;
+  if(!Array.isArray(d.modelos)) d.modelos=[];
+  d.planificacoes.forEach(function(p){ p.semanas=p.semanas||[]; p.semanas.forEach(function(s){
+    s.linhas=s.linhas&&s.linhas.length? s.linhas : [{id:"L1",titulo:""}];
+    s.dias=s.dias||[]; s.notas=s.notas||[];
+    s.dias.forEach(function(di){ di.cel=di.cel||{}; });
+  }); });
+  return d;
+}
+/* todas as cópias guardadas neste navegador (para recuperar trabalho) */
+function localSaves(){
+  var out=[];
+  try{
+    for(var i=0;i<localStorage.length;i++){
+      var k=localStorage.key(i); if(!k || k.indexOf(LS_BASE)!==0) continue;
+      try{ var d=JSON.parse(localStorage.getItem(k)); if(!d||!d.planificacoes) continue;
+        d=normalize(d);
+        var em=(d.dono||d.definicoes.conta||"").toLowerCase();
+        var nW=d.planificacoes.reduce(function(a,p){ return a+p.semanas.length; },0);
+        out.push({key:k, data:d, email:em, semanas:nW});
+      }catch(e){}
+    }
+  }catch(e){}
+  return out;
+}
+function backupLocal(tag){
+  try{ if(state.data) localStorage.setItem("planificacao_backup:"+(state.data.dono||"x")+":"+tag, JSON.stringify(state.data)); }catch(e){}
+}
+function loadLocal(){
+  try{ var raw=localStorage.getItem(LS_KEY); if(raw) return normalize(JSON.parse(raw)); }catch(e){}
+  return null;
+}
+function saveLocal(){
+  if(!state.data) return false;
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(state.data)); return true; }catch(e){ return false; }
+}
+/* ---------- desfazer / refazer ---------- */
+var hist={undo:[], redo:[], cur:null, t:null, MAX:80};
+function snapKey(){ var a=state.data.atualizadoEm; state.data.atualizadoEm=""; var k=JSON.stringify(state.data); state.data.atualizadoEm=a; return k; }
+function histReset(){ hist.undo=[]; hist.redo=[]; hist.cur=snapKey(); updateUndoBtns(); }
+function histCommit(){
+  clearTimeout(hist.t); hist.t=null;
+  if(!state.data) return;
+  var k=snapKey(); if(k===hist.cur) return;
+  if(hist.cur!==null){ hist.undo.push(hist.cur); if(hist.undo.length>hist.MAX) hist.undo.shift(); }
+  hist.cur=k; hist.redo=[]; updateUndoBtns();
+}
+function histRestore(k){
+  var keepPlan=state.planId, keepWeek=state.semanaId, view=state.view;
+  state.data=normalize(JSON.parse(k)); hist.cur=k;
+  if(state.data.planificacoes.some(function(p){return p.id===keepPlan;})) state.planId=keepPlan; else { state.planId=state.data.planificacoes[0].id; keepWeek=null; }
+  state.semanaId=keepWeek; state.view=view;
+  state.data.atualizadoEm=nowISO(); saveLocal(); scheduleDrive();
+  renderAll(); updateUndoBtns();
+}
+function doUndo(){ histCommit(); if(!hist.undo.length){ toast("Não há nada para desfazer."); return; } hist.redo.push(hist.cur); histRestore(hist.undo.pop()); toast("Alteração desfeita."); }
+function doRedo(){ histCommit(); if(!hist.redo.length){ toast("Não há nada para refazer."); return; } hist.undo.push(hist.cur); histRestore(hist.redo.pop()); toast("Alteração refeita."); }
+function updateUndoBtns(){ var u=$("btnUndo"), r=$("btnRedo"); if(u) u.disabled=!hist.undo.length && !hist.t; if(r) r.disabled=!hist.redo.length; }
+function touch(){
+  clearTimeout(hist.t); hist.t=setTimeout(histCommit, 900); if($("btnUndo")) $("btnUndo").disabled=false;
+  state.data.atualizadoEm=nowISO();
+  clearTimeout(state.localTimer);
+  state.localTimer=setTimeout(saveLocal, 400);
+  scheduleDrive();
+}
+
+/* =========================================================
+   ACESSO À PLANIFICAÇÃO / SEMANA ATUAIS
+   ========================================================= */
+function plan(){ var ps=state.data.planificacoes; return ps.filter(function(p){return p.id===state.planId;})[0] || ps[0]; }
+function sortedWeeks(p){ return (p||plan()).semanas.slice().sort(function(a,b){ return firstDate(b).localeCompare(firstDate(a)); }); }
+function firstDate(s){ var ds=s.dias.map(function(d){return d.data;}).filter(Boolean).sort(); return ds[0]||""; }
+function lastDate(s){ var ds=s.dias.map(function(d){return d.data;}).filter(Boolean).sort(); return ds[ds.length-1]||""; }
+function week(){ var p=plan(); return p.semanas.filter(function(s){return s.id===state.semanaId;})[0] || sortedWeeks(p)[0] || null; }
+function weekLabel(s){ var a=firstDate(s), b=lastDate(s); if(!a) return "Semana sem datas"; return fmtShort(a)+" a "+fmtPt(b); }
+function aulaRange(s){ var n=s.dias.map(function(d){return parseInt(d.aula,10);}).filter(function(x){return !isNaN(x);}); if(!n.length) return ""; var mi=Math.min.apply(null,n), ma=Math.max.apply(null,n); return mi===ma? "Aula "+mi : "Aulas "+mi+"–"+ma; }
+
+/* =========================================================
+   LIMPEZA DE HTML (colar do Word, da web, etc.)
+   ========================================================= */
+function cleanHTML(html){
+  var box=document.createElement("div"); box.innerHTML=html||"";
+  box.querySelectorAll("style,script,meta,link,title,xml,o\\:p,head").forEach(function(n){ n.remove(); });
+  function walk(node){
+    var out="";
+    node.childNodes.forEach(function(ch){
+      if(ch.nodeType===3){ out+=esc(ch.nodeValue.replace(/ /g," ").replace(/[\r\n]+/g," ")); return; }
+      if(ch.nodeType!==1) return;
+      var tag=ch.tagName.toLowerCase();
+      var st=(ch.getAttribute("style")||"").toLowerCase();
+      var inner=walk(ch);
+      var bold= tag==="b"||tag==="strong"||/font-weight:\s*(bold|[6-9]00)/.test(st);
+      var ital= tag==="i"||tag==="em"||/font-style:\s*italic/.test(st);
+      var und = tag==="u"||/text-decoration[^;]*underline/.test(st);
+      if(tag==="b"&&/font-weight:\s*normal/.test(st)) bold=false; // Google Docs envolve tudo em <b style="font-weight:normal">
+      if(tag==="br"){ out+="<br>"; return; }
+      if(und) inner="<u>"+inner+"</u>";
+      if(ital) inner="<i>"+inner+"</i>";
+      if(bold) inner="<b>"+inner+"</b>";
+      var pc=colorOf(ch); if(pc && inner && !/^(p|div|li|h[1-6])$/.test(tag)) inner='<span style="color:'+pc+'">'+inner+'</span>';
+      if(tag==="li"){ out+="<div>• "+inner+"</div>"; return; }
+      if(/^(p|div|h[1-6]|blockquote|tr|section|article|header|footer|pre)$/.test(tag)){
+        out+="<div>"+(inner.replace(/<[^>]+>|\s/g,"")? inner : "<br>")+"</div>"; return;
+      }
+      if(tag==="td"||tag==="th"){ out+=inner+" "; return; }
+      out+=inner;
+    });
+    return out;
+  }
+  return walk(box).replace(/(<div><br><\/div>){3,}/g,"<div><br></div><div><br></div>");
+}
+function textToHTML(t){
+  return String(t||"").replace(/\r/g,"").split("\n").map(function(l){ return "<div>"+(l? esc(l) : "<br>")+"</div>"; }).join("");
+}
+function toHex(c){
+  if(!c) return "";
+  c=String(c).trim().toLowerCase();
+  var m=c.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/); if(m){ var h=m[1]; if(h.length===3) h=h.split("").map(function(x){return x+x;}).join(""); return "#"+h; }
+  m=c.match(/^rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/); if(m) return "#"+[m[1],m[2],m[3]].map(function(n){ return ("0"+(+n).toString(16)).slice(-2); }).join("");
+  return "";
+}
+function colorOf(el){
+  var c = el.tagName==="FONT"? el.getAttribute("color") : "";
+  var st=el.getAttribute && el.getAttribute("style")||"", m=st.match(/(?:^|;)\s*color\s*:\s*([^;]+)/i);
+  if(m) c=m[1];
+  c=toHex(c);
+  return (c==="#000000"||c==="#111111")? "" : c;
+}
+function sanitizeStored(html){
+  // mantém só div/br/b/i/u — o que o Word também entende
+  var box=document.createElement("div"); box.innerHTML=html||"";
+  function walk(node){
+    var out="";
+    node.childNodes.forEach(function(ch){
+      if(ch.nodeType===3){ out+=esc(ch.nodeValue); return; }
+      if(ch.nodeType!==1) return;
+      var tag=ch.tagName.toLowerCase(), inner=walk(ch);
+      if(tag==="br") out+="<br>";
+      else if(tag==="b"||tag==="strong") out+="<b>"+inner+"</b>";
+      else if(tag==="i"||tag==="em") out+="<i>"+inner+"</i>";
+      else if(tag==="u") out+="<u>"+inner+"</u>";
+      else if(tag==="div"||tag==="p"||tag==="li"){ var bc=colorOf(ch); out+="<div>"+(bc&&inner? '<span style="color:'+bc+'">'+inner+'</span>' : (inner||"<br>"))+"</div>"; }
+      else if(tag==="span"||tag==="font"){ var c=colorOf(ch); out+= c&&inner? '<span style="color:'+c+'">'+inner+'</span>' : inner; }
+      else out+=inner;
+    });
+    return out;
+  }
+  return walk(box);
+}
+
+/* =========================================================
+   EDITORES (células com texto)
+   ========================================================= */
+function bindEditor(el, getter, setter){
+  el.innerHTML=getter()||"";
+  el.addEventListener("focus", function(){ state.lastEd=el; });
+  el.addEventListener("input", function(){ setter(el.innerHTML); touch(); });
+  el.addEventListener("keyup", rememberRange);
+  el.addEventListener("mouseup", rememberRange);
+  el.addEventListener("blur", function(){ rememberRange(); var c=sanitizeStored(el.innerHTML); if(c!==getter()){ setter(c); touch(); } });
+  el.addEventListener("paste", function(e){
+    var cd=e.clipboardData; if(!cd) return;
+    e.preventDefault();
+    var h=cd.getData("text/html"), t=cd.getData("text/plain");
+    var ins = h ? cleanHTML(h) : textToHTML(t);
+    // colagem de uma só linha: sem quebra extra
+    if(!h && t.indexOf("\n")<0) ins=esc(t);
+    document.execCommand("insertHTML", false, ins);
+    setter(el.innerHTML); touch();
+  });
+}
+function rememberRange(){
+  var sel=window.getSelection();
+  if(sel && sel.rangeCount && state.lastEd && state.lastEd.contains(sel.anchorNode)) state.lastRange=sel.getRangeAt(0).cloneRange();
+}
+function restoreRange(){
+  var ed=state.lastEd;
+  if(!ed || !document.body.contains(ed)) return false;
+  ed.focus();
+  var sel=window.getSelection();
+  if(state.lastRange && ed.contains(state.lastRange.startContainer)){ sel.removeAllRanges(); sel.addRange(state.lastRange); }
+  else { var r=document.createRange(); r.selectNodeContents(ed); r.collapse(false); sel.removeAllRanges(); sel.addRange(r); }
+  return true;
+}
+function fmt(cmd){
+  if(!restoreRange()){ toast("Clica primeiro dentro de uma célula."); return; }
+  document.execCommand(cmd, false, null);
+  state.lastEd.dispatchEvent(new Event("input"));
+  rememberRange();
+}
+function insertSnippet(t){
+  if(!restoreRange()){ toast("Clica primeiro na célula onde queres o texto."); return; }
+  document.execCommand("insertHTML", false, t.html);
+  state.lastEd.dispatchEvent(new Event("input"));
+  rememberRange();
+  toast("“"+t.titulo+"” inserido.");
+}
+
+/* =========================================================
+   RENDER — GERAL
+   ========================================================= */
+function renderAll(){
+  renderModels();
+  renderBrand(); renderPlanSel(); renderWeeks(); renderSnips(); renderMain(); renderDrivePill();
+}
+function renderBrand(){
+  var d=state.data.definicoes, m=$("brandMark");
+  if(d.logo){ m.className="brand-mark has-logo"; m.innerHTML='<img alt="" src="'+d.logo+'">'; }
+  else { m.className="brand-mark"; m.textContent="P"; }
+  $("brandSub").textContent=[d.escola||"Escola por preencher", d.anoLetivo, plan().nome].filter(Boolean).join(" · ");
+}
+function renderPlanSel(){
+  var s=$("planSel");
+  s.innerHTML=state.data.planificacoes.map(function(p){ return '<option value="'+esc(p.id)+'"'+(p.id===plan().id?" selected":"")+'>'+esc(p.nome)+'</option>'; }).join("")+'<option value="__new">+ Nova planificação…</option>';
+}
+function renderWeeks(){
+  var ws=sortedWeeks(), cur=week();
+  $("weekCount").textContent=ws.length? ws.length : "";
+  $("weekList").innerHTML = ws.length ? ws.map(function(s){
+    return '<button type="button" class="week-item'+(cur&&s.id===cur.id&&state.view==="semana"?" active":"")+'" data-week="'+esc(s.id)+'"><span class="w1">'+esc(weekLabel(s))+'</span><span class="w2">'+esc(aulaRange(s)||"—")+'</span></button>';
+  }).join("") : '<div class="side-help">Ainda não há semanas. Carrega em “+ Nova”.</div>';
+}
+/* =========================================================
+   SEMANAS FREQUENTES (esqueletos de semana para reutilizar)
+   ========================================================= */
+var DAY_IDX={"segunda-feira":0,"terça-feira":1,"quarta-feira":2,"quinta-feira":3,"sexta-feira":4,"sábado":5,"domingo":6};
+function modelFromWeek(s, nome){
+  return {id:uid("m"), nome:nome, linhas:JSON.parse(JSON.stringify(s.linhas)),
+    dias:s.dias.map(function(d){ return {nome:normDay(d.nome)||d.nome, cel:JSON.parse(JSON.stringify(d.cel||{}))}; }),
+    notas:s.notas.map(function(n){ return {titulo:n.titulo, html:n.html||""}; })};
+}
+function weekFromModel(m, mon){
+  var s={id:uid("s"), linhas:JSON.parse(JSON.stringify(m.linhas)), notas:m.notas.map(function(n){ return {id:uid("n"), titulo:n.titulo, html:n.html}; }), dias:[]};
+  m.dias.forEach(function(d,i){ var k=DAY_IDX[normDay(d.nome)]; var dt=addDays(mon, k!=null? k : Math.min(i,4));
+    s.dias.push({id:uid("d"), nome:weekdayName(dt)||d.nome, data:dt, aula:"", estado:"", cel:JSON.parse(JSON.stringify(d.cel||{}))}); });
+  return s;
+}
+function applyModelToWeek(m, s){
+  // troca colunas, linhas e textos pela semana frequente, mantendo datas e aulas das colunas existentes
+  var old=s.dias.slice();
+  s.linhas=JSON.parse(JSON.stringify(m.linhas));
+  s.notas=m.notas.map(function(n){ return {id:uid("n"), titulo:n.titulo, html:n.html}; });
+  var used={};
+  s.dias=m.dias.map(function(md,i){
+    var match=null;
+    for(var j=0;j<old.length;j++){ if(!used[j] && normDay(old[j].nome)===normDay(md.nome)){ match=old[j]; used[j]=1; break; } }
+    if(!match && old.length===m.dias.length && !used[i]){ match=old[i]; used[i]=1; }
+    var base=match||{id:uid("d"), nome:md.nome, data:"", aula:"", estado:""};
+    return {id:base.id||uid("d"), nome:base.nome||md.nome, data:base.data, aula:base.aula, estado:base.estado||"", cel:JSON.parse(JSON.stringify(md.cel||{}))};
+  });
+}
+function renderModels(){
+  var el=$("modelList"); if(!el) return;
+  var ms=state.data.modelos||[];
+  el.innerHTML= ms.length? ms.map(function(m){
+    return '<div class="snip"><span class="t" title="'+esc(m.nome)+'">'+esc(m.nome)+'</span>'
+      +'<button class="icon-btn" type="button" data-model-use="'+esc(m.id)+'" title="Usar esta semana frequente">Usar</button>'
+      +'<button class="icon-btn" type="button" data-model-edit="'+esc(m.id)+'" title="Mudar o nome ou apagar">✎</button></div>';
+  }).join("") : '<div class="side-help">Abre uma semana e carrega em “+ guardar” para a usares como esqueleto.</div>';
+}
+function saveModel(){
+  var s=week(); if(!s){ toast("Abre primeiro uma semana."); return; }
+  openModal('<h3>Guardar como semana frequente</h3><p>Fica guardado o esqueleto desta semana: as colunas, as linhas, os blocos do fundo e os textos. As datas e os números das aulas não são guardados.</p>'
+    +'<div class="field"><label for="mdN">Nome</label><input id="mdN" placeholder="Ex.: Semana tipo 1.º B" value="Semana tipo"></div>'
+    +'<label class="choice"><input type="checkbox" id="mdKeep" checked><div><b>Guardar também os textos</b><span>Desliga para guardar só a estrutura, com as células vazias.</span></div></label>'
+    +'<div class="modal-foot"><button class="btn btn-ghost" type="button" data-close>Cancelar</button><button class="btn btn-primary" type="button" id="mdGo">Guardar</button></div>');
+  $("mdN").select();
+  $("mdGo").onclick=function(){
+    var n=$("mdN").value.trim(); if(!n){ toast("Dá um nome."); return; }
+    var m=modelFromWeek(s, n);
+    if(!$("mdKeep").checked){ m.dias.forEach(function(d){ d.cel={}; }); m.notas.forEach(function(x){ x.html=""; }); }
+    state.data.modelos=(state.data.modelos||[]).concat([m]);
+    closeModal(); touch(); renderModels(); toast("“"+n+"” guardada nas semanas frequentes.");
+  };
+}
+function useModel(id){
+  var m=(state.data.modelos||[]).filter(function(x){ return x.id===id; })[0]; if(!m) return;
+  var cur=week();
+  openModal('<h3>Usar “'+esc(m.nome)+'”</h3>'
+    +(cur? '<label class="choice"><input type="radio" name="mdDest" value="cur" checked><div><b>Na semana aberta ('+esc(weekLabel(cur))+')</b><span>Troca as colunas e os textos por esta semana frequente. As datas e as aulas mantêm-se.</span></div></label>' : '')
+    +'<label class="choice"><input type="radio" name="mdDest" value="new"'+(cur?"":" checked")+'><div><b>Numa semana nova</b><span>Cria a semana seguinte já com este esqueleto.</span></div></label>'
+    +'<p>Se não gostares, carrega na seta <b>↶</b>.</p>'
+    +'<div class="modal-foot"><button class="btn btn-ghost" type="button" data-close>Cancelar</button><button class="btn btn-primary" type="button" id="mdUse">Usar</button></div>');
+  $("mdUse").onclick=function(){
+    var dest=document.querySelector('input[name=mdDest]:checked').value;
+    if(dest==="cur"){ applyModelToWeek(m, cur); closeModal(); touch(); renderMain(); renderWeeks(); toast("Semana frequente aplicada."); }
+    else { closeModal(); openNewWeek(m.id); }
+  };
+}
+function editModel(id){
+  var m=(state.data.modelos||[]).filter(function(x){ return x.id===id; })[0]; if(!m) return;
+  openModal('<h3>Semana frequente</h3><div class="field"><label for="mdR">Nome</label><input id="mdR" value="'+esc(m.nome)+'"></div>'
+    +'<div class="modal-foot"><button class="btn btn-danger" type="button" id="mdDel" style="margin-right:auto">Apagar</button><button class="btn btn-ghost" type="button" data-close>Cancelar</button><button class="btn btn-primary" type="button" id="mdSave">Guardar</button></div>');
+  $("mdSave").onclick=function(){ var n=$("mdR").value.trim(); if(n) m.nome=n; closeModal(); touch(); renderModels(); };
+  $("mdDel").onclick=function(){ state.data.modelos=state.data.modelos.filter(function(x){ return x.id!==id; }); closeModal(); touch(); renderModels(); toast("Semana frequente apagada."); };
+}
+
+/* =========================================================
+   PROCURAR SEMANA (por data)
+   ========================================================= */
+function openFindWeek(){
+  var ws=sortedWeeks();
+  openModal('<h3>Procurar semana</h3>'
+    +'<div class="grid2"><div class="field"><label for="fwDate">Escolhe um dia</label><input type="date" id="fwDate"></div>'
+    +'<div class="field"><label for="fwTxt">Ou escreve (data ou n.º da aula)</label><input id="fwTxt" placeholder="Ex.: 21.09 ou 15"></div></div>'
+    +'<div class="fw-list" id="fwList"></div>'
+    +'<div class="modal-foot"><button class="btn btn-ghost" type="button" data-close>Fechar</button></div>');
+  function draw(list, msg){
+    $("fwList").innerHTML=(msg? '<div class="side-help">'+msg+'</div>' : '')+(list.length? list.map(function(s){
+      return '<button type="button" class="week-item" data-fw="'+esc(s.id)+'"><span class="w1">'+esc(weekLabel(s))+'</span><span class="w2">'+esc(aulaRange(s)||"—")+'</span></button>'; }).join("") : '<div class="side-help">Nenhuma semana encontrada.</div>');
+    $("fwList").querySelectorAll("[data-fw]").forEach(function(b){ b.onclick=function(){ state.semanaId=b.getAttribute("data-fw"); state.view="semana"; closeModal(); renderWeeks(); renderMain(); scrollWeekIntoView(); }; });
+  }
+  draw(ws, ws.length+" semana(s), da mais recente para a mais antiga.");
+  $("fwDate").addEventListener("change", function(e){
+    var d=e.target.value; if(!d){ draw(ws); return; }
+    var hit=ws.filter(function(s){ var a=firstDate(s), b=lastDate(s); return a && d>=addDays(a,-((parseISO(a).getDay()+6)%7)) && d<=addDays(b,6-((parseISO(b).getDay()+6)%7)); });
+    if(hit.length===1){ state.semanaId=hit[0].id; state.view="semana"; closeModal(); renderWeeks(); renderMain(); scrollWeekIntoView(); toast("Semana de "+weekLabel(hit[0])+"."); return; }
+    if(hit.length) return draw(hit);
+    var near=ws.slice().sort(function(a,b){ return Math.abs(parseISO(firstDate(a))-parseISO(d))-Math.abs(parseISO(firstDate(b))-parseISO(d)); }).slice(0,3);
+    draw(near, "Não há semana nesse dia. As mais próximas:");
+  });
+  $("fwTxt").addEventListener("input", function(e){
+    var q=e.target.value.trim().replace(/\//g,"."); if(!q){ draw(ws); return; }
+    draw(ws.filter(function(s){ var hay=weekLabel(s)+" "+s.dias.map(function(d){ return fmtPt(d.data)+" "+d.aula+" "+d.nome; }).join(" "); return hay.toLowerCase().indexOf(q.toLowerCase())>-1; }));
+  });
+  setTimeout(function(){ if($("fwDate")) $("fwDate").focus(); }, 50);
+}
+function scrollWeekIntoView(){ var a=document.querySelector(".week-item.active"); if(a) a.scrollIntoView({block:"nearest"}); }
+
+/* menu "Documento": importar, Word, PDF/imprimir */
+function openDocMenu(){
+  var has=!!week();
+  openModal('<h3>Documento</h3><div class="doc-menu">'
+    +'<button type="button" class="dm" id="dmImp"><span class="dm-i">📥</span><span><b>Importar de Word</b><small>Trazer uma ou mais páginas de um .docx</small></span></button>'
+    +'<button type="button" class="dm" id="dmWord"'+(has?"":" disabled")+'><span class="dm-i">📝</span><span><b>Guardar em Word</b><small>Descarregar .docx (e cópia na Drive)</small></span></button>'
+    +'<button type="button" class="dm" id="dmPdf"'+(has?"":" disabled")+'><span class="dm-i">🖨️</span><span><b>PDF ou imprimir</b><small>Abre a janela de impressão; escolhe “Guardar como PDF” para PDF</small></span></button>'
+    +'</div><div class="modal-foot"><button class="btn btn-ghost" type="button" data-close>Fechar</button></div>');
+  $("dmImp").onclick=function(){ closeModal(); openImport(); };
+  $("dmWord").onclick=function(){ closeModal(); openExport("docx"); };
+  $("dmPdf").onclick=function(){ closeModal(); openExport("pdf"); };
+}
+
+function renderSnips(){
+  $("snipList").innerHTML = state.data.textos.map(function(t){
+    return '<div class="snip"><span class="t" title="'+esc(t.titulo)+'">'+esc(t.titulo)+'</span>'
+      +'<button class="icon-btn" type="button" data-snip-ins="'+esc(t.id)+'" title="Inserir no cursor">Inserir</button>'
+      +'<button class="icon-btn" type="button" data-snip-edit="'+esc(t.id)+'" title="Editar">✎</button></div>';
+  }).join("") || '<div class="side-help">Sem textos guardados.</div>';
+}
+function renderMain(){
+  $("navSemana").classList.toggle("active", state.view==="semana");
+  $("navDefs").classList.toggle("active", state.view==="defs");
+  if($("btnCfg")) $("btnCfg").classList.toggle("on", state.view==="defs");
+  if(state.view==="defs") renderDefs(); else renderWeek();
+}
+
+/* =========================================================
+   RENDER — SEMANA (a folha editável)
+   ========================================================= */
+function bannersHTML(){
+  var d=state.data.definicoes, h="";
+  if(MOVED_TO) h+='<div class="banner warn"><span class="grow"><b>A aplicação mudou de endereço.</b> Em Configurações → Cópias, carrega em “Exportar tudo” e depois abre o novo endereço e usa “Importar cópia”.</span><a class="btn btn-primary btn-sm" href="'+esc(MOVED_TO)+'" target="_blank" rel="noopener">Abrir o novo endereço</a></div>';
+  if(!d.escola || !d.logo) h+='<div class="banner"><span class="grow">Falta '+(!d.escola&&!d.logo? "o nome e o logótipo da escola" : (!d.escola? "o nome da escola" : "o logótipo da escola"))+' no cabeçalho.</span><button class="btn btn-ghost btn-sm" type="button" data-nav="defs">Preencher dados</button></div>';
+  if(state.drive.mismatch) h+='<div class="banner warn"><span class="grow">Entraste na Google com <b>'+esc(state.drive.owner)+'</b>, mas escolheste <b>'+esc(d.conta)+'</b>. Não gravo nada na Drive até resolveres isto nas definições.</span><button class="btn btn-ghost btn-sm" type="button" data-nav="defs">Ver definições</button></div>';
+  return h;
+}
+function renderWeek(){
+  var s=week(), main=$("main");
+  if(!s){
+    main.innerHTML=bannersHTML()+'<div class="panel"><h2>Começa a primeira semana</h2><p>Cria uma semana nova e escreve a planificação de cada dia diretamente na tabela. As semanas seguintes podem copiar a anterior, já com as datas e o número das aulas atualizados.</p><div class="row"><button class="btn btn-primary" type="button" id="emptyNew">+ Nova semana</button></div></div>';
+    $("emptyNew").onclick=openNewWeek; return;
+  }
+  state.semanaId=s.id;
+  var d=state.data.definicoes, n=s.dias.length;
+  var h=bannersHTML();
+  h+='<div class="tools" role="toolbar" aria-label="Ferramentas">'
+    +'<div class="grp"><button class="fmt" type="button" data-fmt="bold" title="Negrito"><b>N</b></button><button class="fmt" type="button" data-fmt="italic" title="Itálico"><i>I</i></button><button class="fmt" type="button" data-fmt="underline" title="Sublinhado"><u>S</u></button><span class="color-wrap"><button class="fmt color-btn" type="button" id="colorBtn" title="Cor do texto" aria-haspopup="true"><span class="ca">A</span><span class="cbar" id="colorBar"></span></button><div class="palette" id="palette" hidden>'+PALETTE.map(function(c){ return '<button type="button" class="sw" data-color="'+c[0]+'" title="'+c[1]+'" style="background:'+c[0]+'"></button>'; }).join("")+'<div class="pal-row"><button type="button" class="pal-x" data-color="">Sem cor</button><label class="pal-custom" title="Escolher outra cor">Outra… <input type="color" id="colorCustom" value="#1f4f8f"></label></div></div></span><button class="fmt" type="button" data-fmt="removeFormat" title="Limpar formatação do texto selecionado" style="font-weight:500;padding:0 7px">Limpar</button></div>'
+    +'<span class="sep"></span>'
+    +'<div class="grp"><button class="btn btn-ghost btn-sm" type="button" id="addCol" title="Acrescentar um dia (coluna)">+ Coluna</button><button class="btn btn-ghost btn-sm" type="button" id="addRow" title="Acrescentar uma linha à tabela">+ Linha</button><button class="btn btn-ghost btn-sm" type="button" id="renum" title="Renumerar as aulas seguidas a partir da 1.ª coluna">Nº aulas</button></div>'
+    +'<span class="sep"></span>'
+    +'<div class="grp fsbox" title="Tamanho da letra"><button class="fmt" type="button" id="fsDown" title="Letra mais pequena">A−</button><span id="fsVal">'+String(fsOf()).replace(".",",")+' pt</span><button class="fmt" type="button" id="fsUp" title="Letra maior">A+</button></div>'
+    +'<label class="grp" style="gap:5px;font-size:13px" title="Reduz a letra automaticamente no Word e no PDF para a semana caber numa folha"><input type="checkbox" id="fitChk"'+(state.data.definicoes.caberPagina?" checked":"")+'> Ajustar</label>'
+    +'<button class="btn btn-ghost btn-sm" type="button" id="compact" title="Tira as linhas em branco desta semana">Compactar</button>'
+    +'<span class="fit" id="fitInfo">…</span>'
+    +'<span class="grow"></span>'
+    +'<button class="icon-btn del trash" type="button" id="delWeek" title="Eliminar esta semana" aria-label="Eliminar esta semana">🗑</button>'
+    +'</div>';
+
+  h+='<div class="sheet-wrap"><div class="sheet" id="sheet">';
+  h+='<div class="doc-head" data-nav="defs" title="Clica para alterar o cabeçalho">'
+    +'<div class="doc-logo'+(d.logo?" has":"")+'">'+(d.logo? '<img alt="Logótipo" src="'+d.logo+'">' : 'Logótipo<br>da escola')+'</div>'
+    +'<div><div class="doc-escola">'+(d.escola? esc(d.escola) : '<span class="ph">Nome da escola</span>')+'</div>'+(d.agrupamento? '<div class="doc-agr">'+esc(d.agrupamento)+'</div>':"")+'</div>'
+    +'<div class="doc-right"><b>'+esc(d.titulo||"Planificação Semanal")+'</b><br>'+esc(d.turma||"")+'<br>Ano letivo '+(d.anoLetivo? esc(d.anoLetivo) : '<span class="ph">por preencher</span>')+'</div>'
+    +'</div>';
+  h+='<div class="week-title">Semana de '+esc(weekLabel(s))+'</div>';
+
+  h+='<table class="plan"><colgroup>'+s.dias.map(function(){return "<col>";}).join("")+'</colgroup><thead><tr>';
+  s.dias.forEach(function(di,i){
+    h+='<th><div class="col-tools">'
+      +'<span><button class="icon-btn" type="button" data-colmove="'+i+':-1" title="Mover para a esquerda"'+(i===0?" disabled":"")+'>◀</button><button class="icon-btn" type="button" data-colmove="'+i+':1" title="Mover para a direita"'+(i===n-1?" disabled":"")+'>▶</button></span>'
+      +'<select data-estado="'+i+'" title="Marcar o dia">'+ESTADOS.map(function(e){ return '<option value="'+esc(e)+'"'+(e===(di.estado||"")?" selected":"")+'>'+(e||"Dia normal")+'</option>'; }).join("")+'</select>'
+      +'<span><button class="icon-btn" type="button" data-coldup="'+i+'" title="Duplicar coluna">⧉</button><button class="icon-btn del" type="button" data-coldel="'+i+'" title="Remover coluna">✕</button></span>'
+      +'</div>'
+      +'<input class="day-name" data-dayname="'+i+'" value="'+esc(di.nome)+'" aria-label="Dia">'
+      +'<input class="day-date" type="date" data-daydate="'+i+'" value="'+esc(di.data)+'" aria-label="Data">'
+      +'</th>';
+  });
+  h+='</tr></thead><tbody><tr class="aula-row">';
+  s.dias.forEach(function(di,i){ h+='<td><div class="aula-wrap">Aula nº: <input class="day-aula" data-dayaula="'+i+'" value="'+esc(di.aula)+'" inputmode="numeric" aria-label="Número da aula"></div></td>'; });
+  h+='</tr>';
+  s.linhas.forEach(function(L,li){
+    var showBand = s.linhas.length>1 || L.titulo;
+    if(showBand){
+      h+='<tr class="band"><td colspan="'+n+'"><div class="band-wrap"><input data-lineTitle="'+li+'" value="'+esc(L.titulo)+'" placeholder="Título desta linha (opcional, ex.: Manhã)">'
+        +(s.linhas.length>1? '<button class="icon-btn" type="button" data-lineup="'+li+'" title="Subir"'+(li===0?" disabled":"")+'>▲</button><button class="icon-btn del" type="button" data-linedel="'+li+'" title="Remover linha">✕</button>' : "")
+        +'</div></td></tr>';
+    }
+    h+='<tr>';
+    s.dias.forEach(function(di,i){
+      h+='<td class="cell'+(di.estado?" estado":"")+'">'+(di.estado&&li===0? '<div class="estado-tag">'+esc(di.estado)+'</div>' : "")
+        +'<div class="ed" contenteditable="true" spellcheck="true" lang="pt-PT" data-cell="'+i+':'+esc(L.id)+'" data-ph="Escreve ou cola aqui…"></div>'
+        +'<button class="cell-copy" type="button" data-cellcopy="'+i+':'+esc(L.id)+'" title="Copiar este texto para outros dias">copiar ⇉</button></td>';
+    });
+    h+='</tr>';
+  });
+  h+='</tbody></table>';
+
+  if(s.notas.length){
+    h+='<div class="notes" style="grid-template-columns:'+s.notas.map(function(){return "minmax(0,1fr)";}).join(" ")+'">';
+    s.notas.forEach(function(nt,k){
+      h+='<div class="note"><div class="note-head"><input data-notetitle="'+k+'" value="'+esc(nt.titulo)+'" placeholder="Título do bloco"><button class="icon-btn del" type="button" data-notedel="'+k+'" title="Remover bloco">✕</button></div>'
+        +'<div class="ed" contenteditable="true" spellcheck="true" lang="pt-PT" data-note="'+k+'" data-ph="Escreve ou cola aqui…"></div></div>';
+    });
+    h+='</div>';
+  }
+  h+='<div class="sheet-add"><button class="btn btn-ghost btn-sm" type="button" id="addNote">+ Bloco no fundo (ex.: Trabalho de Casa)</button></div>';
+  h+='<div class="doc-foot" data-nav="defs" title="Clica para alterar o rodapé"><span>Docente: '+(d.docente? esc(d.docente) : '<span class="ph">nome da docente</span>')+'</span><span>Ano letivo '+esc(d.anoLetivo||"")+'</span><span>Página 1 de 1</span></div>';
+  h+='</div></div>';
+  main.innerHTML=h;
+
+  // ligar editores
+  main.querySelectorAll("[data-cell]").forEach(function(el){
+    var p=el.getAttribute("data-cell").split(":"), i=+p[0], lid=p[1];
+    bindEditor(el, function(){ return s.dias[i].cel[lid]||""; }, function(v){ s.dias[i].cel[lid]=v; });
+  });
+  main.querySelectorAll("[data-note]").forEach(function(el){
+    var k=+el.getAttribute("data-note");
+    bindEditor(el, function(){ return s.notas[k].html||""; }, function(v){ s.notas[k].html=v; });
+  });
+  bindWeekControls(s);
+}
+
+var PALETTE=[["#111111","Preto"],["#5f6368","Cinzento"],["#c0392b","Vermelho"],["#e67e22","Laranja"],["#b7950b","Amarelo-torrado"],["#1e8449","Verde"],["#27ae60","Verde-claro"],["#16a085","Verde-água"],["#1f4f8f","Azul"],["#2e86c1","Azul-claro"],["#7d3c98","Roxo"],["#c2185b","Rosa"],["#6e4b2a","Castanho"],["#0b5394","Azul-escuro"],["#990000","Bordô"],["#bf9000","Dourado"]];
+function applyColor(c){
+  if(!restoreRange()){ toast("Seleciona primeiro o texto numa célula."); return; }
+  var sel=window.getSelection();
+  if(sel.isCollapsed){ toast("Seleciona o texto que queres pintar."); }
+  document.execCommand("styleWithCSS", false, true);
+  document.execCommand("foreColor", false, c||"#111111");
+  document.execCommand("styleWithCSS", false, false);
+  state.lastEd.dispatchEvent(new Event("input"));
+  rememberRange();
+  state.lastColor=c||""; var bar=$("colorBar"); if(bar) bar.style.background=state.lastColor||"#111111";
+}
+function bindWeekControls(s){
+  var main=$("main");
+  var pal=$("palette"), cbtn=$("colorBtn");
+  $("colorBar").style.background=state.lastColor||"#c0392b";
+  cbtn.addEventListener("mousedown", function(e){ e.preventDefault(); });
+  cbtn.addEventListener("click", function(e){ e.stopPropagation(); var r=cbtn.getBoundingClientRect(); pal.style.top=(r.bottom+6)+"px"; pal.style.left=Math.max(8, Math.min(r.left, window.innerWidth-260))+"px"; pal.hidden=!pal.hidden; });
+  pal.querySelectorAll("[data-color]").forEach(function(b){
+    b.addEventListener("mousedown", function(e){ e.preventDefault(); });
+    b.addEventListener("click", function(e){ e.stopPropagation(); pal.hidden=true; applyColor(b.getAttribute("data-color")); });
+  });
+  $("colorCustom").addEventListener("change", function(e){ pal.hidden=true; applyColor(e.target.value); });
+  $("colorCustom").addEventListener("mousedown", function(e){ e.stopPropagation(); });
+  document.addEventListener("click", function(e){ if(pal && !pal.hidden && !e.target.closest(".color-wrap")) pal.hidden=true; });
+  main.querySelectorAll("[data-fmt]").forEach(function(b){
+    b.addEventListener("mousedown", function(e){ e.preventDefault(); });
+    b.addEventListener("click", function(){ fmt(b.getAttribute("data-fmt")); });
+  });
+  main.querySelectorAll("[data-dayname]").forEach(function(inp){ inp.addEventListener("input", function(){ s.dias[+inp.getAttribute("data-dayname")].nome=inp.value; touch(); }); });
+  main.querySelectorAll("[data-dayaula]").forEach(function(inp){ inp.addEventListener("input", function(){ s.dias[+inp.getAttribute("data-dayaula")].aula=inp.value.trim(); touch(); renderWeeks(); }); });
+  main.querySelectorAll("[data-daydate]").forEach(function(inp){ inp.addEventListener("change", function(){
+    var di=s.dias[+inp.getAttribute("data-daydate")];
+    var antigo=weekdayName(di.data);
+    di.data=inp.value;
+    if(!di.nome || di.nome===antigo) di.nome=weekdayName(inp.value);
+    touch(); renderWeek(); renderWeeks();
+  }); });
+  main.querySelectorAll("[data-estado]").forEach(function(sel){ sel.addEventListener("change", function(){ s.dias[+sel.getAttribute("data-estado")].estado=sel.value; touch(); renderWeek(); }); });
+  main.querySelectorAll("[data-colmove]").forEach(function(b){ b.addEventListener("click", function(){
+    var p=b.getAttribute("data-colmove").split(":"), i=+p[0], j=i+(+p[1]);
+    if(j<0||j>=s.dias.length) return;
+    var t=s.dias[i]; s.dias[i]=s.dias[j]; s.dias[j]=t; touch(); renderWeek();
+  }); });
+  main.querySelectorAll("[data-coldup]").forEach(function(b){ b.addEventListener("click", function(){
+    var i=+b.getAttribute("data-coldup"), c=JSON.parse(JSON.stringify(s.dias[i])); c.id=uid("d");
+    s.dias.splice(i+1,0,c); touch(); renderWeek(); toast("Coluna duplicada.");
+  }); });
+  main.querySelectorAll("[data-coldel]").forEach(function(b){ b.addEventListener("click", function(){
+    var i=+b.getAttribute("data-coldel");
+    if(s.dias.length<=1){ toast("A semana precisa de pelo menos uma coluna."); return; }
+    askConfirm("Remover a coluna de "+(s.dias[i].nome||"este dia")+"?", "O texto desta coluna desaparece da planificação.", "Remover", function(){ s.dias.splice(i,1); touch(); renderWeek(); });
+  }); });
+  main.querySelectorAll("[data-linetitle]").forEach(function(inp){ inp.addEventListener("input", function(){ s.linhas[+inp.getAttribute("data-linetitle")].titulo=inp.value; touch(); }); });
+  main.querySelectorAll("[data-lineup]").forEach(function(b){ b.addEventListener("click", function(){
+    var i=+b.getAttribute("data-lineup"); if(i<1) return; var t=s.linhas[i]; s.linhas[i]=s.linhas[i-1]; s.linhas[i-1]=t; touch(); renderWeek();
+  }); });
+  main.querySelectorAll("[data-linedel]").forEach(function(b){ b.addEventListener("click", function(){
+    var i=+b.getAttribute("data-linedel"), L=s.linhas[i];
+    askConfirm("Remover a linha “"+(L.titulo||"sem título")+"”?", "O texto desta linha em todos os dias desaparece.", "Remover", function(){
+      s.linhas.splice(i,1); s.dias.forEach(function(di){ delete di.cel[L.id]; }); touch(); renderWeek();
+    });
+  }); });
+  main.querySelectorAll("[data-notetitle]").forEach(function(inp){ inp.addEventListener("input", function(){ s.notas[+inp.getAttribute("data-notetitle")].titulo=inp.value; touch(); }); });
+  main.querySelectorAll("[data-notedel]").forEach(function(b){ b.addEventListener("click", function(){
+    var k=+b.getAttribute("data-notedel");
+    askConfirm("Remover o bloco “"+(s.notas[k].titulo||"sem título")+"”?", "O texto deste bloco desaparece desta semana.", "Remover", function(){ s.notas.splice(k,1); touch(); renderWeek(); });
+  }); });
+  main.querySelectorAll("[data-cellcopy]").forEach(function(b){
+    b.addEventListener("mousedown", function(e){ e.preventDefault(); });
+    b.addEventListener("click", function(){ var p=b.getAttribute("data-cellcopy").split(":"); openCopyCell(s, +p[0], p[1]); });
+  });
+  $("addCol").onclick=function(){
+    var last=s.dias[s.dias.length-1];
+    var data= last&&last.data? addDays(last.data,1) : "";
+    var aula= last&&!isNaN(parseInt(last.aula,10))? String(parseInt(last.aula,10)+1) : "";
+    s.dias.push({id:uid("d"), nome:weekdayName(data), data:data, aula:aula, estado:"", cel:{}});
+    touch(); renderWeek();
+  };
+  $("addRow").onclick=function(){ s.linhas.push({id:uid("L"), titulo:""}); touch(); renderWeek(); toast("Linha nova no fundo da tabela. Dá-lhe um título, se quiseres."); };
+  $("addNote").onclick=function(){ s.notas.push({id:uid("n"), titulo:"Trabalho de Casa:", html:""}); touch(); renderWeek(); };
+  $("fsDown").onclick=function(){ setFs(fsOf()-0.5); };
+  $("fsUp").onclick=function(){ setFs(fsOf()+0.5); };
+  $("fitChk").onchange=function(e){ state.data.definicoes.caberPagina=e.target.checked; touch(); updateFit(); };
+  $("compact").onclick=function(){ openCompact(s); };
+  applyDocFont(); updateFit();
+  $("sheet").addEventListener("input", function(){ clearTimeout(state.fitT); state.fitT=setTimeout(updateFit, 700); });
+  $("renum").onclick=function(){ renumber(s); touch(); renderWeek(); renderWeeks(); toast("Aulas renumeradas."); };
+  $("delWeek").onclick=function(){
+    askConfirm("Eliminar a semana de "+weekLabel(s)+"?", "Esta semana sai da planificação. A cópia que já estiver na Drive mantém-se até à próxima gravação.", "Eliminar", function(){
+      var p=plan(); p.semanas=p.semanas.filter(function(x){return x.id!==s.id;}); state.semanaId=null; touch(); renderWeeks(); renderMain();
+    });
+  };
+
+}
+
+function applyDocFont(){
+  var sh=$("sheet"); if(!sh) return;
+  sh.style.setProperty("--doc-fs", (fsOf()*96/72).toFixed(2)+"px");
+  sh.style.setProperty("--doc-lh", String(lhOf()+0.1));
+}
+function setFs(v){
+  v=Math.max(6, Math.min(16, Math.round(v*2)/2));
+  state.data.definicoes.tamanhoLetra=v; touch();
+  if($("fsVal")) $("fsVal").textContent=String(v).replace(".",",")+" pt";
+  applyDocFont(); updateFit();
+}
+function updateFit(){
+  var el=$("fitInfo"), s=week(); if(!el||!s) return;
+  var r=fitWeek(s), d=state.data.definicoes;
+  if(r.fits && r.fs===fsOf()){ el.className="fit ok"; el.textContent="✓ 1 folha"; el.title="A semana cabe numa folha."; }
+  else if(r.fits){ el.className="fit ok"; el.textContent="✓ 1 folha · "+String(r.fs).replace(".",",")+" pt"; el.title="Cabe numa folha: no Word e no PDF a letra desta semana desce para "+String(r.fs).replace(".",",")+" pt."; }
+  else { el.className="fit bad"; el.textContent= "✗ +1 folha"; el.title="Experimenta “Compactar”, encurta frases, ou ativa “Caber numa folha”."; }
+}
+function openCompact(s){
+  openModal('<h3>Compactar a semana</h3><p>Ganha espaço sem perder texto.</p>'
+    +'<label class="choice"><input type="checkbox" id="cpBlank" checked><div><b>Tirar as linhas em branco</b><span>As linhas vazias entre disciplinas desaparecem.</span></div></label>'
+    +'<label class="choice"><input type="checkbox" id="cpJoin"><div><b>Juntar os tópicos seguidos na mesma linha</b><span>“- Receção dos alunos;” e “- Marcação das presenças;” ficam um a seguir ao outro.</span></div></label>'
+    +'<label class="choice"><input type="checkbox" id="cpLh" checked><div><b>Espaço entre linhas apertado</b><span>Vale para o ecrã, o Word e o PDF.</span></div></label>'
+    +'<div class="modal-foot"><button class="btn btn-ghost" type="button" data-close>Cancelar</button><button class="btn btn-primary" type="button" id="cpGo2">Compactar</button></div>');
+  $("cpGo2").onclick=function(){
+    var blank=$("cpBlank").checked, join=$("cpJoin").checked;
+    function fix(html){
+      var ps=htmlToParas(html||"");
+      if(blank) ps=ps.filter(function(rs){ return rs.some(function(r){ return r.t.trim(); }); });
+      var lines=ps.map(function(rs){ return rs.map(function(r){ var t=esc(r.t); if(r.u) t="<u>"+t+"</u>"; if(r.i) t="<i>"+t+"</i>"; if(r.b) t="<b>"+t+"</b>"; if(r.color) t='<span style="color:#'+r.color+'">'+t+'</span>'; return t; }).join(""); });
+      if(join){
+        var out=[];
+        lines.forEach(function(l){
+          var pl=l.replace(/<[^>]+>/g,"").trim();
+          if(/^[-•]/.test(pl) && out.length && /^[-•]/.test(out[out.length-1].replace(/<[^>]+>/g,"").trim())) out[out.length-1]+=" "+l; else out.push(l);
+        });
+        lines=out;
+      }
+      return lines.map(function(l){ return "<div>"+(l.replace(/<[^>]+>/g,"").trim()? l : "<br>")+"</div>"; }).join("");
+    }
+    s.dias.forEach(function(di){ Object.keys(di.cel).forEach(function(k){ di.cel[k]=fix(di.cel[k]); }); });
+    s.notas.forEach(function(nt){ nt.html=fix(nt.html); });
+    if($("cpLh").checked) state.data.definicoes.entrelinha=1;
+    closeModal(); touch(); renderWeek(); toast("Semana compactada.");
+  };
+}
+
+/* =========================================================
+   IMPORTAR DE UM DOCUMENTO WORD (.docx)
+   Cada tabela de planificação = uma "página"/semana.
+   Documentos sem tabela: as páginas são separadas pelas quebras de página.
+   ========================================================= */
+var W_NS="http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+function readZipEntry(buf, wanted){
+  var dv=new DataView(buf), u8=new Uint8Array(buf), eocd=-1;
+  for(var i=buf.byteLength-22;i>=Math.max(0,buf.byteLength-66000);i--){ if(dv.getUint32(i,true)===0x06054b50){ eocd=i; break; } }
+  if(eocd<0) return Promise.reject(new Error("O ficheiro não é um documento Word (.docx) válido."));
+  var n=dv.getUint16(eocd+10,true), off=dv.getUint32(eocd+16,true), dec=new TextDecoder();
+  for(var k=0;k<n;k++){
+    var method=dv.getUint16(off+10,true), csize=dv.getUint32(off+20,true), nlen=dv.getUint16(off+28,true), xlen=dv.getUint16(off+30,true), clen=dv.getUint16(off+32,true), loff=dv.getUint32(off+42,true);
+    var name=dec.decode(u8.subarray(off+46, off+46+nlen));
+    if(name===wanted){
+      var lnl=dv.getUint16(loff+26,true), lxl=dv.getUint16(loff+28,true), start=loff+30+lnl+lxl, data=u8.slice(start, start+csize);
+      if(method===0) return Promise.resolve(dec.decode(data));
+      if(method!==8) return Promise.reject(new Error("Compressão do documento não suportada."));
+      if(typeof DecompressionStream==="undefined") return Promise.reject(new Error("Este navegador é antigo demais para ler documentos Word. Usa o Chrome, o Edge ou o Safari atualizados."));
+      var ds=new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+      return new Response(ds).text();
+    }
+    off+=46+nlen+xlen+clen;
+  }
+  return Promise.reject(new Error("O ficheiro não parece um documento Word (.docx)."));
+}
+function wEl(node, name){ var r=[]; for(var c=node.firstChild;c;c=c.nextSibling){ if(c.nodeType===1 && c.localName===name) r.push(c); } return r; }
+function wAttr(el, name){ return el? (el.getAttributeNS(W_NS,name) || el.getAttribute("w:"+name)) : null; }
+function wOn(rPr, name){ var e=rPr && wEl(rPr,name)[0]; if(!e) return false; var v=wAttr(e,"val"); return !(v==="0"||v==="false"||v==="none"); }
+/* parágrafo -> {html, text, pageBreakBefore} */
+function wPara(p){
+  var html="", text="", brk=false, brkAfter=false, rPrP=null;
+  function runs(parent){
+    for(var c=parent.firstChild;c;c=c.nextSibling){
+      if(c.nodeType!==1) continue;
+      if(c.localName==="r"){
+        var rPr=wEl(c,"rPr")[0], b=wOn(rPr,"b"), i=wOn(rPr,"i"), u=wOn(rPr,"u"), col=rPr&&wEl(rPr,"color")[0], cv=col? wAttr(col,"val") : "";
+        var t="";
+        for(var x=c.firstChild;x;x=x.nextSibling){
+          if(x.nodeType!==1) continue;
+          if(x.localName==="t") t+=x.textContent;
+          else if(x.localName==="tab") t+=" ";
+          else if(x.localName==="br"){ if(wAttr(x,"type")==="page"){ if((text+t).trim()) brkAfter=true; else brk=true; } else t+="\n"; }
+          else if(x.localName==="lastRenderedPageBreak"){ if(!(text+t).trim()) brk=true; }
+        }
+        if(!t) continue;
+        text+=t;
+        var parts=t.split("\n").map(function(seg){ var e=esc(seg); if(!e) return ""; if(u) e="<u>"+e+"</u>"; if(i) e="<i>"+e+"</i>"; if(b) e="<b>"+e+"</b>"; if(cv && /^[0-9A-Fa-f]{6}$/.test(cv) && !/^0{6}$/.test(cv)) e='<span style="color:#'+cv.toLowerCase()+'">'+e+'</span>'; return e; });
+        html+=parts.join("<br>");
+      } else if(c.localName==="hyperlink"||c.localName==="smartTag"||c.localName==="ins"||c.localName==="sdt"||c.localName==="sdtContent"||c.localName==="fldSimple") runs(c);
+    }
+  }
+  var pPr=wEl(p,"pPr")[0]; if(pPr && wEl(pPr,"pageBreakBefore").length) brk=true;
+  runs(p);
+  var num=pPr && wEl(pPr,"numPr").length;
+  if(num && text.trim()) html="• "+html;
+  return {html:html.replace(/(<\/b>)(<b>)/g,""), text:text, brk:brk, brkAfter:brkAfter};
+}
+function cellHTML(tc){
+  var lines=[];
+  (function walk(n){ for(var c=n.firstChild;c;c=c.nextSibling){ if(c.nodeType!==1) continue; if(c.localName==="p"){ var pp=wPara(c); lines.push(pp.text.trim()? pp.html : ""); } else if(c.localName==="tbl"||c.localName==="tr"||c.localName==="tc"||c.localName==="sdt"||c.localName==="sdtContent") walk(c); } })(tc);
+  while(lines.length && !lines[0]) lines.shift();
+  while(lines.length && !lines[lines.length-1]) lines.pop();
+  return lines.map(function(l){ return "<div>"+(l||"<br>")+"</div>"; }).join("");
+}
+function plainOf(html){ var d=document.createElement("div"); d.innerHTML=(html||"").replace(/<\/div>/g," </div>"); return (d.textContent||"").replace(/\s+/g," ").trim(); }
+var WD_RE=/(segunda|ter[çc]a|quarta|quinta|sexta|s[áa]bado|domingo)(-feira)?/i;
+function parseDate(t){
+  var m=t.match(/(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{2,4})/); if(!m) return "";
+  var y=+m[3]; if(y<100) y+=2000;
+  return y+"-"+pad(+m[2])+"-"+pad(+m[1]);
+}
+function normDay(t){ var m=(t||"").toLowerCase().match(WD_RE); if(!m) return ""; return m[1].replace("terca","terça").replace("sabado","sábado")+(/s[áa]bado|domingo/.test(m[1])?"":"-feira"); }
+/* tabela Word -> semana da aplicação (ou null se não parecer uma planificação) */
+function tableToWeek(tbl){
+  var rows=wEl(tbl,"tr").map(function(tr){
+    var col=0;
+    return wEl(tr,"tc").map(function(tc){
+      var pr=wEl(tc,"tcPr")[0], gs=pr&&wEl(pr,"gridSpan")[0], vm=pr&&wEl(pr,"vMerge")[0];
+      var span=gs? (+wAttr(gs,"val")||1) : 1, vmv=vm? (wAttr(vm,"val")||"continue") : "";
+      var cell={start:col, span:span, cont:vmv==="continue", html:cellHTML(tc)}; cell.text=plainOf(cell.html); col+=span; return cell;
+    });
+  });
+  var hi=-1;
+  for(var r=0;r<rows.length && hi<0;r++){ var hits=rows[r].filter(function(c){ return WD_RE.test(c.text); }).length; if(hits>=2 || (hits>=1 && rows[r].length===1)) hi=r; }
+  if(hi<0) return null;
+  var days=rows[hi].map(function(c){ return {start:c.start, end:c.start+c.span, nome:normDay(c.text)||c.text.split(" ")[0], data:parseDate(c.text), aula:"", estado:"", parts:[]}; });
+  var aulaM=rows[hi].length && rows[hi][0].text.match(/aula\s*n[.ºo°]*\s*:?\s*(\d+)/i);
+  if(aulaM) rows[hi].forEach(function(c,i){ var m=c.text.match(/aula\s*n[.ºo°]*\s*:?\s*(\d+)/i); if(m) days[i].aula=m[1]; });
+  var notas=[];
+  function dayOf(c){ for(var i=0;i<days.length;i++){ if(c.start>=days[i].start && c.start<days[i].end) return i; } return -1; }
+  for(var r2=hi+1;r2<rows.length;r2++){
+    var row=rows[r2];
+    if(row.every(function(c){ return /aula\s*n/i.test(c.text) || !c.text; }) && row.some(function(c){ return /aula\s*n/i.test(c.text); })){
+      row.forEach(function(c){ var i=dayOf(c), m=c.text.match(/(\d+)/); if(i>-1 && m) days[i].aula=m[1]; }); continue;
+    }
+    var wide=row.filter(function(c){ var i=dayOf(c); return i>-1 && c.start+c.span>days[i].end; });
+    if(wide.length && wide.length===row.filter(function(c){ return c.text; }).length){
+      row.forEach(function(c){ if(!c.text) return; var lines=c.html.match(/<div>[\s\S]*?<\/div>/g)||[], first=plainOf(lines[0]||"");
+        var titled=lines.length>1 && first.length<70 && (/:\s*$/.test(first) || /^<div><b>/.test(lines[0]));
+        notas.push({id:uid("n"), titulo: titled? first : "", html: titled? lines.slice(1).join("").replace(/^(<div><br><\/div>)+/,"") : c.html}); });
+      continue;
+    }
+    row.forEach(function(c){ if(c.cont || !c.text) return; var i=dayOf(c); if(i>-1) days[i].parts.push(c.html); });
+  }
+  var ESTS=ESTADOS.filter(Boolean).map(function(e){ return e.toLowerCase(); });
+  var wk={id:uid("s"), linhas:[{id:"L1",titulo:""}], notas:notas, dias:days.map(function(d){
+    var html=d.parts.filter(function(x){ return plainOf(x); }).join("<div><br></div>"), estado="";
+    var lines=html.match(/<div>[\s\S]*?<\/div>/g)||[];
+    lines=lines.filter(function(l){ var t=plainOf(l).toLowerCase(); if(!estado && ESTS.indexOf(t)>-1){ estado=ESTADOS.filter(function(e){ return e.toLowerCase()===t; })[0]; return false; } return true; });
+    while(lines.length && !plainOf(lines[0])) lines.shift();
+    if(!d.data && d.nome) {}
+    return {id:uid("d"), nome:d.nome||weekdayName(d.data), data:d.data, aula:d.aula, estado:estado, cel:{L1:lines.join("")}};
+  })};
+  return wk;
+}
+/* documento -> lista de "páginas" */
+function docxPages(xml){
+  var doc=new DOMParser().parseFromString(xml,"application/xml");
+  var body=doc.getElementsByTagNameNS(W_NS,"body")[0]; if(!body) throw new Error("Documento vazio.");
+  var pages=[], textPages=[[]];
+  for(var c=body.firstChild;c;c=c.nextSibling){
+    if(c.nodeType!==1) continue;
+    if(c.localName==="tbl"){ var wk=tableToWeek(c); if(wk) pages.push({kind:"week", week:wk}); else textPages[textPages.length-1].push(cellHTML(c)); }
+    else if(c.localName==="p"){ var pp=wPara(c); if(pp.brk && textPages[textPages.length-1].length) textPages.push([]); textPages[textPages.length-1].push("<div>"+(pp.text.trim()? pp.html : "<br>")+"</div>"); if(pp.brkAfter) textPages.push([]); }
+  }
+  if(pages.length) return pages;
+  return textPages.map(function(ls){ return {kind:"text", html:ls.join("").replace(/^(<div><br><\/div>)+|(<div><br><\/div>)+$/g,"")}; }).filter(function(p){ return plainOf(p.html); });
+}
+function pageLabel(p,i){
+  if(p.kind==="week"){ var s=p.week, a=firstDate(s), b=lastDate(s);
+    return "Página "+(i+1)+" — "+(a? "semana de "+fmtShort(a)+" a "+fmtPt(b) : s.dias.length+" colunas")+(aulaRange(s)? " · "+aulaRange(s) : ""); }
+  var t=plainOf(p.html); return "Página "+(i+1)+" — "+(t.length>70? t.slice(0,70)+"…" : t);
+}
+function openImport(){
+  var cur=week();
+  openModal('<h3>Importar de um documento Word</h3>'
+    +'<p>Escolhe um ficheiro <b>.docx</b>. Depois escolhes que páginas queres trazer e para onde.</p>'
+    +'<span class="btn btn-primary file-btn">Escolher documento…<input type="file" id="impFile" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"></span>'
+    +'<div class="progress" id="impProg"></div><div id="impBody"></div>'
+    +'<div class="modal-foot"><button class="btn btn-ghost" type="button" data-close>Cancelar</button><button class="btn btn-primary" type="button" id="impGo" disabled>Importar</button></div>');
+  var pages=[];
+  $("impFile").addEventListener("change", function(e){
+    var f=e.target.files[0]; if(!f) return;
+    if(/\.doc$/i.test(f.name)){ $("impProg").textContent="Este é um ficheiro .doc antigo. Abre-o no Word e guarda como .docx (Ficheiro → Guardar como → Documento do Word)."; return; }
+    $("impProg").textContent="A ler “"+f.name+"”…";
+    f.arrayBuffer().then(function(buf){ return readZipEntry(buf,"word/document.xml"); }).then(function(xml){
+      pages=docxPages(xml);
+      if(!pages.length){ $("impProg").textContent="Não encontrei texto neste documento."; return; }
+      var isWeeks=pages[0].kind==="week";
+      $("impProg").textContent="“"+f.name+"”: "+pages.length+(pages.length===1?" página encontrada.":" páginas encontradas.")+(isWeeks? " Cada página é uma semana." : "");
+      var h='<div class="imp-sec"><div class="imp-h"><b>1. Que páginas?</b><span><button type="button" class="linkish" id="impAll">Todas</button> · <button type="button" class="linkish" id="impNone">Nenhuma</button></span></div><div class="imp-list">'
+        +pages.map(function(p,i){ return '<label class="choice"><input type="checkbox" data-pg="'+i+'"'+(pages.length===1?" checked":"")+'><div><b>'+esc(pageLabel(p,i))+'</b></div></label>'; }).join("")+'</div></div>';
+      h+='<div class="imp-sec"><b>2. Para onde?</b>';
+      if(isWeeks){
+        h+='<label class="choice"><input type="radio" name="impDest" value="cur" checked'+(cur?"":" disabled")+'><div><b>Para a semana aberta'+(cur? " ("+esc(weekLabel(cur))+")" : "")+'</b><span>Substitui os textos desta semana pelos da página escolhida. As datas e os números das aulas desta semana mantêm-se. Se escolheres várias páginas, os textos ficam juntos.</span></div></label>'
+          +'<label class="choice"><input type="radio" name="impDest" value="new"'+(cur?"":" checked")+'><div><b>Criar semanas novas</b><span>Uma semana nova por cada página, com as datas e as aulas do documento.</span></div></label>';
+      } else {
+        var opts=(cur? cur.dias.map(function(d,i){ return '<option value="d'+i+'">'+esc(d.nome)+' '+esc(fmtPt(d.data))+'</option>'; }).join("")+cur.notas.map(function(n,i){ return '<option value="n'+i+'">Bloco: '+esc(n.titulo||("bloco "+(i+1)))+'</option>'; }).join("") : "");
+        h+='<p>Este documento não tem uma tabela de planificação, por isso o texto vai para uma célula da semana aberta.</p><div class="field"><label for="impCell">Célula de destino</label><select id="impCell">'+opts+'</select></div>'
+          +'<label class="choice"><input type="radio" name="impMode" value="add" checked><div><b>Acrescentar no fim</b></div></label><label class="choice"><input type="radio" name="impMode" value="rep"><div><b>Substituir</b></div></label>';
+      }
+      h+='</div><p>Se não gostares do resultado, carrega na seta <b>↶</b> (voltar).</p>';
+      $("impBody").innerHTML=h;
+      $("impAll").onclick=function(){ document.querySelectorAll("[data-pg]").forEach(function(c){ c.checked=true; }); };
+      $("impNone").onclick=function(){ document.querySelectorAll("[data-pg]").forEach(function(c){ c.checked=false; }); };
+      $("impGo").disabled=false;
+    }).catch(function(err){ $("impProg").textContent="Não consegui ler o documento: "+(err&&err.message||err); });
+  });
+  $("impGo").onclick=function(){
+    var sel=[].slice.call(document.querySelectorAll("[data-pg]:checked")).map(function(c){ return pages[+c.getAttribute("data-pg")]; });
+    if(!sel.length){ toast("Escolhe pelo menos uma página."); return; }
+    var p=plan();
+    if(sel[0].kind==="week"){
+      var dest=(document.querySelector('input[name=impDest]:checked')||{}).value;
+      if(dest==="cur" && cur){
+        var src=sel.map(function(x){ return x.week; });
+        var merged=src[0];
+        if(src.length>1){ merged=JSON.parse(JSON.stringify(src[0])); src.slice(1).forEach(function(w){ w.dias.forEach(function(d,i){ var t=merged.dias[i] || merged.dias.filter(function(m){ return m.nome===d.nome; })[0]; if(t) t.cel.L1=(t.cel.L1||"")+"<div><br></div>"+(d.cel.L1||""); else merged.dias.push(d); }); merged.notas=merged.notas.concat(w.notas); }); }
+        var sameCount=merged.dias.length===cur.dias.length;
+        var lid=cur.linhas[0].id;
+        merged.dias.forEach(function(md,i){
+          var target= sameCount? cur.dias[i] : cur.dias.filter(function(cd){ return normDay(cd.nome)&&normDay(cd.nome)===normDay(md.nome) && !cd._imp; })[0];
+          if(target){ target.cel={}; target.cel[lid]=md.cel.L1||""; target.estado=md.estado||target.estado; target._imp=true; }
+          else { var nd={id:uid("d"), nome:md.nome, data:md.data, aula:md.aula, estado:md.estado, cel:{}}; nd.cel[lid]=md.cel.L1||""; cur.dias.push(nd); }
+        });
+        cur.dias.forEach(function(d){ delete d._imp; });
+        if(merged.notas.length) cur.notas=merged.notas;
+        state.semanaId=cur.id;
+      } else {
+        sel.forEach(function(x){ var w=JSON.parse(JSON.stringify(x.week)); w.id=uid("s"); p.semanas.push(w); state.semanaId=w.id; });
+      }
+    } else {
+      var html=sel.map(function(x){ return x.html; }).join("<div><br></div>");
+      var v=$("impCell").value, mode=document.querySelector('input[name=impMode]:checked').value;
+      if(v[0]==="d"){ var d=cur.dias[+v.slice(1)], k=cur.linhas[0].id; d.cel[k]= mode==="add" && plainOf(d.cel[k])? d.cel[k]+"<div><br></div>"+html : html; }
+      else { var n=cur.notas[+v.slice(1)]; n.html= mode==="add" && plainOf(n.html)? n.html+"<div><br></div>"+html : html; }
+    }
+    state.view="semana"; closeModal(); touch(); renderWeeks(); renderMain();
+    toast(sel.length+(sel.length===1?" página importada.":" páginas importadas."));
+  };
+}
+
+function renumber(s, start){
+  var n = start!=null? start : parseInt(s.dias[0]&&s.dias[0].aula,10);
+  if(isNaN(n)) n=1;
+  var prevDate=null, cur=n-1;
+  s.dias.forEach(function(di,i){
+    if(di.estado && di.estado!=="Visita de estudo"){ di.aula=""; return; }
+    if(di.data && di.data===prevDate){ di.aula=String(cur); return; }
+    cur++; di.aula=String(cur); prevDate=di.data;
+  });
+  return cur;
+}
+
+/* copiar o texto de uma célula para outros dias */
+function openCopyCell(s, i, lid){
+  var src=s.dias[i].cel[lid]||"";
+  if(!src.replace(/<[^>]+>|\s|&nbsp;/g,"")){ toast("Esta célula está vazia."); return; }
+  var opts=s.dias.map(function(di,j){ if(j===i) return ""; return '<label class="choice"><input type="checkbox" data-cpto="'+j+'" checked><div><b>'+esc(di.nome||"Dia")+' '+esc(fmtPt(di.data))+'</b><span>'+((di.cel[lid]||"").replace(/<[^>]+>|&nbsp;/g,"").trim()? "já tem texto" : "vazia")+'</span></div></label>'; }).join("");
+  openModal('<h3>Copiar para outros dias</h3><p>Escolhe os dias que recebem o texto de '+esc(s.dias[i].nome)+'.</p>'
+    +'<label class="choice"><input type="radio" name="cpmode" value="add" checked><div><b>Acrescentar no fim</b><span>Mantém o que já lá estiver escrito.</span></div></label>'
+    +'<label class="choice"><input type="radio" name="cpmode" value="rep"><div><b>Substituir</b><span>Apaga o texto desses dias e põe este.</span></div></label>'
+    +'<div style="display:flex;flex-direction:column;gap:6px">'+opts+'</div>'
+    +'<div class="modal-foot"><button class="btn btn-ghost" type="button" data-close>Cancelar</button><button class="btn btn-primary" type="button" id="cpGo">Copiar</button></div>');
+  $("cpGo").onclick=function(){
+    var mode=document.querySelector('input[name=cpmode]:checked').value, c=0;
+    document.querySelectorAll("[data-cpto]").forEach(function(cb){
+      if(!cb.checked) return; var di=s.dias[+cb.getAttribute("data-cpto")];
+      var cur=di.cel[lid]||"";
+      di.cel[lid]= (mode==="rep"||!cur.replace(/<[^>]+>|\s|&nbsp;/g,""))? src : cur+"<div><br></div>"+src; c++;
+    });
+    closeModal(); touch(); renderWeek(); toast("Texto copiado para "+c+(c===1?" dia.":" dias."));
+  };
+}
+
+/* =========================================================
+   NOVA SEMANA
+   ========================================================= */
+function openNewWeek(modelId){
+  var prev=sortedWeeks()[0], models=state.data.modelos||[];
+  var nextMon;
+  if(prev && firstDate(prev)){ var d=parseISO(firstDate(prev)); d.setDate(d.getDate()-((d.getDay()+6)%7)+7); nextMon=toISO(d); }
+  else { var t=new Date(); t.setHours(12); t.setDate(t.getDate()-((t.getDay()+6)%7)); nextMon=toISO(t); }
+  openModal('<h3>Nova semana</h3>'
+    +'<div class="field"><label for="nwMon">Segunda-feira da semana</label><input type="date" id="nwMon" value="'+nextMon+'"></div>'
+    +models.map(function(m){ return '<label class="choice"><input type="radio" name="nwMode" value="m:'+esc(m.id)+'"'+(modelId===m.id?" checked":"")+'><div><b>Semana frequente: '+esc(m.nome)+'</b><span>Começa com este esqueleto. Só tens de completar.</span></div></label>'; }).join("")
+    +(prev? '<label class="choice"><input type="radio" name="nwMode" value="copy"'+(modelId?"":" checked")+'><div><b>Copiar a semana anterior ('+esc(weekLabel(prev))+')</b><span>Mantém colunas, linhas e textos. Só tens de mudar o que é diferente.</span></div></label>'
+          +'<label class="choice"><input type="radio" name="nwMode" value="struct"><div><b>Só a estrutura</b><span>Mesmas colunas, linhas e blocos, com as células em branco.</span></div></label>' : "")
+    +'<label class="choice"><input type="radio" name="nwMode" value="blank"'+(prev?"":" checked")+'><div><b>Semana nova, de segunda a sexta</b><span>Cinco colunas vazias.</span></div></label>'
+    +'<p>As datas e o número das aulas continuam a partir da semana anterior. Os dias marcados como feriado não contam aula.</p>'
+    +'<div class="modal-foot"><button class="btn btn-ghost" type="button" data-close>Cancelar</button><button class="btn btn-primary" type="button" id="nwGo">Criar semana</button></div>');
+  $("nwGo").onclick=function(){
+    var mon=$("nwMon").value; if(!mon){ toast("Escolhe a data de segunda-feira."); return; }
+    var mode=(document.querySelector('input[name=nwMode]:checked')||{}).value||"blank";
+    var lastAula=0;
+    if(prev) prev.dias.forEach(function(di){ var n=parseInt(di.aula,10); if(!isNaN(n)&&n>lastAula) lastAula=n; });
+    var s;
+    if(mode.indexOf("m:")===0){
+      var mm=models.filter(function(x){ return "m:"+x.id===mode; })[0];
+      s=weekFromModel(mm, mon);
+    } else if(prev && mode!=="blank"){
+      s=JSON.parse(JSON.stringify(prev)); s.id=uid("s");
+      var base=firstDate(prev);
+      var off=Math.round((parseISO(mon)-parseISO(base))/864e5);
+      s.dias.forEach(function(di){ di.id=uid("d"); if(di.data){ di.data=addDays(di.data,off); di.nome=weekdayName(di.data); } di.estado=""; if(mode==="struct") di.cel={}; });
+      if(mode==="struct") s.notas.forEach(function(nt){ nt.html=""; });
+      s.notas.forEach(function(nt){ nt.id=uid("n"); });
+    } else {
+      s={id:uid("s"), linhas:[{id:"L1",titulo:""}], dias:[], notas:[{id:uid("n"),titulo:"Atividades de Recurso/Estudo/Outras:",html:""},{id:uid("n"),titulo:"Trabalho de Casa:",html:""}]};
+      for(var k=0;k<5;k++){ var dt=addDays(mon,k); s.dias.push({id:uid("d"), nome:weekdayName(dt), data:dt, aula:"", estado:"", cel:{}}); }
+    }
+    renumber(s, lastAula+1);
+    plan().semanas.push(s); state.semanaId=s.id; state.view="semana";
+    closeModal(); touch(); renderWeeks(); renderMain();
+    toast("Semana de "+weekLabel(s)+" criada.");
+  };
+}
+
+/* =========================================================
+   TEXTOS FREQUENTES
+   ========================================================= */
+function openSnip(id){
+  var t = id? state.data.textos.filter(function(x){return x.id===id;})[0] : null;
+  var selHTML="";
+  if(!t){ // se houver texto selecionado numa célula, começa com ele
+    var sel=window.getSelection();
+    if(sel && sel.rangeCount && !sel.isCollapsed && state.lastEd && state.lastEd.contains(sel.anchorNode)){ var dv=document.createElement("div"); dv.appendChild(sel.getRangeAt(0).cloneContents()); selHTML=sanitizeStored(dv.innerHTML); }
+  }
+  openModal('<h3>'+(t?"Editar texto frequente":"Novo texto frequente")+'</h3>'
+    +'<p>Guarda aqui frases que repetes muitas vezes. Depois basta clicar em “Inserir”.</p>'
+    +'<div class="field"><label for="snT">Nome</label><input id="snT" value="'+esc(t?t.titulo:"")+'" placeholder="Ex.: Rotina de entrada"></div>'
+    +'<div class="field"><label>Texto (podes colar e usar Ctrl+B para negrito)</label><div class="snip-ed" id="snH" contenteditable="true" lang="pt-PT"></div></div>'
+    +'<div class="modal-foot">'+(t?'<button class="btn btn-danger" type="button" id="snDel" style="margin-right:auto">Apagar</button>':"")+'<button class="btn btn-ghost" type="button" data-close>Cancelar</button><button class="btn btn-primary" type="button" id="snOk">Guardar</button></div>');
+  var ed=$("snH"); ed.innerHTML= t? t.html : selHTML;
+  ed.addEventListener("paste", function(e){ var cd=e.clipboardData; if(!cd) return; e.preventDefault(); var h=cd.getData("text/html"); document.execCommand("insertHTML", false, h? cleanHTML(h) : textToHTML(cd.getData("text/plain"))); });
+  $("snOk").onclick=function(){
+    var nome=$("snT").value.trim(), html=sanitizeStored(ed.innerHTML);
+    if(!nome){ toast("Dá um nome ao texto."); return; }
+    if(t){ t.titulo=nome; t.html=html; } else state.data.textos.push({id:uid("t"), titulo:nome, html:html});
+    closeModal(); touch(); renderSnips(); toast("Texto guardado.");
+  };
+  if(t) $("snDel").onclick=function(){ state.data.textos=state.data.textos.filter(function(x){return x.id!==t.id;}); closeModal(); touch(); renderSnips(); };
+}
+
+/* =========================================================
+   DEFINIÇÕES
+   ========================================================= */
+function renderDefs(){
+  var d=state.data.definicoes, dr=state.drive;
+  var h=bannersHTML()+'<div class="cfg-head"><h2>⚙️ Configurações</h2><nav class="cfg-nav">'
+    +[["cfg-escola","🏫 Escola e documento"],["cfg-drive","☁️ Google Drive"],["cfg-copias","🛟 Cópias e recuperação"],["cfg-plan","📚 Planificações"],["cfg-conta","👤 Conta"],["cfg-app","📲 Aplicação"]].map(function(x){ return '<button type="button" class="chip" data-goto="'+x[0]+'">'+x[1]+'</button>'; }).join("")+'</nav></div>'
+    +'<div class="panel" id="cfg-escola"><h2>Cabeçalho e rodapé</h2><p>Estes dados aparecem em todas as páginas: o logótipo, a escola e o ano letivo no cabeçalho; a docente e o número da página no rodapé.</p>'
+    +'<div class="logo-box"><div class="logo-prev">'+(d.logo? '<img alt="Logótipo" src="'+d.logo+'">' : "Sem logótipo")+'</div>'
+    +'<div style="display:flex;flex-direction:column;gap:6px"><span class="btn btn-primary file-btn">Carregar logótipo<input type="file" id="logoIn" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"></span>'
+    +(d.logo? '<button class="btn btn-ghost btn-sm" type="button" id="logoDel">Retirar logótipo</button>' : "")+'<span class="field"><span class="help">PNG ou JPG. É reduzido automaticamente.</span></span></div></div>'
+    +'<div class="grid2">'
+    +fld("escola","Nome da escola","Ex.: Escola Básica da Ajuda")
+    +fld("agrupamento","Agrupamento (opcional)","Ex.: Agrupamento de Escolas …")
+    +fld("anoLetivo","Ano letivo","2026/2027")
+    +fld("turma","Ano / turma","1.º ano – Turma A")
+    +fld("titulo","Título do documento","Planificação Semanal")
+    +fld("docente","Nome da docente (rodapé)","Prof. …")
+    +'<div class="field"><label for="f_tamanhoLetra">Tamanho da letra (pt)</label><select id="f_tamanhoLetra">'+[7,7.5,8,8.5,9,9.5,10,10.5,11,11.5,12,13,14].map(function(x){return '<option value="'+x+'"'+(fsOf()===x?" selected":"")+'>'+String(x).replace(".",",")+'</option>';}).join("")+'</select><span class="help">Também mudas na barra por cima da tabela.</span></div>'
+    +'<div class="field"><label for="f_entrelinha">Espaço entre linhas</label><select id="f_entrelinha">'+[[1,"Apertado"],[1.1,"Normal"],[1.25,"Largo"]].map(function(x){return '<option value="'+x[0]+'"'+(lhOf()===x[0]?" selected":"")+'>'+x[1]+'</option>';}).join("")+'</select></div>'
+    +'</div></div>';
+
+  h+='<div class="panel" id="cfg-drive"><h2>Google Drive</h2>'
+    +'<p>Escreve o email da conta Google onde queres guardar e carrega em “Entrar com Google”. A planificação fica num ficheiro dentro de uma pasta da tua Drive, e também neste computador por segurança. A aplicação só vê os ficheiros que ela própria criou.</p>'
+    +'<div class="grid2">'
+    +fld("conta","Email da conta Google para a Drive","nome@gmail.com","email")
+    +fld("pasta","Nome da pasta na Drive","Planificações")
+    +'</div>'
+    +driveStatusHTML()
+    +'<div class="row"><button class="btn btn-primary" type="button" id="drvConnect">'+(state.drive.status==="ok"? "Recarregar da Drive" : "Entrar com Google")+'</button>'
+    +(state.drive.status==="ok"? '<button class="btn btn-ghost" type="button" id="drvSave">Guardar na Drive agora</button><button class="btn btn-ghost" type="button" id="drvOut">Trocar de conta Google</button>' : "")
+    +'<label class="row" style="gap:6px;font-size:13.5px"><input type="checkbox" id="drvAuto"'+(d.driveAuto?" checked":"")+'> Guardar sozinha enquanto escrevo</label></div>'
+    +(GOOGLE_CLIENT_ID? "" : '<details><summary style="cursor:pointer;font-size:13px;color:var(--ink-muted)">Configuração técnica</summary><div class="field" style="margin-top:8px"><label for="f_cid">ID de cliente Google (OAuth)</label><input id="f_cid" value="'+esc(clientId())+'" placeholder="xxxx.apps.googleusercontent.com"><span class="help">Só é preciso uma vez. Fica guardado neste navegador.</span></div></details>')
+    +'</div>';
+
+  h+='<div class="panel" id="cfg-copias"><h2>Cópias de segurança e recuperação</h2>'
+    +'<p><b>Exportar tudo</b> descarrega um ficheiro com todas as tuas planificações, textos e semanas frequentes. Guarda-o num sítio seguro. Serve também para passar tudo para outro computador ou para outra versão da aplicação (com <b>Importar cópia</b>).</p>'
+    +'<div class="row"><button class="btn btn-primary" type="button" id="expAll">⬇️ Exportar tudo</button><span class="btn btn-ghost file-btn">⬆️ Importar cópia (.json)<input type="file" id="recFile2" accept=".json,application/json"></span></div>'
+    +'<h3 style="margin-top:6px">Recuperar trabalho</h3><p>Se o teu trabalho desapareceu (por exemplo, depois de criares a conta outra vez), procura aqui as cópias guardadas neste computador e na tua Drive.</p>'
+    +'<div class="row"><button class="btn btn-ghost" type="button" id="recLocal">Procurar neste computador</button>'+(state.drive.status==="ok"? '<button class="btn btn-ghost" type="button" id="recDrive">Recarregar da Drive</button><button class="btn btn-ghost" type="button" id="recVers">Versões anteriores na Drive</button>' : '')+'<span class="btn btn-ghost file-btn">Abrir ficheiro de cópia (.json)<input type="file" id="recFile" accept=".json,application/json"></span></div><div id="recList" style="display:flex;flex-direction:column;gap:6px"></div></div>';
+  h+='<div class="panel" id="cfg-plan"><h2>Planificações</h2><p>Podes ter mais do que uma (por exemplo, uma por turma ou por ano). O cabeçalho e o rodapé são os mesmos para todas.</p><div style="display:flex;flex-direction:column;gap:6px">';
+  state.data.planificacoes.forEach(function(p){
+    h+='<div class="plan-row"><input data-planname="'+esc(p.id)+'" value="'+esc(p.nome)+'" aria-label="Nome da planificação"><span class="side-help">'+p.semanas.length+' semana(s)</span><button class="icon-btn del" type="button" data-plandel="'+esc(p.id)+'" title="Apagar">✕</button></div>';
+  });
+  h+='</div><div class="row"><button class="btn btn-ghost btn-sm" type="button" id="planNew">+ Nova planificação</button></div></div>';
+  var standalone=(window.matchMedia && matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone===true;
+  h+='<div class="panel" id="cfg-conta"><h2>Conta</h2>'
+    +'<p>Sessão iniciada como <b>'+esc((state.user&&state.user.email)||"sem conta")+'</b>.</p>'
+    +(state.sb? '<h3>Mudar a password</h3><div class="grid2"><div class="field"><label for="pw1">Nova password (mínimo 8)</label><input id="pw1" type="password" autocomplete="new-password"></div><div class="field"><label for="pw2">Repetir</label><input id="pw2" type="password" autocomplete="new-password"></div></div><div class="row"><button class="btn btn-primary btn-sm" type="button" id="pwGo">Guardar nova password</button><span class="side-help" id="pwMsg"></span></div>' : '')
+    +'<div class="row"><button class="btn btn-ghost btn-sm" type="button" id="cfgLogout">Sair desta conta</button></div></div>';
+  h+='<div class="panel" id="cfg-app"><h2>Aplicação</h2>'
+    +'<p>Endereço: <span class="kv">'+esc(location.origin)+'</span></p>'
+    +'<div class="row">'+(standalone? '<button class="btn btn-ghost btn-sm" type="button" id="cfgRefresh">⟳ Atualizar a aplicação</button>' : '<button class="btn btn-ghost btn-sm" type="button" id="cfgInstall">📲 Instalar (ícone no ambiente de trabalho / telemóvel)</button>')+'</div>'
+    +'<p>Se um dia a aplicação mudar de endereço: aqui em <b>Cópias</b> carrega em <b>Exportar tudo</b>, abre o novo endereço, cria conta com o mesmo email e usa <b>Importar cópia</b>.</p></div>';
+  $("main").innerHTML=h;
+
+  ["escola","agrupamento","anoLetivo","turma","titulo","docente","pasta"].forEach(function(k){
+    $("f_"+k).addEventListener("input", function(e){ d[k]=e.target.value; touch(); renderBrand(); });
+  });
+  $("f_conta").addEventListener("change", function(e){ d.conta=e.target.value.trim(); touch(); checkOwner(); renderDefs(); });
+  $("f_tamanhoLetra").addEventListener("change", function(e){ d.tamanhoLetra=+e.target.value; touch(); });
+  $("f_entrelinha").addEventListener("change", function(e){ d.entrelinha=+e.target.value; touch(); });
+  $("logoIn").addEventListener("change", function(e){ var f=e.target.files[0]; if(f) loadLogo(f); });
+  if($("logoDel")) $("logoDel").onclick=function(){ d.logo=null; d.logoW=0; d.logoH=0; touch(); renderBrand(); renderDefs(); };
+  $("drvConnect").onclick=function(){ driveConnect(true); };
+  if($("drvSave")) $("drvSave").onclick=function(){ driveSave(true); };
+  if($("drvOut")) $("drvOut").onclick=function(){ driveLogout(); };
+  if($("f_cid") && !GOOGLE_CLIENT_ID) $("f_cid").addEventListener("change", function(e){ try{ localStorage.setItem("planificacao_client_id", e.target.value.trim()); }catch(x){} toast("ID de cliente guardado."); });
+  $("drvAuto").onchange=function(e){ d.driveAuto=e.target.checked; touch(); };
+  if($("drvUseOwner")) $("drvUseOwner").onclick=function(){ d.conta=state.drive.owner; state.drive.mismatch=false; touch(); driveConnect(true); };
+  if($("drvSwitch")) $("drvSwitch").onclick=function(){ state.drive.mismatch=false; auth.token=null; driveConnect(true, true); };
+  document.querySelectorAll("[data-planname]").forEach(function(inp){ inp.addEventListener("input", function(){ var p=state.data.planificacoes.filter(function(x){return x.id===inp.getAttribute("data-planname");})[0]; p.nome=inp.value; touch(); renderPlanSel(); renderBrand(); }); });
+  document.querySelectorAll("[data-plandel]").forEach(function(b){ b.addEventListener("click", function(){
+    if(state.data.planificacoes.length<=1){ toast("Tem de existir pelo menos uma planificação."); return; }
+    var id=b.getAttribute("data-plandel"), p=state.data.planificacoes.filter(function(x){return x.id===id;})[0];
+    askConfirm("Apagar a planificação “"+p.nome+"”?", "Saem "+p.semanas.length+" semana(s). Não dá para desfazer.", "Apagar", function(){
+      state.data.planificacoes=state.data.planificacoes.filter(function(x){return x.id!==id;});
+      if(state.planId===id){ state.planId=state.data.planificacoes[0].id; state.semanaId=null; }
+      touch(); renderAll();
+    });
+  }); });
+  $("planNew").onclick=newPlan;
+  $("recLocal").onclick=function(){ showRecover(false); };
+  $("expAll").onclick=exportAll;
+  $("recFile2").addEventListener("change", function(e){ var f=e.target.files[0]; if(!f) return; f.text().then(function(t){ var d=JSON.parse(t); if(!d.planificacoes) throw 0; offerRestore(normalize(d), "o ficheiro “"+f.name+"”"); }).catch(function(){ toast("Esse ficheiro não é uma cópia da Planificação."); }); });
+  document.querySelectorAll("[data-goto]").forEach(function(b){ b.onclick=function(){ var t=$(b.getAttribute("data-goto")); if(t) t.scrollIntoView({behavior:"smooth",block:"start"}); }; });
+  if($("pwGo")) $("pwGo").onclick=function(){
+    var a=$("pw1").value, b2=$("pw2").value, m=$("pwMsg");
+    if(a.length<8){ m.textContent="A password precisa de pelo menos 8 caracteres."; return; }
+    if(a!==b2){ m.textContent="As passwords não são iguais."; return; }
+    m.textContent="A guardar…";
+    state.sb.auth.updateUser({password:a}).then(function(r){ if(r.error){ m.textContent=authMsg(r.error); return; } $("pw1").value=""; $("pw2").value=""; m.textContent="Password alterada ✓"; toast("Password alterada."); }).catch(function(e){ m.textContent=authMsg(e); });
+  };
+  $("cfgLogout").onclick=function(){ $("btnLogout").click(); };
+  if($("cfgInstall")) $("cfgInstall").onclick=function(){ $("btnInstall").click(); };
+  if($("cfgRefresh")) $("cfgRefresh").onclick=function(){ $("btnRefresh").click(); };
+  if($("recVers")) $("recVers").onclick=showDriveVersions;
+  $("recFile").addEventListener("change", function(e){ var f=e.target.files[0]; if(!f) return; f.text().then(function(t){ var d=JSON.parse(t); if(!d.planificacoes) throw 0; offerRestore(normalize(d), "o ficheiro “"+f.name+"”"); }).catch(function(){ toast("Esse ficheiro não é uma cópia da Planificação."); }); });
+  if($("recDrive")) $("recDrive").onclick=function(){ state.data.definicoes.driveSync=null; driveConnect(true); };
+}
+function exportAll(){
+  saveLocal();
+  var t=new Date(), name="Planificacao_copia_"+t.getFullYear()+"-"+pad(t.getMonth()+1)+"-"+pad(t.getDate())+".json";
+  downloadBytes(name, new TextEncoder().encode(JSON.stringify(state.data,null,1)), "application/json");
+  toast("Cópia descarregada: "+name);
+}
+function countWeeks(d){ return d.planificacoes.reduce(function(a,p){ return a+p.semanas.length; },0); }
+function offerRestore(rec, origem){
+  askConfirm("Recuperar "+countWeeks(rec)+" semana(s) de "+origem+"?", "O que tens agora é substituído por esta versão. Podes desfazer com a seta ↶.", "Recuperar", function(){
+    histCommit(); backupLocal("antes-de-recuperar");
+    var keep=state.data.definicoes;
+    rec.dono=state.data.dono; rec.definicoes.driveLigada=keep.driveLigada; rec.definicoes.driveSync=keep.driveSync; rec.definicoes.conta=keep.conta||rec.definicoes.conta; rec.definicoes.pasta=keep.pasta||rec.definicoes.pasta;
+    state.data=normalize(rec); state.planId=state.data.planificacoes[0].id; state.semanaId=null; state.view="semana";
+    touch(); renderAll(); driveSave(false); toast("Trabalho recuperado.");
+  });
+}
+function showDriveVersions(){
+  var box=$("recList"), fid=state.drive.fileId;
+  if(!fid){ box.innerHTML='<div class="banner"><span class="grow">Ainda não há ficheiro na Drive.</span></div>'; return; }
+  box.innerHTML='<div class="side-help">A procurar versões na Drive…</div>';
+  api("GET", API+"/files/"+fid+"/revisions?fields=revisions(id,modifiedTime,size)&pageSize=200").then(function(r){
+    var revs=(r.revisions||[]).slice().reverse();
+    if(!revs.length){ box.innerHTML='<div class="banner"><span class="grow">A Drive não tem versões anteriores deste ficheiro.</span></div>'; return; }
+    box.innerHTML='<div class="side-help">A Drive guarda as versões dos últimos 30 dias. A mais recente está em cima.</div>'+revs.map(function(v,i){
+      return '<div class="plan-row"><div style="flex:1"><b>'+esc(new Date(v.modifiedTime).toLocaleString("pt-PT"))+'</b><div class="side-help" id="rv'+i+'">'+(v.size? Math.round(v.size/1024)+" KB" : "")+(i===0?" · versão atual":"")+'</div></div><button class="btn btn-ghost btn-sm" type="button" data-rev="'+i+'">Ver</button></div>';
+    }).join("");
+    box.querySelectorAll("[data-rev]").forEach(function(b){ b.onclick=function(){
+      var i=+b.getAttribute("data-rev"), v=revs[i]; b.disabled=true; b.textContent="…";
+      api("GET", API+"/files/"+fid+"/revisions/"+v.id+"?alt=media", null, null, "text").then(function(t){
+        var d=normalize(JSON.parse(t)), n=countWeeks(d);
+        $("rv"+i).textContent=n+" semana(s) · "+(d.definicoes.docente||"")+" · "+(d.definicoes.escola||"");
+        b.disabled=false; b.textContent="Recuperar"; b.className="btn btn-primary btn-sm";
+        b.onclick=function(){ offerRestore(d, "a versão de "+new Date(v.modifiedTime).toLocaleString("pt-PT")); };
+      }).catch(function(e){ b.disabled=false; b.textContent="Ver"; toast(driveErr(e),5000); });
+    }; });
+  }).catch(function(e){ box.innerHTML='<div class="banner err"><span class="grow">'+esc(driveErr(e))+'</span></div>'; });
+}
+function showRecover(all){
+  var me=(state.data.dono||"").toLowerCase();
+  var list=localSaves().concat((function(){ var o=[]; try{ for(var i=0;i<localStorage.length;i++){ var k=localStorage.key(i); if(k&&k.indexOf("planificacao_backup:")===0){ try{ var d=normalize(JSON.parse(localStorage.getItem(k))); o.push({key:k,data:d,email:(d.dono||d.definicoes.conta||"").toLowerCase(),semanas:d.planificacoes.reduce(function(a,p){return a+p.semanas.length;},0),backup:true}); }catch(e){} } } }catch(e){} return o; })())
+    .filter(function(x){ return x.key!==LS_KEY && x.semanas>0 && (all || x.email===me || !x.email); })
+    .sort(function(a,b){ return String(b.data.atualizadoEm).localeCompare(String(a.data.atualizadoEm)); });
+  var box=$("recList");
+  if(!list.length){
+    box.innerHTML='<div class="banner"><span class="grow">Não encontrei outras cópias '+(all?"":"do teu email ")+'neste navegador.'+(all?"":' <button type="button" class="linkish" id="recAll">Mostrar todas as cópias deste computador</button>')+'</span></div>';
+    if($("recAll")) $("recAll").onclick=function(){ showRecover(true); };
+    return;
+  }
+  box.innerHTML=list.map(function(x,i){ var d=x.data.definicoes, when=x.data.atualizadoEm&&x.data.atualizadoEm>"2001"? new Date(x.data.atualizadoEm).toLocaleString("pt-PT") : "—";
+    return '<div class="plan-row"><div style="flex:1;min-width:0"><b>'+esc(d.docente||"(sem nome)")+'</b> · '+esc(d.escola||"")+'<div class="side-help">'+x.semanas+' semana(s) · alterado a '+esc(when)+(x.email? ' · '+esc(x.email):'')+(x.backup?' · cópia de segurança':'')+'</div></div><button class="btn btn-primary btn-sm" type="button" data-rec="'+i+'">Recuperar</button></div>'; }).join("")
+    +(all?'':'<button type="button" class="linkish" id="recAll">Mostrar todas as cópias deste computador</button>');
+  if($("recAll")) $("recAll").onclick=function(){ showRecover(true); };
+  box.querySelectorAll("[data-rec]").forEach(function(b){ b.onclick=function(){
+    var x=list[+b.getAttribute("data-rec")];
+    offerRestore(JSON.parse(JSON.stringify(x.data)), "uma cópia deste computador");
+  }; });
+}
+function fld(k,label,ph,type){
+  return '<div class="field"><label for="f_'+k+'">'+label+'</label><input id="f_'+k+'" type="'+(type||"text")+'" value="'+esc(state.data.definicoes[k]||"")+'" placeholder="'+esc(ph)+'"></div>';
+}
+function driveStatusHTML(){
+  var dr=state.drive, d=state.data.definicoes;
+  if(dr.mismatch) return '<div class="banner warn"><span class="grow">Entraste com <b>'+esc(dr.owner)+'</b>, mas o email escolhido é <b>'+esc(d.conta)+'</b>. Não gravo na Drive até resolveres.</span><button class="btn btn-ghost btn-sm" type="button" id="drvUseOwner">Usar '+esc(dr.owner)+'</button><button class="btn btn-ghost btn-sm" type="button" id="drvSwitch">Entrar com '+esc(d.conta)+'</button></div>';
+  if(dr.status==="ok") return '<div class="banner ok"><span class="grow">Ligada à Drive de <b>'+esc(dr.owner)+'</b>, pasta <b>'+esc(d.pasta)+'</b>.'+(dr.lastSave? ' Última gravação às '+hm(dr.lastSave)+'.' : "")+'</span>'+(dr.folderId? '<a class="btn btn-ghost btn-sm" href="https://drive.google.com/drive/folders/'+esc(dr.folderId)+'" target="_blank" rel="noopener">Abrir pasta</a>':"")+'</div>';
+  if(dr.status==="error") return '<div class="banner err"><span class="grow">'+esc(dr.msg)+'</span></div>';
+  if(dr.status==="busy") return '<div class="banner"><span class="grow">A falar com a Google…</span></div>';
+  return '<div class="banner"><span class="grow">'+(d.driveLigada? "Por segurança, a Google pede para entrares de novo em cada sessão. Carrega em “Entrar com Google”." : "Ainda não está ligada à Drive. Até lá, tudo fica guardado neste computador.")+'</span></div>';
+}
+function loadLogo(file){
+  var fr=new FileReader();
+  fr.onload=function(){
+    var img=new Image();
+    img.onload=function(){
+      var max=480, w=img.naturalWidth||img.width||300, h=img.naturalHeight||img.height||150;
+      var k=Math.min(1, max/Math.max(w,h)); w=Math.max(1,Math.round(w*k)); h=Math.max(1,Math.round(h*k));
+      var c=document.createElement("canvas"); c.width=w; c.height=h;
+      c.getContext("2d").drawImage(img,0,0,w,h);
+      var d=state.data.definicoes; d.logo=c.toDataURL("image/png"); d.logoW=w; d.logoH=h;
+      touch(); renderBrand(); renderDefs(); toast("Logótipo carregado.");
+    };
+    img.onerror=function(){ toast("Não consegui ler essa imagem. Experimenta um PNG ou JPG."); };
+    img.src=fr.result;
+  };
+  fr.readAsDataURL(file);
+}
+function newPlan(){
+  openModal('<h3>Nova planificação</h3><div class="field"><label for="npN">Nome</label><input id="npN" placeholder="Ex.: 2.º ano – Turma B"></div><div class="modal-foot"><button class="btn btn-ghost" type="button" data-close>Cancelar</button><button class="btn btn-primary" type="button" id="npGo">Criar</button></div>');
+  $("npN").focus();
+  $("npGo").onclick=function(){ var n=$("npN").value.trim(); if(!n){ toast("Escreve um nome."); return; } var p={id:uid("p"), nome:n, semanas:[]}; state.data.planificacoes.push(p); state.planId=p.id; state.semanaId=null; state.view="semana"; closeModal(); touch(); renderAll(); };
+}
+
+/* =========================================================
+   MODAL / CONFIRMAÇÃO
+   ========================================================= */
+function openModal(html){ $("modalBox").innerHTML=html; $("modal").classList.add("open"); $("modalBox").querySelectorAll("[data-close]").forEach(function(b){ b.onclick=closeModal; }); }
+function closeModal(){ $("modal").classList.remove("open"); $("modalBox").innerHTML=""; }
+function askConfirm(title, text, okLabel, fn){
+  openModal('<h3>'+esc(title)+'</h3><p>'+esc(text)+'</p><div class="modal-foot"><button class="btn btn-ghost" type="button" data-close>Cancelar</button><button class="btn btn-danger" type="button" id="cfOk">'+esc(okLabel)+'</button></div>');
+  $("cfOk").onclick=function(){ closeModal(); fn(); };
+}
+
+/* =========================================================
+   GOOGLE DRIVE — cada pessoa entra com a sua conta Google
+   (Google Identity Services + API da Drive, permissão "drive.file":
+    a app só vê os ficheiros que ela própria criou)
+   ========================================================= */
+var SCOPE="https://www.googleapis.com/auth/drive.file";
+var API="https://www.googleapis.com/drive/v3", UP="https://www.googleapis.com/upload/drive/v3";
+var FOLDER_MIME="application/vnd.google-apps.folder";
+var auth={client:null, token:null, exp:0, gisReady:false};
+
+function clientId(){
+  var c=GOOGLE_CLIENT_ID;
+  if(!c){ try{ c=localStorage.getItem("planificacao_client_id")||""; }catch(e){} }
+  return (c||"").trim();
+}
+function driveErr(e){
+  var c=e&&e.code;
+  if(c==="noclient") return "Falta configurar o acesso à Google (ID de cliente). Vê “Configuração técnica”, mais abaixo.";
+  if(c==="nogis") return "Não consegui carregar o início de sessão da Google. Verifica a internet e recarrega a página.";
+  if(c==="popup_closed"||c==="popup_failed_to_open") return "A janela da Google fechou ou foi bloqueada. Permite janelas pop-up para este site e tenta outra vez.";
+  if(c==="access_denied") return "Não deste autorização para usar a Drive.";
+  if(c==="auth") return "A sessão da Google terminou. Carrega em “Entrar com Google” outra vez.";
+  if(c==="offline") return "Sem internet. Fica tudo guardado neste computador e vai para a Drive quando voltares a ligar.";
+  if(c==="http") return "A Drive respondeu com erro ("+e.status+"). "+(e.message||"");
+  return "Falhou a ligação à Drive"+(e&&e.message? ": "+e.message : ".");
+}
+function waitGIS(){
+  return new Promise(function(res,rej){
+    var n=0; (function chk(){ if(window.google&&google.accounts&&google.accounts.oauth2){ auth.gisReady=true; res(); } else if(++n>60) rej({code:"nogis"}); else setTimeout(chk,150); })();
+  });
+}
+function getToken(interactive, forceChoose){
+  if(auth.token && Date.now()<auth.exp && !forceChoose) return Promise.resolve(auth.token);
+  auth.token=null;
+  if(!interactive) return Promise.reject({code:"auth"}); // sem clique o navegador bloqueia a janela da Google
+  if(!clientId()) return Promise.reject({code:"noclient"});
+  return waitGIS().then(function(){
+    return new Promise(function(res,rej){
+      var d=state.data.definicoes;
+      auth.client=google.accounts.oauth2.initTokenClient({
+        client_id:clientId(), scope:SCOPE, login_hint:d.conta||undefined,
+        callback:function(r){ if(r && r.access_token){ auth.token=r.access_token; auth.exp=Date.now()+((+r.expires_in||3600)-120)*1000; res(auth.token); } else rej({code:(r&&r.error)||"auth"}); },
+        error_callback:function(err){ rej({code:(err&&err.type)||"auth", message:err&&err.message}); }
+      });
+      auth.client.requestAccessToken({prompt: forceChoose? "select_account" : "", login_hint:d.conta||undefined});
+    });
+  });
+}
+function api(method, url, body, headers, as){
+  if(!navigator.onLine) return Promise.reject({code:"offline"});
+  return getToken(false).then(function(tok){
+    var h=Object.assign({Authorization:"Bearer "+tok}, headers||{});
+    return fetch(url,{method:method, headers:h, body:body});
+  }).then(function(r){
+    if(r.status===401){ auth.token=null; throw {code:"auth"}; }
+    if(!r.ok) return r.text().then(function(t){ var m=""; try{ m=JSON.parse(t).error.message; }catch(e){ m=t.slice(0,160); } throw {code:"http", status:r.status, message:m}; });
+    if(as==="buf") return r.arrayBuffer();
+    if(as==="text") return r.text();
+    return r.status===204? null : r.json();
+  });
+}
+function multipart(meta, content, mime){
+  var bnd="planif"+Math.random().toString(36).slice(2);
+  var head="--"+bnd+"\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n"+JSON.stringify(meta)+"\r\n--"+bnd+"\r\nContent-Type: "+mime+"\r\n\r\n";
+  var blob=new Blob([head, content, "\r\n--"+bnd+"--"]);
+  return {blob:blob, type:"multipart/related; boundary="+bnd};
+}
+function createFile(meta, content, mime){
+  var m=multipart(meta, content, mime);
+  return api("POST", UP+"/files?uploadType=multipart&fields=id,name,mimeType,webViewLink", m.blob, {"Content-Type":m.type});
+}
+function qv(s){ return String(s).replace(/\\/g,"\\\\").replace(/'/g,"\\'"); }
+function b64ToBytes(b64){ var bin=atob(b64), u=new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return u; }
+
+function setDrive(status,msg){ state.drive.status=status; state.drive.msg=msg||""; renderDrivePill(); if(state.view==="defs") renderDefs(); }
+function renderDrivePill(){
+  var p=$("drivePill"), t=$("drivePillTxt"), dr=state.drive, d=state.data.definicoes;
+  p.className="pill";
+  if(dr.saving||dr.status==="busy"){ p.classList.add("busy"); t.textContent="a guardar na Drive…"; return; }
+  if(dr.mismatch){ p.classList.add("warn"); t.textContent="conta Google diferente"; return; }
+  if(dr.status==="ok"){ p.classList.add(dr.pending?"warn":"ok"); t.textContent= dr.pending? "alterações por enviar" : ("Drive · guardado"+(dr.lastSave? " "+hm(dr.lastSave):"")); return; }
+  if(dr.status==="error"){ p.classList.add("err"); t.textContent="Drive com erro — guardado aqui"; return; }
+  p.classList.add("warn"); t.textContent= d.driveLigada? "Entrar na Google para gravar" : "Drive por ligar — guardado aqui";
+}
+function checkOwner(){
+  var d=state.data.definicoes, dr=state.drive;
+  dr.mismatch = !!(dr.owner && d.conta && dr.owner.toLowerCase()!==d.conta.toLowerCase());
+  renderDrivePill();
+  return !dr.mismatch;
+}
+function ensureFolder(){
+  var name=state.data.definicoes.pasta||"Planificações";
+  var q="name = '"+qv(name)+"' and mimeType = '"+FOLDER_MIME+"' and trashed = false";
+  return api("GET", API+"/files?fields=files(id,name)&q="+encodeURIComponent(q)).then(function(r){
+    if(r.files && r.files.length) return r.files[0].id;
+    return api("POST", API+"/files?fields=id", JSON.stringify({name:name, mimeType:FOLDER_MIME}), {"Content-Type":"application/json"}).then(function(x){ return x.id; });
+  }).then(function(id){ state.drive.folderId=id; return id; });
+}
+function findDataFile(){
+  var q="name = '"+DATA_FILE+"' and '"+qv(state.drive.folderId)+"' in parents and trashed = false";
+  return api("GET", API+"/files?orderBy=modifiedTime desc&fields=files(id,modifiedTime)&q="+encodeURIComponent(q)).then(function(r){ return (r.files||[])[0]||null; });
+}
+/* entrar: interactive=true quando vem de um clique */
+function driveConnect(interactive, choose){
+  var d=state.data.definicoes;
+  if(!clientId()){ setDrive("error", driveErr({code:"noclient"})); return Promise.resolve(); }
+  setDrive("busy");
+  return getToken(interactive, choose).then(function(){
+    return api("GET", API+"/about?fields=user(emailAddress,displayName)");
+  }).then(function(ab){
+    state.drive.owner=(ab&&ab.user&&ab.user.emailAddress)||"";
+    if(!d.conta) d.conta=state.drive.owner;
+    if(!checkOwner()){ state.drive.status="ok"; throw {code:"mismatch"}; }
+    return ensureFolder();
+  }).then(function(){
+    d.driveLigada=true; saveLocal();
+    return findDataFile();
+  }).then(function(f){
+    state.drive.fileId= f? f.id : null;
+    if(!f) return driveSave(false);
+    return api("GET", API+"/files/"+f.id+"?alt=media", null, null, "text").then(function(txt){
+      var remote=normalize(JSON.parse(txt));
+      var neverSynced = d.driveSync!==f.id;
+      var remoteHasWork = remote.planificacoes.some(function(p){ return p.semanas.length; });
+      if(neverSynced && remoteHasWork){ backupLocal("antes-da-drive"); remote.atualizadoEm=nowISO(); }
+      if((neverSynced && remoteHasWork) || String(remote.atualizadoEm||"") > String(state.data.atualizadoEm||"")){
+        remote.definicoes.conta=d.conta; remote.definicoes.pasta=d.pasta; remote.definicoes.driveLigada=true; remote.definicoes.driveAuto=d.driveAuto; remote.definicoes.driveSync=f.id; remote.dono=state.data.dono;
+        state.data=remote; saveLocal();
+        if(!state.data.planificacoes.some(function(x){return x.id===state.planId;})){ state.planId=state.data.planificacoes[0].id; state.semanaId=null; }
+        renderAll(); histReset(); toast("Carreguei a tua planificação da Drive.");
+      } else if(String(remote.atualizadoEm||"") < String(state.data.atualizadoEm||"")){
+        return driveSave(false);
+      }
+    });
+  }).then(function(){
+    state.drive.status="ok"; renderDrivePill(); if(state.view==="defs") renderDefs();
+    if(interactive) toast("Ligada à Drive de "+state.drive.owner+".");
+  }).catch(function(e){
+    if(e && e.code==="mismatch"){ renderDrivePill(); renderMain(); return; }
+    if(e && e.code==="auth" && !interactive){ state.drive.status="local"; renderDrivePill(); if(state.view==="defs") renderDefs(); return; }
+    setDrive("error", driveErr(e));
+  });
+}
+function driveLogout(){
+  var d=state.data.definicoes;
+  try{ if(auth.token && window.google) google.accounts.oauth2.revoke(auth.token, function(){}); }catch(e){}
+  auth.token=null; auth.exp=0;
+  d.driveLigada=false; state.drive={status:"local", msg:"", folderId:null, fileId:null, owner:"", lastSave:null, saving:false, timer:null, pending:false, mismatch:false};
+  saveLocal(); renderDrivePill(); renderMain(); toast("Sessão da Google terminada neste computador.");
+}
+function scheduleDrive(){
+  var d=state.data.definicoes;
+  if(!d.driveLigada || state.drive.status!=="ok") return;
+  state.drive.pending=true; renderDrivePill();
+  if(!d.driveAuto) return;
+  clearTimeout(state.drive.timer);
+  state.drive.timer=setTimeout(function(){ driveSave(false); }, 20000);
+}
+function driveSave(manual){
+  var d=state.data.definicoes, dr=state.drive;
+  saveLocal();
+  if(!d.driveLigada){ if(manual) toast("Guardado neste computador. Para guardar na Drive, entra com a Google em “Configurações”."); return Promise.resolve(); }
+  if(dr.mismatch){ if(manual) toast("Resolve primeiro a conta Google nas definições."); return Promise.resolve(); }
+  if(dr.status!=="ok" && !manual) return Promise.resolve();
+  if(dr.saving){ dr.again=true; return Promise.resolve(); }
+  clearTimeout(dr.timer);
+  dr.saving=true; renderDrivePill();
+  var json=JSON.stringify(state.data);
+  var p = (manual && !auth.token) ? getToken(true) : Promise.resolve();
+  return p.then(function(){ return dr.folderId? dr.folderId : ensureFolder(); }).then(function(fid){
+    if(dr.fileId) return api("PATCH", UP+"/files/"+dr.fileId+"?uploadType=media&fields=id", new Blob([json],{type:"application/json"}), {"Content-Type":"application/json"});
+    return createFile({name:DATA_FILE, parents:[fid], mimeType:"application/json"}, json, "application/json").then(function(r){ dr.fileId=r.id; return r; });
+  }).then(function(){
+    dr.saving=false; dr.pending=false; dr.lastSave=new Date(); dr.status="ok"; dr.msg="";
+    if(d.driveSync!==dr.fileId){ d.driveSync=dr.fileId; saveLocal(); }
+    renderDrivePill(); if(state.view==="defs") renderDefs();
+    if(manual) toast("Guardado na Drive.");
+  }).catch(function(e){
+    dr.saving=false;
+    if(e && e.code==="auth"){ dr.status="local"; renderDrivePill(); if(manual) toast(driveErr(e),5000); return; }
+    if(e && e.code==="http" && e.status===404){ dr.fileId=null; dr.folderId=null; }
+    setDrive("error", driveErr(e));
+    if(manual) toast(driveErr(e), 5000);
+  }).then(function(){ if(dr.again){ dr.again=false; return driveSave(false); } });
+}
+
+/* =========================================================
+   GERAR WORD (.docx) — feito aqui mesmo, sem servidores
+   ========================================================= */
+var CRC_T=(function(){ var t=new Uint32Array(256); for(var n=0;n<256;n++){ var c=n; for(var k=0;k<8;k++) c= c&1? 0xEDB88320^(c>>>1) : c>>>1; t[n]=c>>>0; } return t; })();
+function crc32(u){ var c=0xFFFFFFFF; for(var i=0;i<u.length;i++) c=CRC_T[(c^u[i])&0xFF]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
+function zipStore(files){
+  var enc=new TextEncoder(), parts=[], central=[], off=0;
+  files.forEach(function(f){
+    var name=enc.encode(f.name), data= typeof f.data==="string"? enc.encode(f.data) : f.data, crc=crc32(data);
+    var lh=new DataView(new ArrayBuffer(30));
+    lh.setUint32(0,0x04034b50,true); lh.setUint16(4,20,true); lh.setUint16(6,0x0800,true); lh.setUint16(8,0,true);
+    lh.setUint16(10,0,true); lh.setUint16(12,0x21,true); lh.setUint32(14,crc,true); lh.setUint32(18,data.length,true); lh.setUint32(22,data.length,true);
+    lh.setUint16(26,name.length,true); lh.setUint16(28,0,true);
+    parts.push(new Uint8Array(lh.buffer), name, data);
+    var ch=new DataView(new ArrayBuffer(46));
+    ch.setUint32(0,0x02014b50,true); ch.setUint16(4,20,true); ch.setUint16(6,20,true); ch.setUint16(8,0x0800,true); ch.setUint16(10,0,true);
+    ch.setUint16(12,0,true); ch.setUint16(14,0x21,true); ch.setUint32(16,crc,true); ch.setUint32(20,data.length,true); ch.setUint32(24,data.length,true);
+    ch.setUint16(28,name.length,true); ch.setUint16(30,0,true); ch.setUint16(32,0,true); ch.setUint16(34,0,true); ch.setUint16(36,0,true); ch.setUint32(38,0,true); ch.setUint32(42,off,true);
+    central.push(new Uint8Array(ch.buffer), name);
+    off+=30+name.length+data.length;
+  });
+  var cdSize=central.reduce(function(a,b){return a+b.length;},0);
+  var end=new DataView(new ArrayBuffer(22));
+  end.setUint32(0,0x06054b50,true); end.setUint16(8,files.length,true); end.setUint16(10,files.length,true); end.setUint32(12,cdSize,true); end.setUint32(16,off,true);
+  var all=parts.concat(central,[new Uint8Array(end.buffer)]);
+  var total=all.reduce(function(a,b){return a+b.length;},0), out=new Uint8Array(total), p=0;
+  all.forEach(function(a){ out.set(a,p); p+=a.length; });
+  return out;
+}
+function xe(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+/* HTML da célula -> parágrafos com "runs" formatados */
+function htmlToParas(html){
+  var box=document.createElement("div"); box.innerHTML=html||"";
+  var paras=[[]];
+  function cur(){ return paras[paras.length-1]; }
+  function brk(){ paras.push([]); }
+  function walk(node, f){
+    node.childNodes.forEach(function(ch){
+      if(ch.nodeType===3){ var t=ch.nodeValue.replace(/ /g," ").replace(/[\r\n]+/g," "); if(t) cur().push({t:t,b:f.b,i:f.i,u:f.u,color:f.color}); return; }
+      if(ch.nodeType!==1) return;
+      var tag=ch.tagName.toLowerCase();
+      if(tag==="br"){ brk(); return; }
+      var cc=colorOf(ch); var nf={b:f.b||tag==="b"||tag==="strong", i:f.i||tag==="i"||tag==="em", u:f.u||tag==="u", color:cc? cc.slice(1).toUpperCase() : f.color};
+      var block=/^(div|p|li|h[1-6]|ul|ol)$/.test(tag);
+      if(block && cur().length) brk();
+      if(tag==="li") cur().push({t:"• ",b:false,i:false,u:false});
+      walk(ch, nf);
+      if(block && cur().length) brk();
+    });
+  }
+  walk(box,{b:false,i:false,u:false});
+  while(paras.length>1 && !paras[paras.length-1].length) paras.pop();
+  return paras;
+}
+function runX(r, sz){
+  return '<w:r><w:rPr>'+(r.b?'<w:b/>':'')+(r.i?'<w:i/>':'')+(r.u?'<w:u w:val="single"/>':'')+(r.color?'<w:color w:val="'+r.color+'"/>':'')+'<w:sz w:val="'+sz+'"/><w:szCs w:val="'+sz+'"/></w:rPr><w:t xml:space="preserve">'+xe(r.t)+'</w:t></w:r>';
+}
+var DOCX_LINE=240;
+function paraX(runs, sz, o){
+  o=o||{};
+  return '<w:p><w:pPr>'+(o.keep?'<w:keepNext/>':'')+(o.pb?'<w:pageBreakBefore/>':'')+'<w:spacing w:before="'+(o.before||0)+'" w:after="'+(o.after||0)+'" w:line="'+(o.line||Math.round(sz*10*lhOf()*1.05))+'" w:lineRule="'+(o.line?"auto":"exact")+'"/>'+(o.jc?'<w:jc w:val="'+o.jc+'"/>':'')+'<w:rPr><w:sz w:val="'+sz+'"/></w:rPr></w:pPr>'+runs.map(function(r){ return runX(r,sz); }).join("")+'</w:p>';
+}
+function cellX(innerParas, w, o){
+  o=o||{};
+  return '<w:tc><w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/>'+(o.span>1?'<w:gridSpan w:val="'+o.span+'"/>':'')+(o.fill?'<w:shd w:val="clear" w:color="auto" w:fill="'+o.fill+'"/>':'')+(o.vc?'<w:vAlign w:val="center"/>':'')+'</w:tcPr>'+(innerParas||'<w:p/>')+'</w:tc>';
+}
+function weekTableX(s, sz, totalW){
+  var n=s.dias.length, colW=Math.floor(totalW/n);
+  var x='<w:tbl><w:tblPr><w:tblW w:w="'+(colW*n)+'" w:type="dxa"/><w:jc w:val="center"/><w:tblBorders>'
+    +['top','left','bottom','right','insideH','insideV'].map(function(b){ return '<w:'+b+' w:val="single" w:sz="6" w:space="0" w:color="444444"/>'; }).join("")
+    +'</w:tblBorders><w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="28" w:type="dxa"/><w:left w:w="90" w:type="dxa"/><w:bottom w:w="28" w:type="dxa"/><w:right w:w="90" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>';
+  for(var i=0;i<n;i++) x+='<w:gridCol w:w="'+colW+'"/>';
+  x+='</w:tblGrid>';
+  // cabeçalho: dia + data + aula
+  x+='<w:tr><w:trPr><w:tblHeader/><w:cantSplit/></w:trPr>'+s.dias.map(function(di){
+    return cellX(paraX([{t:(di.nome||"")+" "+fmtPt(di.data),b:true}],sz,{jc:"center",line:228})+(di.aula? paraX([{t:"Aula nº "+di.aula,b:true}],sz,{jc:"center",line:228}) : ""), colW, {fill:"DCE6F2",vc:true});
+  }).join("")+'</w:tr>';
+  s.linhas.forEach(function(L,li){
+    if(L.titulo) x+='<w:tr><w:trPr><w:cantSplit/></w:trPr>'+cellX(paraX([{t:L.titulo,b:true}],sz,{keep:true}), colW*n, {span:n, fill:"EEF2F7"})+'</w:tr>';
+    x+='<w:tr>'+s.dias.map(function(di){
+      var ps="";
+      if(di.estado && li===0) ps+=paraX([{t:di.estado,b:true,color:"7A1F14"}],sz+2,{jc:"center",before:40,after:80});
+      ps+=htmlToParas(di.cel[L.id]).map(function(rs){ return paraX(rs,sz); }).join("");
+      return cellX(ps, colW, {fill: di.estado? "F1F1F1" : null});
+    }).join("")+'</w:tr>';
+  });
+  // blocos do fundo
+  var notas=s.notas.filter(function(nt){ return nt.titulo || (nt.html||"").replace(/<[^>]+>|\s|&nbsp;/g,""); });
+  function noteParas(nt){ return (nt.titulo? paraX([{t:nt.titulo,b:true}],sz) : "")+htmlToParas(nt.html).map(function(rs){ return paraX(rs,sz); }).join(""); }
+  if(notas.length && notas.length<=n){
+    var base=Math.floor(n/notas.length), extra=n%notas.length;
+    x+='<w:tr>'+notas.map(function(nt,k){ var sp=base+(k<extra?1:0); return cellX(noteParas(nt), colW*sp, {span:sp}); }).join("")+'</w:tr>';
+  } else notas.forEach(function(nt){ x+='<w:tr>'+cellX(noteParas(nt), colW*n, {span:n})+'</w:tr>'; });
+  return x+'</w:tbl>';
+}
+function buildDocx(weeks){
+  var d=state.data.definicoes;
+  DOCX_LINE=Math.round(240*lhOf());
+  var PW=16838, PH=11906, M=397, totalW=PW-2*M;
+  var NS='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"';
+  var hasLogo=!!d.logo;
+  var sz=Math.round(fsOf()*2);
+  var body="";
+  weeks.forEach(function(s,i){
+    var wsz=Math.round(fitWeek(s, 0.93).fs*2);
+    body+=paraX([{t:"Semana de "+weekLabel(s),b:true}], 16, {jc:"center",after:20,keep:true,pb:i>0,line:220});
+    body+=weekTableX(s, wsz, totalW);
+  });
+  body+='<w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="20" w:lineRule="exact"/><w:rPr><w:sz w:val="2"/></w:rPr></w:pPr></w:p>';
+  var sect='<w:sectPr><w:headerReference w:type="default" r:id="rIdH1"/><w:footerReference w:type="default" r:id="rIdF1"/><w:pgSz w:w="'+PW+'" w:h="'+PH+'" w:orient="landscape"/><w:pgMar w:top="900" w:right="'+M+'" w:bottom="560" w:left="'+M+'" w:header="300" w:footer="240" w:gutter="0"/></w:sectPr>';
+  var documentXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document '+NS+'><w:body>'+body+sect+'</w:body></w:document>';
+
+  // cabeçalho: tabela sem bordas (logo | escola | título/turma/ano)
+  var logoX="";
+  if(hasLogo){
+    var hEmu=310000, wEmu=Math.round(hEmu*(d.logoW||1)/(d.logoH||1));
+    if(wEmu>1100000){ hEmu=Math.round(hEmu*1100000/wEmu); wEmu=1100000; }
+    logoX='<w:p><w:pPr><w:spacing w:after="0"/></w:pPr><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="'+wEmu+'" cy="'+hEmu+'"/><wp:docPr id="1" name="Logotipo"/><wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic><pic:nvPicPr><pic:cNvPr id="0" name="logo.png"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rIdImg1"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="'+wEmu+'" cy="'+hEmu+'"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>';
+  }
+  var cm=6400, side=Math.floor((totalW-cm)/2), c1=hasLogo?1500:10, c2=side-c1, c3=side, cmW=totalW-c1-c2-c3;
+  var noB='<w:tblBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="single" w:sz="8" w:space="0" w:color="1F3D6B"/><w:right w:val="nil"/><w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders>';
+  var hdr='<w:tbl><w:tblPr><w:tblW w:w="'+totalW+'" w:type="dxa"/>'+noB+'<w:tblLayout w:type="fixed"/><w:tblCellMar><w:left w:w="0" w:type="dxa"/><w:bottom w:w="30" w:type="dxa"/><w:right w:w="0" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid><w:gridCol w:w="'+c1+'"/><w:gridCol w:w="'+c2+'"/><w:gridCol w:w="'+cmW+'"/><w:gridCol w:w="'+c3+'"/></w:tblGrid><w:tr>'
+    +cellX(logoX||'<w:p/>', c1, {vc:true})
+    +cellX(paraX([{t:d.escola||"",b:true,color:"1F3D6B"}],18,{line:240})+(d.agrupamento? paraX([{t:d.agrupamento}],14,{line:240}) : ""), c2, {vc:true})
+    +cellX(paraX([{t:d.titulo||"Planificação Semanal",b:true,color:"1F3D6B"},{t:(d.turma?" · "+d.turma:"")+" · Ano letivo "+(d.anoLetivo||"")}],17,{jc:"center",line:240}), cmW, {vc:true})
+    +cellX(paraX([{t:"",b:true}],17,{jc:"right",line:240}), c3, {vc:true})
+    +'</w:tr></w:tbl><w:p><w:pPr><w:spacing w:after="0" w:line="40" w:lineRule="exact"/><w:rPr><w:sz w:val="2"/></w:rPr></w:pPr></w:p>';
+  var headerXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:hdr '+NS+'>'+hdr+'</w:hdr>';
+
+  // rodapé: docente | ano letivo | página X de Y
+  function fld(code){ return '<w:r><w:rPr><w:sz w:val="14"/></w:rPr><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:rPr><w:sz w:val="14"/></w:rPr><w:instrText xml:space="preserve"> '+code+' </w:instrText></w:r><w:r><w:rPr><w:sz w:val="14"/></w:rPr><w:fldChar w:fldCharType="separate"/></w:r><w:r><w:rPr><w:sz w:val="14"/></w:rPr><w:t>1</w:t></w:r><w:r><w:rPr><w:sz w:val="14"/></w:rPr><w:fldChar w:fldCharType="end"/></w:r>'; }
+  var ft='<w:p><w:pPr><w:pBdr><w:top w:val="single" w:sz="6" w:space="2" w:color="1F3D6B"/></w:pBdr><w:tabs><w:tab w:val="center" w:pos="'+Math.round(totalW/2)+'"/><w:tab w:val="right" w:pos="'+totalW+'"/></w:tabs><w:spacing w:after="0"/></w:pPr>'
+    +runX({t:"Docente: "+(d.docente||"")},14)+'<w:r><w:rPr><w:sz w:val="14"/></w:rPr><w:tab/></w:r>'+runX({t:(d.turma?d.turma+" · ":"")+"Ano letivo "+(d.anoLetivo||"")},14)+'<w:r><w:rPr><w:sz w:val="14"/></w:rPr><w:tab/></w:r>'
+    +runX({t:"Página "},14)+fld("PAGE")+runX({t:" de "},14)+fld("NUMPAGES")+'</w:p>';
+  var footerXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr '+NS+'>'+ft+'</w:ftr>';
+
+  var stylesXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:sz w:val="'+sz+'"/><w:szCs w:val="'+sz+'"/><w:lang w:val="pt-PT"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="0" w:line="240" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style><w:style w:type="table" w:default="1" w:styleId="TableNormal"><w:name w:val="Normal Table"/><w:tblPr><w:tblInd w:w="0" w:type="dxa"/><w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="108" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/><w:right w:w="108" w:type="dxa"/></w:tblCellMar></w:tblPr></w:style></w:styles>';
+  var settingsXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:updateFields w:val="true"/><w:defaultTabStop w:val="708"/><w:compat><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat></w:settings>';
+  var ct='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/>'
+    +'<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/><Override PartName="/word/header1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>';
+  var rels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/></Relationships>';
+  var docRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rIdS" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rIdSet" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/><Relationship Id="rIdH1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="header1.xml"/><Relationship Id="rIdF1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/></Relationships>';
+  var hdrRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+(hasLogo?'<Relationship Id="rIdImg1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/logo.png"/>':'')+'</Relationships>';
+  var core='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>'+xe((d.titulo||"Planificação")+" – "+(d.turma||""))+'</dc:title><dc:creator>'+xe(d.docente||"")+'</dc:creator><dcterms:created xsi:type="dcterms:W3CDTF">'+new Date().toISOString().slice(0,19)+'Z</dcterms:created></cp:coreProperties>';
+
+  var files=[
+    {name:"[Content_Types].xml", data:ct},
+    {name:"_rels/.rels", data:rels},
+    {name:"docProps/core.xml", data:core},
+    {name:"word/document.xml", data:documentXml},
+    {name:"word/styles.xml", data:stylesXml},
+    {name:"word/settings.xml", data:settingsXml},
+    {name:"word/header1.xml", data:headerXml},
+    {name:"word/footer1.xml", data:footerXml},
+    {name:"word/_rels/document.xml.rels", data:docRels},
+    {name:"word/_rels/header1.xml.rels", data:hdrRels}
+  ];
+  if(hasLogo) files.push({name:"word/media/logo.png", data:b64ToBytes(d.logo.split(",")[1])});
+  return zipStore(files);
+}
+
+/* =========================================================
+   IMPRIMIR / PDF  (janela de impressão do navegador)
+   cabeçalho e rodapé repetem-se em cada página (thead/tfoot)
+   ========================================================= */
+function fsOf(){ var v=+state.data.definicoes.tamanhoLetra; return v>=6&&v<=16? v : 10; }
+function lhOf(){ var v=+state.data.definicoes.entrelinha; return v>=0.9&&v<=1.6? v : 1.1; }
+function planTableHTML(s, fs){
+  var n=s.dias.length;
+  var t='<table class="p-plan" style="font-size:'+fs+'pt;line-height:'+lhOf()+'">';
+  t+='<thead><tr>'+s.dias.map(function(di){ return '<th>'+esc(di.nome)+' '+esc(fmtPt(di.data))+(di.aula? '<br>Aula nº '+esc(di.aula) : "")+'</th>'; }).join("")+'</tr></thead><tbody>';
+  s.linhas.forEach(function(L,li){
+    if(L.titulo) t+='<tr><td colspan="'+n+'" class="p-band">'+esc(L.titulo)+'</td></tr>';
+    t+='<tr>'+s.dias.map(function(di){ return '<td class="'+(di.estado?"p-est":"")+'">'+(di.estado&&li===0?'<div class="p-tag">'+esc(di.estado)+'</div>':"")+sanitizeStored(di.cel[L.id]||"")+'</td>'; }).join("")+'</tr>';
+  });
+  var notas=s.notas.filter(function(nt){ return nt.titulo || (nt.html||"").replace(/<[^>]+>|\s|&nbsp;/g,""); });
+  if(notas.length) t+='<tr><td colspan="'+n+'" style="padding:0"><div class="p-notes">'+notas.map(function(nt){ return '<div><b>'+esc(nt.titulo)+'</b>'+sanitizeStored(nt.html||"")+'</div>'; }).join("")+'</div></td></tr>';
+  return t+'</tbody></table>';
+}
+/* altura útil de uma folha A4 deitada: 210mm − margens 14mm − cabeçalho 12,5mm − rodapé 5,5mm */
+var MM=96/25.4, PAGE_H=(210-14-12.5-5.5)*MM;
+function measureWeek(s, fs){
+  var m=$("measure"); m.innerHTML=planTableHTML(s, fs);
+  var h=m.firstChild.getBoundingClientRect().height; m.innerHTML=""; return h;
+}
+/* tamanho de letra que faz a semana caber numa folha (mínimo 6pt) */
+function fitWeek(s, safety){
+  var base=fsOf(), avail=PAGE_H*(safety||0.98);
+  if(!state.data.definicoes.caberPagina) return {fs:base, fits: measureWeek(s,base)<=avail};
+  for(var f=base; f>=6; f-=0.5){ if(measureWeek(s,f)<=avail) return {fs:f, fits:true}; }
+  return {fs:6, fits:false};
+}
+function headHTML(s){
+  var d=state.data.definicoes;
+  return '<div class="p-head"><div class="p-left">'+(d.logo?'<div class="p-logo"><img alt="" src="'+d.logo+'"></div>':"")
+    +'<div class="p-esc"><b>'+esc(d.escola)+'</b>'+(d.agrupamento?'<br><span>'+esc(d.agrupamento)+'</span>':"")+'</div></div>'
+    +'<div class="p-mid"><b>'+esc(d.titulo||"Planificação Semanal")+'</b>'+(d.turma?' · '+esc(d.turma):"")+' · Ano letivo '+esc(d.anoLetivo)+'</div>'
+    +'<div class="p-right">Semana de '+esc(weekLabel(s))+'</div></div>';
+}
+function printHTML(weeks){
+  var d=state.data.definicoes;
+  return weeks.map(function(s){
+    var r=fitWeek(s);
+    var foot='<div class="p-foot"><span>Docente: '+esc(d.docente)+'</span><span>'+esc(d.escola)+'</span></div>';
+    return '<div class="p-sheet'+(r.fits?"":" long")+'">'+headHTML(s)+'<div class="p-body">'+planTableHTML(s,r.fs)+'</div>'+foot+'</div>';
+  }).join("");
+}
+function doPrint(weeks){
+  $("printArea").innerHTML=printHTML(weeks);
+  state.oldTitle=document.title; document.title=fileBase(weeks);
+  var imgs=$("printArea").querySelectorAll("img"), left=imgs.length;
+  function go(){ setTimeout(function(){ window.print(); }, 60); }
+  if(!left) return go();
+  imgs.forEach(function(im){ if(im.complete){ if(--left===0) go(); } else im.onload=im.onerror=function(){ if(--left===0) go(); }; });
+}
+window.addEventListener("afterprint", function(){ $("printArea").innerHTML=""; if(state.oldTitle) document.title=state.oldTitle; });
+
+/* =========================================================
+   EXPORTAR (Word / PDF)
+   ========================================================= */
+function fileBase(weeks){
+  var d=state.data.definicoes;
+  var nome=(d.titulo||"Planificação")+" "+(plan().nome||"");
+  if(weeks.length===1) nome+=" - semana "+weekLabel(weeks[0]).replace(/\s/g,"").replace(/a/,"_a_");
+  else nome+=" - "+weeks.length+" semanas";
+  return nome.replace(/[\\/:*?"<>|]/g,"-").replace(/\s+/g," ").trim();
+}
+function downloadBytes(filename, bytes, mime){
+  var url=URL.createObjectURL(new Blob([bytes],{type:mime}));
+  var a=document.createElement("a"); a.href=url; a.download=filename; document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 2000);
+}
+function openExport(kind){
+  var s=week(), d=state.data.definicoes, ws=sortedWeeks();
+  var driveOk = d.driveLigada && state.drive.status==="ok" && !state.drive.mismatch;
+  openModal('<h3>'+(kind==="docx"?"Guardar em Word":"Imprimir ou guardar em PDF")+'</h3>'
+    +'<label class="choice"><input type="radio" name="exScope" value="one" checked><div><b>Só esta semana</b><span>'+esc(weekLabel(s))+'</span></div></label>'
+    +'<label class="choice"><input type="radio" name="exScope" value="all"><div><b>Todas as semanas de “'+esc(plan().nome)+'”</b><span>'+ws.length+' semana(s), uma por página, da mais antiga para a mais recente.</span></div></label>'
+    +(kind==="docx"
+      ? '<label class="choice"><input type="checkbox" id="exDl" checked><div><b>Descarregar para o computador</b><span>Fica na pasta Transferências.</span></div></label>'
+      : '<label class="choice"><input type="checkbox" id="exDl" checked><div><b>Abrir a janela de impressão</b><span>Para PDF, escolhe a impressora “Guardar como PDF”. A folha já sai deitada (A4 horizontal).</span></div></label>')
+    +'<label class="choice"><input type="checkbox" id="exDrive"'+(driveOk?"":" disabled")+'><div><b>Guardar uma cópia na Drive</b><span>'+(driveOk? "Na pasta “"+esc(d.pasta)+"”." : "Entra primeiro com a Google em “Configurações”.")+'</span></div></label>'
+    +'<div class="progress" id="exProg"></div>'
+    +'<div class="modal-foot"><button class="btn btn-ghost" type="button" data-close>Fechar</button><button class="btn btn-primary" type="button" id="exGo">'+(kind==="docx"?"Criar Word":"Continuar")+'</button></div>');
+  $("exGo").onclick=function(){
+    var all=document.querySelector('input[name=exScope]:checked').value==="all";
+    var list= all? ws.slice().reverse() : [s];
+    var dl=$("exDl").checked, dv=$("exDrive").checked;
+    if(!dl && !dv){ toast("Escolhe pelo menos uma opção."); return; }
+    $("exGo").disabled=true;
+    var prog=function(m){ var p=$("exProg"); if(p) p.textContent=m; };
+    runExport(kind, list, dl, dv, prog).then(function(msg){
+      if(kind==="pdf" && dl){ closeModal(); doPrint(list); if(msg) toast(msg,4000); return; }
+      prog(msg); if($("exGo")) $("exGo").disabled=false; toast(msg, 4000);
+    }).catch(function(e){
+      prog(driveErr(e)); if($("exGo")) $("exGo").disabled=false;
+    });
+  };
+}
+function runExport(kind, weeks, dl, dv, prog){
+  var base=fileBase(weeks), docx=buildDocx(weeks), fid=state.drive.folderId;
+  var DOCX="application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+  var done=[];
+  var p=Promise.resolve();
+  if(kind==="docx"){
+    if(dv) p=p.then(function(){ prog("A guardar o Word na Drive…"); return createFile({name:base+".docx", parents:[fid]}, docx, DOCX); }).then(function(){ done.push("guardado na Drive"); });
+    if(dl) p=p.then(function(){ downloadBytes(base+".docx", docx, DOCX); done.push("descarregado"); });
+    return p.then(function(){ return "Word "+done.join(" e ")+"."; });
+  }
+  if(dv){
+    // PDF na Drive: o Word é convertido em Documento Google e exportado em PDF
+    var tmpId=null;
+    p=p.then(function(){ prog("A converter na Drive…"); return createFile({name:"tmp_"+base, parents:[fid], mimeType:"application/vnd.google-apps.document"}, docx, DOCX); })
+      .then(function(r){ tmpId=r.id; prog("A criar o PDF…"); return api("GET", API+"/files/"+tmpId+"/export?mimeType=application/pdf", null, null, "buf"); })
+      .then(function(buf){ prog("A guardar o PDF na Drive…"); return createFile({name:base+".pdf", parents:[fid]}, new Uint8Array(buf), "application/pdf"); })
+      .then(function(){ done.push("PDF guardado na Drive"); if(tmpId) api("DELETE", API+"/files/"+tmpId).catch(function(){}); },
+            function(e){ if(tmpId) api("DELETE", API+"/files/"+tmpId).catch(function(){}); throw e; });
+  }
+  return p.then(function(){ return done.join(". ")+(done.length?".":""); });
+}
+
+/* =========================================================
+   EVENTOS GERAIS
+   ========================================================= */
+document.addEventListener("click", function(e){
+  var t=e.target.closest("[data-nav]");
+  if(t){ state.view=t.getAttribute("data-nav"); renderMain(); renderWeeks(); window.scrollTo(0,0); return; }
+  var w=e.target.closest("[data-week]");
+  if(w){ state.semanaId=w.getAttribute("data-week"); state.view="semana"; renderWeeks(); renderMain(); return; }
+  var si=e.target.closest("[data-snip-ins]");
+  if(si){ var tx=state.data.textos.filter(function(x){return x.id===si.getAttribute("data-snip-ins");})[0]; if(tx) insertSnippet(tx); return; }
+  var se=e.target.closest("[data-snip-edit]");
+  if(se){ openSnip(se.getAttribute("data-snip-edit")); return; }
+});
+document.addEventListener("mousedown", function(e){ if(e.target.closest("[data-snip-ins]")) e.preventDefault(); });
+$("modal").addEventListener("click", function(e){ if(e.target===$("modal")) closeModal(); });
+document.addEventListener("keydown", function(e){
+  if(e.key==="Escape" && $("modal").classList.contains("open")) closeModal();
+  if(!(e.ctrlKey||e.metaKey) || !state.data) return;
+  var k=e.key.toLowerCase(), t=e.target, editing=t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
+  if(editing) return; // dentro de uma célula o próprio navegador desfaz a escrita
+  if(k==="z" && !e.shiftKey){ e.preventDefault(); doUndo(); }
+  else if(k==="y" || (k==="z" && e.shiftKey)){ e.preventDefault(); doRedo(); }
+});
+$("btnUndo").addEventListener("mousedown", function(e){ e.preventDefault(); });
+$("btnRedo").addEventListener("mousedown", function(e){ e.preventDefault(); });
+$("btnUndo").onclick=doUndo; $("btnRedo").onclick=doRedo;
+
+/* ---------- instalar como aplicação (ícone no ambiente de trabalho / telemóvel) ---------- */
+(function(){
+  var deferred=null, btn=$("btnInstall");
+  var standalone = (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone===true;
+  if(standalone){ btn.hidden=true; $("btnRefresh").hidden=false; }
+  $("btnRefresh").addEventListener("click", function(){
+    var b=$("btnRefresh"); b.classList.add("spin"); b.disabled=true;
+    try{ histCommit(); }catch(e){}
+    saveLocal();
+    var p = (state.drive && state.drive.pending && state.data && state.data.definicoes.driveLigada) ? driveSave(false) : Promise.resolve();
+    var upd = (navigator.serviceWorker && navigator.serviceWorker.getRegistration) ? navigator.serviceWorker.getRegistration().then(function(r){ return r && r.update(); }).catch(function(){}) : Promise.resolve();
+    Promise.all([p, upd]).catch(function(){}).then(function(){ location.reload(); });
+    setTimeout(function(){ location.reload(); }, 6000);
+  });
+  if("serviceWorker" in navigator && location.protocol==="https:"){ navigator.serviceWorker.register("sw.js").catch(function(){}); }
+  window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); deferred=e; });
+  window.addEventListener("appinstalled", function(){ btn.hidden=true; deferred=null; toast("Aplicação instalada. Já tens o ícone no ambiente de trabalho / ecrã principal."); });
+  btn.addEventListener("click", function(){
+    if(deferred){
+      deferred.prompt();
+      deferred.userChoice.then(function(c){ if(c && c.outcome==="accepted") toast("A instalar…"); deferred=null; });
+      return;
+    }
+    var ua=navigator.userAgent, ios=/iPhone|iPad|iPod/i.test(ua) || (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1), android=/Android/i.test(ua);
+    var safariMac=/Macintosh/.test(ua) && /Safari/.test(ua) && !/Chrome|Edg/.test(ua), firefox=/Firefox/i.test(ua);
+    var steps;
+    if(ios) steps='<ol class="inst"><li>Abre este site no <b>Safari</b>.</li><li>Carrega no botão <b>Partilhar</b> (o quadrado com a seta para cima ⬆️), em baixo ou em cima.</li><li>Desce e escolhe <b>Adicionar ao ecrã principal</b>.</li><li>Carrega em <b>Adicionar</b>. O ícone aparece no ecrã do iPhone/iPad.</li></ol>';
+    else if(android) steps='<ol class="inst"><li>Abre este site no <b>Chrome</b>.</li><li>Carrega nos <b>três pontos ⋮</b> no canto superior direito.</li><li>Escolhe <b>Instalar aplicação</b> ou <b>Adicionar ao ecrã principal</b>.</li><li>Confirma. O ícone aparece no ecrã do telemóvel.</li></ol>';
+    else if(safariMac) steps='<ol class="inst"><li>No Safari, abre o menu <b>Ficheiro</b>.</li><li>Escolhe <b>Adicionar à Dock…</b> e confirma.</li></ol>';
+    else if(firefox) steps='<p>O Firefox não cria ícones de aplicações. Abre este site no <b>Google Chrome</b> ou no <b>Microsoft Edge</b> e carrega outra vez no botão <b>📲</b>.</p>';
+    else steps='<ol class="inst"><li>Usa o <b>Google Chrome</b> ou o <b>Microsoft Edge</b>.</li><li>Na barra de endereço, à direita, carrega no ícone de <b>instalar</b> (um ecrã com uma seta ⬇️), ou abre o menu <b>⋮</b> → <b>Transmitir, guardar e partilhar</b> → <b>Instalar página como aplicação…</b></li><li>Carrega em <b>Instalar</b>. Fica um ícone no ambiente de trabalho e no menu Iniciar.</li></ol><p>Se o botão não aparecer, recarrega a página (Ctrl+F5) e tenta de novo.</p>';
+    openModal('<h3>Criar ícone da aplicação</h3><p>Assim abres a Planificação com um clique, como qualquer outro programa, sem procurar o site.</p>'+steps+'<div class="modal-foot"><button class="btn btn-primary" type="button" data-close>Percebi</button></div>');
+  });
+})();
+
+$("btnDoc").onclick=openDocMenu;
+$("userAv").addEventListener("click", function(e){ e.stopPropagation(); $("userMenu").hidden=!$("userMenu").hidden; });
+document.addEventListener("click", function(e){ if(!e.target.closest(".userbox")) $("userMenu").hidden=true; });
+$("btnFind").onclick=openFindWeek;
+$("btnNewModel").addEventListener("mousedown", function(e){ e.preventDefault(); });
+$("btnNewModel").onclick=saveModel;
+document.addEventListener("click", function(e){
+  var u=e.target.closest("[data-model-use]"); if(u){ useModel(u.getAttribute("data-model-use")); return; }
+  var m=e.target.closest("[data-model-edit]"); if(m){ editModel(m.getAttribute("data-model-edit")); }
+});
+/* ---------- ajuda ---------- */
+(function(){
+  var fab=$("helpFab"), panel=$("helpPanel"), q=$("helpSearch");
+  function norm(t){ return (t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase(); }
+  function open(v){ panel.hidden=!v; fab.classList.toggle("open", v); fab.textContent= v? "✕" : "?"; fab.setAttribute("aria-label", v? "Fechar ajuda" : "Ajuda"); if(v) setTimeout(function(){ q.focus(); }, 50); }
+  /* o botão pode ser arrastado para qualquer sítio do ecrã; a posição fica guardada */
+  var POS_KEY="planificacao_help_pos", drag=null, moved=false;
+  function place(x,y){
+    var w=fab.offsetWidth||56, h=fab.offsetHeight||56;
+    x=Math.max(6, Math.min(window.innerWidth-w-6, x)); y=Math.max(6, Math.min(window.innerHeight-h-6, y));
+    fab.style.left=x+"px"; fab.style.top=y+"px"; fab.style.right="auto"; fab.style.bottom="auto";
+    return {x:x,y:y};
+  }
+  try{ var sp=JSON.parse(localStorage.getItem(POS_KEY)||"null"); if(sp) place(sp.x*window.innerWidth, sp.y*window.innerHeight); }catch(e){}
+  fab.addEventListener("pointerdown", function(e){
+    var r=fab.getBoundingClientRect(); drag={dx:e.clientX-r.left, dy:e.clientY-r.top, sx:e.clientX, sy:e.clientY}; moved=false;
+    fab.setPointerCapture(e.pointerId);
+  });
+  fab.addEventListener("pointermove", function(e){
+    if(!drag) return;
+    if(!moved && Math.abs(e.clientX-drag.sx)+Math.abs(e.clientY-drag.sy)<6) return;
+    moved=true; fab.classList.add("dragging");
+    place(e.clientX-drag.dx, e.clientY-drag.dy);
+  });
+  fab.addEventListener("pointerup", function(e){
+    if(!drag) return; drag=null; fab.classList.remove("dragging");
+    if(moved){
+      var r=fab.getBoundingClientRect();
+      try{ localStorage.setItem(POS_KEY, JSON.stringify({x:r.left/window.innerWidth, y:r.top/window.innerHeight})); }catch(x){}
+    }
+  });
+  window.addEventListener("resize", function(){ if(fab.style.left){ var r=fab.getBoundingClientRect(); place(r.left, r.top); } });
+  fab.addEventListener("click", function(e){ if(moved){ e.preventDefault(); moved=false; return; } open(panel.hidden); });
+  $("helpClose").addEventListener("click", function(){ open(false); });
+  document.addEventListener("keydown", function(e){
+    if(e.key==="F1"){ e.preventDefault(); open(panel.hidden); }
+    else if(e.key==="Escape" && !panel.hidden && !$("modal").classList.contains("open")) open(false);
+  });
+  q.addEventListener("input", function(){
+    var t=norm(q.value.trim()), any=false;
+    panel.querySelectorAll(".hs").forEach(function(sec){
+      var hit=!t || norm(sec.textContent).indexOf(t)>-1;
+      sec.hidden=!hit; if(hit) any=true;
+      if(t) sec.open=hit;
+    });
+    $("helpNone").hidden=any;
+  });
+})();
+
+$("btnNewWeek").onclick=function(){ openNewWeek(); };
+
+$("btnNewSnip").addEventListener("mousedown", function(e){ e.preventDefault(); });
+$("btnNewSnip").onclick=function(){ openSnip(null); };
+$("btnSaveNow").onclick=function(){ driveSave(true); };
+$("planSel").onchange=function(e){
+  if(e.target.value==="__new"){ renderPlanSel(); newPlan(); return; }
+  state.planId=e.target.value; state.semanaId=null; state.view="semana"; renderAll();
+};
+window.addEventListener("beforeunload", saveLocal);
+document.addEventListener("visibilitychange", function(){ if(document.hidden && state.data){ saveLocal(); if(state.drive.pending && state.data.definicoes.driveAuto) driveSave(false); } });
+try{ document.execCommand("defaultParagraphSeparator", false, "div"); }catch(e){}
+
+/* =========================================================
+   CONTA DA APLICAÇÃO (email + password, com recuperação)
+   ========================================================= */
+function authMsg(e){
+  var m=(e&&e.message)||String(e||"");
+  if(/invalid login credentials/i.test(m)) return "Email ou password errados. Confirma as maiúsculas e o email; se não te lembras, carrega em “Esqueci-me da password” (não cries outra conta).";
+  if(/email not confirmed/i.test(m)) return "Ainda não confirmaste o email. Abre a mensagem que te enviámos e carrega no link.";
+  if(/already registered|already been registered/i.test(m)) return "Já existe uma conta com este email. Entra, ou recupera a password.";
+  if(/password should be at least|weak/i.test(m)) return "A password é demasiado fraca. Usa pelo menos 8 caracteres, com letras e números.";
+  if(/rate limit|too many/i.test(m)) return "Muitas tentativas seguidas. Espera um minuto e tenta outra vez.";
+  if(/same.*password|different from the old/i.test(m)) return "A nova password tem de ser diferente da anterior.";
+  if(/failed to fetch|network/i.test(m)) return "Sem ligação à internet.";
+  return m||"Algo correu mal. Tenta outra vez.";
+}
+function siteURL(){ return location.origin+location.pathname; }
+function gate(mode, info){
+  var g=$("gate"); g.hidden=false; document.body.classList.add("locked");
+  var h='<div class="gate-card"><div class="gate-brand"><div class="brand-mark">P</div><div><h1>Planificação Semanal</h1><div class="sub">Planifica a semana, guarda na tua Drive, imprime.</div></div></div>';
+  if(!state.sb){
+    if(SUPABASE_URL){ h+='<p class="gate-p">Não consegui carregar o início de sessão. Verifica a ligação à internet e recarrega a página.</p><button class="btn btn-primary" type="button" onclick="location.reload()">Recarregar</button>'; g.innerHTML=h+'</div>'; return; }
+    h+='<p class="gate-p">O acesso com conta ainda não está configurado neste site.</p><button class="btn btn-primary" type="button" id="gTest">Experimentar sem conta</button>';
+    g.innerHTML=h+'</div>'; $("gTest").onclick=function(){ startApp({id:"local", email:""}); }; return;
+  }
+  if(mode==="login"){
+    h+='<h2>Entrar</h2><form id="gForm" novalidate><div class="field"><label for="gEmail">Email</label><input id="gEmail" type="email" autocomplete="email" required></div>'
+      +'<div class="field"><label for="gPass">Password</label><input id="gPass" type="password" autocomplete="current-password" required></div>'
+      +'<div class="gate-err" id="gErr">'+(info||"")+'</div><button class="btn btn-primary gate-go" type="submit">Entrar</button></form>'
+      +'<div class="gate-links"><button type="button" class="linkish" id="gForgot">Esqueci-me da password</button><button type="button" class="linkish" id="gNew">Criar conta</button></div>';
+  } else if(mode==="signup"){
+    h+='<h2>Criar conta</h2><form id="gForm" novalidate><div class="field"><label for="gEmail">Email</label><input id="gEmail" type="email" autocomplete="email" required></div>'
+      +'<div class="field"><label for="gPass">Password (mínimo 8 caracteres)</label><input id="gPass" type="password" autocomplete="new-password" required></div>'
+      +'<div class="field"><label for="gPass2">Repetir password</label><input id="gPass2" type="password" autocomplete="new-password" required></div>'
+      +'<div class="gate-err" id="gErr"></div><button class="btn btn-primary gate-go" type="submit">Criar conta</button></form>'
+      +'<p class="gate-p" style="font-size:12.5px">Já tens conta mas não te lembras da password? Não cries outra: usa <b>Esqueci-me da password</b>.</p><div class="gate-links"><button type="button" class="linkish" id="gBack">Já tenho conta</button><button type="button" class="linkish" id="gForgot2">Esqueci-me da password</button></div>';
+  } else if(mode==="forgot"){
+    h+='<h2>Recuperar password</h2><p class="gate-p">Escreve o teu email. Enviamos um link para criares uma password nova.</p><form id="gForm" novalidate><div class="field"><label for="gEmail">Email</label><input id="gEmail" type="email" autocomplete="email" required></div>'
+      +'<div class="gate-err" id="gErr"></div><button class="btn btn-primary gate-go" type="submit">Enviar link</button></form>'
+      +'<div class="gate-links"><button type="button" class="linkish" id="gBack">Voltar a entrar</button></div>';
+  } else if(mode==="newpass"){
+    h+='<h2>Nova password</h2><form id="gForm" novalidate><div class="field"><label for="gPass">Nova password (mínimo 8 caracteres)</label><input id="gPass" type="password" autocomplete="new-password" required></div>'
+      +'<div class="field"><label for="gPass2">Repetir</label><input id="gPass2" type="password" autocomplete="new-password" required></div>'
+      +'<div class="gate-err" id="gErr"></div><button class="btn btn-primary gate-go" type="submit">Guardar password</button></form>';
+  } else if(mode==="sent"){
+    h+='<h2>Verifica o teu email</h2><p class="gate-p">'+info+'</p><p class="gate-p">Se não aparecer em 2 minutos, procura no Spam ou Promoções.</p><div class="gate-links"><button type="button" class="linkish" id="gBack">Voltar a entrar</button></div>';
+  }
+  g.innerHTML=h+'<div class="gate-p" style="font-size:12px;text-align:center"><a href="privacidade.html">Privacidade</a> · <a href="termos.html">Termos</a></div></div>';
+  if($("gForgot")) $("gForgot").onclick=function(){ gate("forgot"); };
+  if($("gNew")) $("gNew").onclick=function(){ gate("signup"); };
+  if($("gForgot2")) $("gForgot2").onclick=function(){ gate("forgot"); };
+  if($("gBack")) $("gBack").onclick=function(){ gate("login"); };
+  var f=$("gForm"); if(!f) return;
+  var first=f.querySelector("input"); if(first) first.focus();
+  f.addEventListener("submit", function(e){
+    e.preventDefault();
+    var err=$("gErr"), btn=f.querySelector("button[type=submit]");
+    var email=$("gEmail")? $("gEmail").value.trim() : "", pass=$("gPass")? $("gPass").value : "", pass2=$("gPass2")? $("gPass2").value : "";
+    if($("gEmail") && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ err.textContent="Escreve um email válido."; return; }
+    if((mode==="signup"||mode==="newpass") && pass.length<8){ err.textContent="A password precisa de pelo menos 8 caracteres."; return; }
+    if((mode==="signup"||mode==="newpass") && pass!==pass2){ err.textContent="As passwords não são iguais."; return; }
+    if(mode==="login" && !pass){ err.textContent="Escreve a password."; return; }
+    err.textContent=""; btn.disabled=true;
+    var p;
+    if(mode==="login") p=state.sb.auth.signInWithPassword({email:email, password:pass});
+    else if(mode==="signup") p=state.sb.auth.signUp({email:email, password:pass, options:{emailRedirectTo:siteURL()}});
+    else if(mode==="forgot") p=state.sb.auth.resetPasswordForEmail(email, {redirectTo:siteURL()});
+    else p=state.sb.auth.updateUser({password:pass});
+    p.then(function(r){
+      btn.disabled=false;
+      if(r.error){ err.textContent=authMsg(r.error); return; }
+      if(mode==="signup"){
+        if(r.data && r.data.user && Array.isArray(r.data.user.identities) && r.data.user.identities.length===0){
+          err.textContent="Já existe uma conta com este email. Volta a “Entrar” ou usa “Esqueci-me da password”."; return;
+        }
+        if(r.data && r.data.session) return; // confirmação de email desligada: entra logo
+        gate("sent", "Enviámos um email para <b>"+esc(email)+"</b>. Carrega no link para ativar a conta e depois entra aqui.");
+      } else if(mode==="forgot"){
+        gate("sent", "Se existir uma conta com <b>"+esc(email)+"</b>, vais receber um link para criar uma password nova.");
+      } else if(mode==="newpass"){
+        state.recovering=false; toast("Password alterada."); startApp(r.data.user);
+      }
+    }).catch(function(x){ btn.disabled=false; err.textContent=authMsg(x); });
+  });
+}
+function startApp(user){
+  if(state.started && state.user && user && state.user.id===user.id){ $("gate").hidden=true; document.body.classList.remove("locked"); return; }
+  state.user=user; state.started=true;
+  var email=(user.email||"").trim().toLowerCase();
+  LS_KEY = LS_BASE+":"+(email||user.id||"local");
+  state.data = loadLocal();
+  if(!state.data && email){
+    // primeira vez com esta chave: procura trabalho antigo deste email guardado neste computador
+    var old=localSaves().filter(function(x){ return x.key!==LS_KEY && x.semanas>0 && (x.email===email || x.key===LS_BASE+":"+user.id || x.key===LS_BASE+":local"); }).sort(function(a,b){ return String(b.data.atualizadoEm).localeCompare(String(a.data.atualizadoEm)); })[0];
+    if(old){ state.data=old.data; saveLocal(); setTimeout(function(){ toast("Recuperei o teu trabalho guardado neste computador."); }, 600); }
+  }
+  if(!state.data) state.data=normalize(defaultData());
+  if(email) state.data.dono=email;
+  if(!state.data.definicoes.conta && user.email) state.data.definicoes.conta=user.email;
+  state.planId = state.data.planificacoes[0].id; state.semanaId=null; state.view="semana";
+  $("gate").hidden=true; document.body.classList.remove("locked");
+  histReset();
+  $("userBox").hidden=false; $("userEmail").textContent=user.email||"sem conta";
+  $("userAv").textContent=((user.email||"?").trim()[0]||"?").toUpperCase(); $("userAv").title=(user.email||"Sem conta")+" · clica para sair";
+  renderAll();
+  if(state.data.definicoes.driveLigada) renderDrivePill();
+}
+$("btnLogout").onclick=function(){
+  saveLocal();
+  if(state.sb) state.sb.auth.signOut().then(function(){ location.reload(); }); else location.reload();
+};
+$("drivePill").addEventListener("click", function(){
+  if(state.drive.status==="ok") { driveSave(true); return; }
+  if(state.data.definicoes.driveLigada) driveConnect(true); else { state.view="defs"; renderMain(); renderWeeks(); }
+});
+
+/* =========================================================
+   ARRANQUE
+   ========================================================= */
+window.__plan = {startApp:function(u){ return startApp(u); }, showRecover:function(a){ return showRecover(a); }, buildDocx:function(w){ return buildDocx(w); }, state:state, htmlToParas:htmlToParas, cleanHTML:cleanHTML, printHTML:function(w){ return printHTML(w); }};
+(function boot(){
+  if(SUPABASE_URL && SUPABASE_KEY && window.supabase && window.supabase.createClient){
+    state.sb=window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {auth:{persistSession:true, autoRefreshToken:true, detectSessionInUrl:true}});
+    state.sb.auth.onAuthStateChange(function(ev, session){
+      if(ev==="PASSWORD_RECOVERY"){ state.recovering=true; gate("newpass"); return; }
+      if(state.recovering) return;
+      if(session && session.user) startApp(session.user);
+      else if(ev==="SIGNED_OUT"){ gate("login"); }
+    });
+    state.sb.auth.getSession().then(function(r){
+      var s=r && r.data && r.data.session;
+      if(state.recovering) return;
+      if(s && s.user) startApp(s.user); else gate("login");
+    }).catch(function(){ gate("login"); });
+  } else {
+    gate("login");
+  }
+})();
+})();
+</script>
+
+</body>
+</html>
