@@ -1,0 +1,17 @@
+{
+  "name": "Limpezas — Gestão AL",
+  "short_name": "Limpezas",
+  "description": "Registar o início e o fim das limpezas",
+  "lang": "pt-PT",
+  "start_url": "/limpeza.html?app=1",
+  "scope": "/limpeza",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F3EDE3",
+  "theme_color": "#2FB5A5",
+  "icons": [
+    { "src": "/limpeza-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/limpeza-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/limpeza-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

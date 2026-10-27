@@ -122,6 +122,20 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 .sw{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
 .sw button{width:30px;height:30px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px var(--line2)}
 .sw button.on{box-shadow:0 0 0 2px var(--ink)}
+.lchk label{display:flex;align-items:center;gap:8px;padding:8px 2px;font-size:14px;border-bottom:1px solid var(--line)}.lchk input{width:18px;height:18px}.lchk small{color:var(--ink3);margin-left:auto}
+.lnkbox{margin-top:12px;font-size:12px;word-break:break-all;background:#EEF5F4;border:1px solid #CFE6E2;border-radius:10px;padding:9px 11px;color:var(--accent-d)}
+.eqc{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:11px 12px;margin-top:8px}.eqc .t{display:flex;align-items:center;gap:8px;font-weight:700}.eqc .s{font-size:12px;color:var(--ink2);margin-top:3px}.eqc .b{display:flex;gap:6px;margin-top:9px}.eqc .b .btn{flex:1;padding:8px 6px;font-size:13px}
+.tagoff{font-size:11px;background:#F6DCDA;color:var(--red);border-radius:6px;padding:1px 6px;font-weight:700}
+.hrp{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:11px 12px;margin-top:10px}.hrp .t{display:flex;justify-content:space-between;font-weight:700;font-size:15px}.hrp .s{font-size:12px;color:var(--ink2);margin-top:2px}.hrp table{width:100%;border-collapse:collapse;margin-top:8px;font-size:12px}.hrp td{padding:5px 2px;border-top:1px solid var(--line)}.hrp td.r{text-align:right;white-space:nowrap}
+.lstat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 10px;margin:0 0 10px}.lstat .h{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink2);margin:2px 2px 6px}
+.lstat .r{display:flex;align-items:center;gap:8px;padding:8px 6px;border-top:1px solid var(--line);cursor:pointer;font-size:13px}.lstat .r i{width:10px;height:10px;border-radius:50%;flex:none}.lstat .r b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lstat .e{font-weight:700;text-align:right;white-space:nowrap}.lstat .e small{display:block;font-weight:400;color:var(--ink3);font-size:11px}
+.lstat .curso .e{color:var(--amber)}.lstat .atrasada .e{color:var(--red)}.lstat .falta .e{color:var(--ink)}.lstat .feita .e{color:var(--direta)}
+em.lb{font-style:normal;font-size:13px;line-height:1;margin-left:auto;flex:none;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
+.legend.lgl{margin-top:-2px}.legend.lgl u{display:inline-block;width:16px;height:5px;border-radius:3px;margin-right:5px;vertical-align:middle}
+em.lb u{display:block;width:16px;height:5px;border-radius:3px;background:var(--red)}
+em.lb.curso u{background:#F2C230;animation:lbp 1.4s ease-in-out infinite}em.lb.feita u{background:var(--direta)}
+@keyframes lbp{50%{opacity:.3}}
 .note{font-size:12px;color:var(--ink2);background:#F7F2E9;border-radius:11px;padding:9px 11px;margin-top:10px}
 .toast{position:fixed;left:50%;bottom:78px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-size:13px;z-index:99;max-width:90vw;box-shadow:0 6px 20px rgba(0,0,0,.3)}
 .aj{border:1px solid var(--line);border-radius:13px;margin-top:8px;overflow:hidden}
@@ -218,7 +232,7 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 <!-- APP -->
 <div id="app" class="hide">
   <header>
-    <div class="t"><div class="logo" style="width:32px;height:32px;font-size:13px;border-radius:9px">AL</div> Gestão AL <span class="badge hide" id="demoBadge">EXEMPLO</span><small style="font-size:10px;color:var(--ink3);font-weight:600">v3.4</small></div>
+    <div class="t"><div class="logo" style="width:32px;height:32px;font-size:13px;border-radius:9px">AL</div> Gestão AL <span class="badge hide" id="demoBadge">EXEMPLO</span><small style="font-size:10px;color:var(--ink3);font-weight:600">v3.5</small></div>
     <a class="lnk hide" id="lnkGerirmais" href="index.html" title="Ir para a Gestão de Negócio (mesma conta)">Gerirmais ↗</a>
     <button class="ibtn" id="copiaBtn" onclick="abrirCopias()" title="Cópias na Google Drive">☁️</button>
     <button class="ibtn" onclick="sair()" title="Sair">⏻</button>
@@ -292,7 +306,7 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 <div id="mTar" class="ov hide" onclick="if(event.target===this)fechar('mTar')"><div class="sheet">
   <h2 id="tTitulo">Nova tarefa</h2>
   <div class="row2">
-    <label class="fld"><span>Tipo</span><select id="tTipo"><option value="limpeza">🧹 Limpeza</option><option value="avaria">🔧 Avaria</option><option value="compra">🛒 Compra</option><option value="lembrete">🔔 Lembrete</option></select></label>
+    <label class="fld"><span>Tipo</span><select id="tTipo" onchange="tTipoMudou()"><option value="limpeza">🧹 Limpeza</option><option value="avaria">🔧 Avaria</option><option value="compra">🛒 Compra</option><option value="lembrete">🔔 Lembrete</option></select></label>
     <label class="fld"><span>Estado</span><select id="tEst"><option value="pendente">Pendente</option><option value="em_curso">Em curso</option><option value="feita">Feita</option></select></label>
   </div>
   <label class="fld"><span>O que é preciso fazer</span><input id="tTit" placeholder="Ex: Mudar lâmpada da sala"></label>
@@ -300,7 +314,15 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
     <label class="fld"><span>Alojamento</span><select id="tAloj"></select></label>
     <label class="fld"><span>Data</span><input id="tData" type="date"></label>
   </div>
-  <label class="fld"><span>Responsável (opcional)</span><input id="tResp" placeholder="Ex: D. Rosa"></label>
+  <label class="fld" id="tRespBox"><span>Responsável (opcional)</span><input id="tResp" placeholder="Ex: D. Rosa"></label>
+  <div id="tLimpBox" class="hide">
+    <label class="fld"><span>🧽 Quem limpa (equipa de limpeza)</span><select id="tLimp"></select></label>
+    <div class="row2">
+      <label class="fld"><span>Começou</span><input id="tIni" type="datetime-local"></label>
+      <label class="fld"><span>Terminou</span><input id="tFim" type="datetime-local"></label>
+    </div>
+    <div class="note" id="tLimpInfo"></div>
+  </div>
   <label class="fld"><span>Notas</span><textarea id="tNotas" rows="2"></textarea></label>
   <div class="note hide" id="tRes"></div>
   <div class="acts"><button class="btn red hide" id="tDel" onclick="apagarTarefa()">Apagar</button><button class="btn" onclick="fechar('mTar')">Cancelar</button><button class="btn pri" onclick="guardarTarefa()">Guardar</button></div>
@@ -347,6 +369,45 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
   <label class="fld"><span>Texto</span><textarea id="nTxt" rows="6"></textarea></label>
   <label style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:14px"><input type="checkbox" id="nFix" style="width:18px;height:18px"> 📌 Fixar no topo</label>
   <div class="acts"><button class="btn red hide" id="nDel" onclick="apagarNota()">Apagar</button><button class="btn" onclick="fechar('mNota')">Cancelar</button><button class="btn pri" onclick="guardarNota()">Guardar</button></div>
+</div></div>
+
+<!-- JANELA: EQUIPA DE LIMPEZA -->
+<div id="mEquipa" class="ov hide" onclick="if(event.target===this)fechar('mEquipa')"><div class="sheet">
+  <h2>👥 Equipa de limpeza</h2>
+  <p style="font-size:13px;color:var(--ink2);margin-top:2px">Cada pessoa (ou empresa) recebe um <b>link só dela</b> para carregar em <b>▶ Comecei</b> e <b>■ Terminei</b> — fica registada a hora de cada limpeza. Pelo link só vê os <b>dias e o imóvel</b> das limpezas que lhe estão atribuídas: não vê hóspedes, valores nem contas.</p>
+  <div id="eqLista"></div>
+  <button class="btn pri full" style="margin-top:10px" onclick="abrirLimp()">+ Adicionar pessoa ou empresa</button>
+  <div class="acts"><button class="btn" onclick="fechar('mEquipa')">Fechar</button></div>
+</div></div>
+
+<!-- JANELA: PESSOA DA EQUIPA -->
+<div id="mLimp" class="ov hide" onclick="if(event.target===this)fechar('mLimp')"><div class="sheet">
+  <h2 id="lTitulo">Nova pessoa</h2>
+  <label class="fld"><span>Nome (pessoa ou empresa)</span><input id="lNome" maxlength="80" placeholder="Ex: D. Rosa / Limpezas Brilho"></label>
+  <div class="row2">
+    <label class="fld"><span>Telemóvel (para WhatsApp)</span><input id="lTel" type="tel" inputmode="tel" placeholder="9xx xxx xxx"></label>
+    <label class="fld"><span>Preço por hora (€, opcional)</span><input id="lPreco" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off"></label>
+  </div>
+  <div class="fld"><span>Imóveis que limpa normalmente</span><div id="lAlojs" class="lchk"></div></div>
+  <div class="note">As limpezas destes imóveis (as novas e as já marcadas de hoje em diante) ficam atribuídas a esta pessoa. Podes sempre mudar uma limpeza em particular no separador Tarefas.</div>
+  <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px"><input type="checkbox" id="lAtivo" style="width:18px;height:18px"> Link ativo <small style="color:var(--ink3)">(desliga para bloquear o acesso)</small></label>
+  <div id="lLinkBox" class="hide">
+    <div class="lnkbox" id="lLink"></div>
+    <div class="row2" style="margin-top:8px">
+      <button class="btn pri" onclick="enviarLink(S.editL)">📤 Enviar por WhatsApp</button>
+      <button class="btn" onclick="copiarLink(S.editL)">📋 Copiar link</button>
+    </div>
+    <button class="btn full" style="margin-top:8px" onclick="trocarLink()">🔄 Trocar link (o antigo deixa de funcionar)</button>
+  </div>
+  <div class="acts"><button class="btn red hide" id="lDel" onclick="apagarLimp()">Apagar</button><button class="btn" onclick="fechar('mLimp')">Cancelar</button><button class="btn pri" onclick="guardarLimp()">Guardar</button></div>
+</div></div>
+
+<!-- JANELA: HORAS DE LIMPEZA -->
+<div id="mHoras" class="ov hide" onclick="if(event.target===this)fechar('mHoras')"><div class="sheet">
+  <h2>⏱ Horas de limpeza</h2>
+  <div class="bar-top" style="margin-top:6px"><button class="nb" onclick="mudaMesH(-1)" aria-label="Mês anterior">‹</button><h2 id="hrMes" style="font-size:16px"></h2><button class="nb" onclick="mudaMesH(1)" aria-label="Mês seguinte">›</button></div>
+  <div id="hrCorpo"></div>
+  <div class="acts"><button class="btn" onclick="fechar('mHoras')">Fechar</button></div>
 </div></div>
 
 <!-- JANELA: CÓPIAS -->
@@ -413,6 +474,7 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
     <li><b>Cores</b>: Airbnb (laranja), Booking (azul), Direta (verde), Outra (roxo), Bloqueio (riscas).</li>
     <li><b>Tracejado</b> = reserva pendente. <b>Contorno vermelho ⚠</b> = duas reservas sobrepostas no mesmo alojamento.</li>
     <li>O dia de saída de um hóspede pode ser o dia de entrada do seguinte — isso <b>não</b> é sobreposição.</li>
+    <li><b>Vassoura 🧹</b> ao lado do nome do imóvel = limpeza de hoje: barra <b>vermelha</b> por fazer, <b>amarela</b> em curso, <b>verde</b> feita. Toca na vassoura para ver quem limpa e as horas.</li>
     <li>Usa <b>‹ ›</b> para mudar de mês e <b>Hoje</b> para voltar ao mês atual.</li>
   </ul></details>
 
@@ -422,9 +484,20 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
     <li>Toca no <b>círculo ◯</b> à direita para marcar como <b>feita</b> (toca outra vez para desfazer).</li>
     <li>Toca na tarefa para <b>editar</b> (data, responsável, estado) ou <b>apagar</b>.</li>
     <li>Em cima vês as <b>atrasadas</b> (a vermelho), as de <b>hoje</b> e as <b>próximas</b>. Usa os filtros para ver só um alojamento ou um tipo.</li>
+    <li>Numa limpeza vês <b>quem limpa</b> 🧽 e as <b>horas</b> registadas (podes corrigi-las).</li>
   </ol></details>
 
-  <details class="aj"><summary><span class="n">9</span>💶 Contas (receitas e despesas)</summary><ol>
+  <details class="aj"><summary><span class="n">9</span>🧽 Equipa de limpeza: link Comecei / Terminei</summary><ol>
+    <li>Em <b>Tarefas</b> carrega em <b>👥 Equipa de limpeza</b> → <b>+ Adicionar pessoa ou empresa</b>.</li>
+    <li>Escreve o <b>nome</b>, o <b>telemóvel</b>, o <b>preço por hora</b> (opcional) e marca os <b>imóveis</b> que essa pessoa limpa. <b>Guardar</b>.</li>
+    <li>Carrega em <b>📤 Enviar link</b>: abre o WhatsApp com a mensagem pronta (ou <b>📋 Copiar</b> para enviar por SMS).</li>
+    <li>A pessoa abre o link, carrega em <b>📲 Pôr ícone no telemóvel</b> e fica com o ícone <b>Limpezas</b>. No dia, carrega em <b>▶ Comecei</b> ao chegar e <b>■ Terminei</b> ao sair (pode deixar uma nota).</li>
+    <li>Pelo link ela só vê <b>os dias e o imóvel</b> das limpezas dela — nada de hóspedes, valores ou contas.</li>
+    <li>Em <b>⏱ Horas de limpeza</b> vês, por mês, as horas de cada pessoa e de cada imóvel, o custo e as limpezas por fazer. O botão <b>💶 Lançar em Contas</b> cria a despesa.</li>
+    <li>Para bloquear o acesso: <b>Editar</b> → desliga <b>Link ativo</b>. Para dar um link novo: <b>🔄 Trocar link</b> (o antigo deixa de funcionar).</li>
+  </ol></details>
+
+  <details class="aj"><summary><span class="n">10</span>💶 Contas (receitas e despesas)</summary><ol>
     <li>Escolhe <b>Mês</b> ou <b>Ano</b> e usa <b>‹ ›</b> para mudar de período.</li>
     <li><b>+ Receita</b> ou <b>+ Despesa</b>: valor, data, alojamento e categoria (podes escolher da lista ou escrever).</li>
     <li>As reservas com valor que ainda não lançaste aparecem em <b>"Reservas por lançar"</b> — carrega em <b>Lançar</b> (ou em <b>"Lançar as … de uma vez"</b>, para todas).</li>
@@ -433,7 +506,7 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
     <li>Toca num movimento para o <b>editar</b> ou <b>apagar</b>.</li>
   </ol></details>
 
-  <details class="aj"><summary><span class="n">10</span>👥 Hóspedes</summary><ol>
+  <details class="aj"><summary><span class="n">11</span>👥 Hóspedes</summary><ol>
     <li>Os hóspedes aparecem <b>sozinhos</b> quando escreves o nome numa reserva. Também podes criar com <b>+ Novo hóspede</b>.</li>
     <li>Toca num hóspede para ver a <b>ficha</b>: contactos, notas e todas as estadias. Os botões <b>Ligar / WhatsApp / Email</b> aparecem quando há contacto.</li>
     <li>Toca numa estadia da lista para abrir essa reserva.</li>
@@ -441,13 +514,13 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
     <li>Apagar a ficha <b>não</b> apaga as reservas.</li>
   </ol></details>
 
-  <details class="aj"><summary><span class="n">11</span>📝 Notas</summary><ol>
+  <details class="aj"><summary><span class="n">12</span>📝 Notas</summary><ol>
     <li>Guarda informação útil: Wi-Fi, códigos, contactos, regras da casa…</li>
     <li><b>+ Nova nota</b> → título, texto e alojamento (ou "Geral"). Marca <b>📌 Fixar</b> para ficar sempre no topo.</li>
     <li>Toca numa nota para <b>editar</b> ou <b>apagar</b>.</li>
   </ol></details>
 
-  <details class="aj"><summary><span class="n">12</span>☁️ Cópias de segurança na Google Drive</summary><ol>
+  <details class="aj"><summary><span class="n">13</span>☁️ Cópias de segurança na Google Drive</summary><ol>
     <li>Toca na <b>nuvem ☁️</b> no topo (um ponto vermelho quer dizer "por ligar" ou "falhou").</li>
     <li>Escreve o <b>email da conta Google</b> onde queres guardar e carrega em <b>Ligar / Guardar cópia agora</b>.</li>
     <li>Na janela da Google escolhe essa conta e aceita. Pronto: a partir daqui é <b>automático</b>.</li>
@@ -455,7 +528,7 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
     <li>Também podes <b>Descarregar Excel</b> para o aparelho quando quiseres.</li>
   </ol></details>
 
-  <details class="aj"><summary><span class="n">13</span>Passar para a Gerirmais e sair</summary><ul>
+  <details class="aj"><summary><span class="n">14</span>Passar para a Gerirmais e sair</summary><ul>
     <li>O botão <b>Gerirmais ↗</b> (em cima) leva-te à Gestão de Negócio, sem novo login — só aparece se tiveres acesso.</li>
     <li>O botão <b>⏻</b> termina a sessão nas duas aplicações neste aparelho.</li>
     <li>A conta e a password são as mesmas da Gerirmais. Esqueceste-te? Usa "Esqueci-me da password" na Gerirmais.</li>
@@ -477,7 +550,7 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
    ==================================================================== */
 const SUPA_URL='https://xkfshzlcwiuvztfdwvjm.supabase.co';   // MESMO projeto da gerirmais (Gestao de Negocio) → mesma conta, sem novo login
 const SUPA_KEY='sb_publishable_SGjww6C455tzA6wpIevT-w_t2X9lqMJ';   // chave publishable da gerirmais (pública; a segurança está no RLS)
-const VERSAO='3.4';
+const VERSAO='3.5';
 const GERIRMAIS_URL='index.html';
 
 /* ---------- utilitários ---------- */
@@ -643,21 +716,23 @@ const CAT_DES=['Limpeza','Lavandaria','Consumíveis','Manutenção / reparação
 const eur=v=>(Math.round((+v||0)*100)/100).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
 const fdl=s=>{if(!s)return'—';const d=new Date(pd(s));return d.getUTCDate()+' '+MS[d.getUTCMonth()]+' '+d.getUTCFullYear();};
 const optsAloj=(sel,vazio)=>(vazio?`<option value="">${vazio}</option>`:'')+S.aloj.map(a=>`<option value="${a.id}"${a.id===sel?' selected':''}>${esc(a.nome)}</option>`).join('');
-Object.assign(S,{tar:[],mov:[],notas:[],notasOk:true,fT:{aj:'',tipo:'',feitas:false},fC:{modo:'mes',y:new Date().getFullYear(),m:new Date().getMonth(),aj:''},fH:'',fN:'',editT:null,editM:null,editH:null,editN:null});
+Object.assign(S,{tar:[],mov:[],notas:[],notasOk:true,fT:{aj:'',tipo:'',feitas:false},fC:{modo:'mes',y:new Date().getFullYear(),m:new Date().getMonth(),aj:''},fH:'',fN:'',limp:[],limpOk:true,fHr:{y:new Date().getFullYear(),m:new Date().getMonth()},editL:null,editT:null,editM:null,editH:null,editN:null});
 
 /* ---------- dados: carregar extra / gravar / apagar genéricos ---------- */
 async function carregarExtra(){
   if(!nuvem())return;
-  const sb=S.sb,[t,m,n]=await Promise.all([
+  const sb=S.sb,[t,m,n,l]=await Promise.all([
     sb.from('al_tarefas').select('*').order('data',{ascending:true}),
     sb.from('al_movimentos').select('*').order('data',{ascending:false}),
-    sb.from('al_notas').select('*').order('atualizado_em',{ascending:false})]);
+    sb.from('al_notas').select('*').order('atualizado_em',{ascending:false}),
+    sb.from('al_limpadores').select('*').order('nome')]);
   if(t.error)throw t.error;if(m.error)throw m.error;
   S.tar=t.data;S.mov=m.data;
+  if(l.error){S.limp=[];S.limpOk=false;}else{S.limp=l.data;S.limpOk=true;}
   if(n.error){S.notas=[];S.notasOk=false;}else{S.notas=n.data;S.notasOk=true;}
-  if(S._jaCarregou)agendarCopia();S._jaCarregou=true;
+  if(S._jaCarregou&&!S._semCopia)agendarCopia();S._jaCarregou=true;
 }
-const LISTA={al_tarefas:'tar',al_movimentos:'mov',al_notas:'notas',al_hospedes:'hosp'};
+const LISTA={al_tarefas:'tar',al_movimentos:'mov',al_notas:'notas',al_hospedes:'hosp',al_limpadores:'limp'};
 async function gravar(tab,o){
   const k=LISTA[tab];
   if(!nuvem()){const i=S[k].findIndex(x=>x.id===o.id);if(i>=0)S[k][i]={...S[k][i],...o};else S[k].push({...o,id:o.id||uuid(),criado_em:new Date().toISOString()});return;}
@@ -675,15 +750,16 @@ function demoLimpeza(r){
   const ex=S.tar.find(t=>t.reserva_id===r.id&&t.tipo==='limpeza');
   if(r.estado==='confirmada'){
     if(ex){if(ex.estado!=='feita'){ex.data=r.checkout;ex.alojamento_id=r.alojamento_id;}}
-    else S.tar.push({id:uuid(),reserva_id:r.id,alojamento_id:r.alojamento_id,tipo:'limpeza',titulo:'Limpeza após check-out',data:r.checkout,estado:'pendente'});
+    else S.tar.push({id:uuid(),reserva_id:r.id,alojamento_id:r.alojamento_id,tipo:'limpeza',titulo:'Limpeza após check-out',data:r.checkout,estado:'pendente',limpador_id:(S.aloj.find(a=>a.id===r.alojamento_id)||{}).limpador_id||null});
   }else if(ex&&ex.estado==='pendente')S.tar=S.tar.filter(t=>t!==ex);
 }
 function demoExtra(){
   ['Portugal','Reino Unido','Brasil','Alemanha','Portugal','França'].forEach((p,i)=>{if(S.hosp[i])S.hosp[i].pais=p;});
+  S.limp=[{id:uuid(),nome:'D. Rosa',telefone:'912345678',preco_hora:8,ativo:true,token:tokenNovo()},{id:uuid(),nome:'Limpezas Brilho, Lda',telefone:'',preco_hora:12,ativo:true,token:tokenNovo()}];S.limpOk=true;
+  S.aloj[0].limpador_id=S.aloj[1].limpador_id=S.limp[0].id;S.aloj[2].limpador_id=S.limp[1].id;
   S.tar=[];S.res.forEach(demoLimpeza);
   const t=hoje(),A=S.aloj[0].id,B=S.aloj[1].id,C=S.aloj[2].id;
-  const passada=S.tar.find(x=>x.data<t);if(passada)passada.estado='feita';
-  if(S.tar[1])S.tar[1].responsavel='D. Rosa';
+  const passada=S.tar.find(x=>x.data<t);if(passada){passada.estado='feita';const d0=new Date(pd(passada.data)+10*36e5);passada.inicio=new Date(d0.getTime()+5*6e4).toISOString();passada.fim=new Date(d0.getTime()+(2*60+20)*6e4).toISOString();passada.nota_limpeza='Falta detergente da loiça';}
   S.tar.push({id:uuid(),alojamento_id:B,tipo:'avaria',titulo:'Torneira da cozinha a pingar',data:addD(t,2),estado:'pendente',responsavel:'Canalizador'},
              {id:uuid(),alojamento_id:A,tipo:'compra',titulo:'Comprar toalhas e café',data:addD(t,1),estado:'pendente'});
   const mes=t.slice(0,8);
@@ -710,7 +786,9 @@ function renderTarefas(m){
   let h=chips([[atras.length,'atrasadas',atras.length?'var(--red)':''],[hojeL.length,'para hoje'],[prox.length,'próximas'],[feitas.length,'feitas']]);
   h+=barraFiltro(`<select onchange="S.fT.aj=this.value;render()">${optsAloj(f.aj,'Todos os alojamentos')}</select>
     <select onchange="S.fT.tipo=this.value;render()"><option value="">Todos os tipos</option>${Object.entries(TIPOS_T).map(([k,v])=>`<option value="${k}"${f.tipo===k?' selected':''}>${v[0]} ${v[1]}</option>`).join('')}</select>`);
-  h+=`<button class="btn pri full" style="margin-top:4px" onclick="abrirTarefa()">+ Nova tarefa</button>`;
+  h+=blocoLimpezas();
+  h+=`<div class="row2" style="margin-top:4px"><button class="btn" onclick="abrirEquipa()">👥 Equipa de limpeza${S.limp.length?' ('+S.limp.length+')':''}</button><button class="btn" onclick="abrirHoras()">⏱ Horas de limpeza</button></div>`;
+  h+=`<button class="btn pri full" style="margin-top:8px" onclick="abrirTarefa()">+ Nova tarefa</button>`;
   const sec=(tit,arr,cls)=>arr.length?`<h3 class="sec"${cls?` style="color:${cls}"`:''}>${tit} (${arr.length})</h3>`+arr.sort(ord).map(cartaoTarefa).join(''):'';
   h+=sec('⚠ Atrasadas',atras,'var(--red)')+sec('Hoje',hojeL)+sec('Próximas',prox);
   if(!abertas.length)h+=`<div class="empty" style="padding:22px">✅ Nada por fazer${f.aj||f.tipo?' com estes filtros':''}.<br><small>As limpezas aparecem sozinhas quando crias uma reserva confirmada.</small></div>`;
@@ -719,7 +797,9 @@ function renderTarefas(m){
 }
 function cartaoTarefa(t){
   const [ic,nm]=TIPOS_T[t.tipo]||TIPOS_T.lembrete,r=t.reserva_id?S.res.find(x=>x.id===t.reserva_id):null,feita=t.estado==='feita';
-  const sub=[nomeAloj(t.alojamento_id),r&&nomeHosp(r)?'saída de '+nomeHosp(r):'',t.responsavel?'👤 '+t.responsavel:''].filter(Boolean).map(esc).join(' · ');
+  const lp=t.tipo==='limpeza'&&t.limpador_id?nomeLimp(t.limpador_id):'';
+  const hrs=t.tipo==='limpeza'&&t.inicio?(t.fim?'⏱ '+horaL(t.inicio)+'–'+horaL(t.fim)+' ('+durFmt(minutosT(t))+')':'⏳ a limpar desde '+horaL(t.inicio)):'';
+  const sub=[nomeAloj(t.alojamento_id),r&&nomeHosp(r)?'saída de '+nomeHosp(r):'',lp?'🧽 '+lp:'',t.responsavel&&!lp?'👤 '+t.responsavel:'',hrs,t.nota_limpeza?'💬 '+t.nota_limpeza:''].filter(Boolean).map(esc).join(' · ');
   return`<div class="ev${feita?' feita':''}" onclick="abrirTarefa('${t.id}')">
     <div class="d"><b>${t.data?new Date(pd(t.data)).getUTCDate():'—'}</b><span>${t.data?MS[new Date(pd(t.data)).getUTCMonth()]:''}</span></div>
     <div class="x"><div>${ic} ${esc(t.titulo)}</div><div>${sub||nm}</div></div>
@@ -741,6 +821,10 @@ function abrirTarefa(id){
   const r=t&&t.reserva_id?S.res.find(x=>x.id===t.reserva_id):null;
   $('tRes').innerHTML=r?`🔗 Ligada à reserva de <b>${esc(nomeHosp(r)||ORIG[r.origem])}</b> (${fd(r.checkin)} → ${fd(r.checkout)}). Se mudares as datas da reserva, esta limpeza acompanha.`:'';
   $('tRes').classList.toggle('hide',!r);$('tDel').classList.toggle('hide',!t);
+  $('tLimp').innerHTML=`<option value="">— ninguém atribuído —</option>`+S.limp.map(l=>`<option value="${l.id}"${t&&t.limpador_id===l.id?' selected':''}>${esc(l.nome)}${l.ativo?'':' (link desligado)'}</option>`).join('');
+  $('tIni').value=t&&t.inicio?paraInput(t.inicio):'';$('tFim').value=t&&t.fim?paraInput(t.fim):'';
+  $('tLimpInfo').innerHTML=(t&&t.inicio&&t.fim?`⏱ Duração: <b>${durFmt(minutosT(t))}</b>. `:'')+(t&&t.nota_limpeza?`💬 Nota de quem limpou: <b>${esc(t.nota_limpeza)}</b><br>`:'')+'As horas são registadas pela pessoa no link dela (botões Comecei / Terminei). Aqui podes corrigir, se for preciso.';
+  tTipoMudou();
   abrir('mTar');
 }
 async function guardarTarefa(){
@@ -748,11 +832,148 @@ async function guardarTarefa(){
   const o={tipo:$('tTipo').value,titulo:tit,alojamento_id:$('tAloj').value||null,data:$('tData').value||null,estado:$('tEst').value,
     responsavel:$('tResp').value.trim()||null,notas:$('tNotas').value.trim()||null};
   if(S.editT)o.id=S.editT;
+  if(o.tipo==='limpeza'&&limpDisponivel()){
+    const ini=$('tIni').value?new Date($('tIni').value):null,fim=$('tFim').value?new Date($('tFim').value):null;
+    if(fim&&!ini){toast('Preenche também a hora a que começou.');return;}
+    if(ini&&fim&&fim<ini){toast('A hora de fim é antes da hora de início.');return;}
+    if(ini&&fim&&fim-ini>16*36e5){toast('Mais de 16 horas? Confirma as datas de início e fim.');return;}
+    o.limpador_id=$('tLimp').value||null;o.inicio=ini?ini.toISOString():null;o.fim=fim?fim.toISOString():null;
+    if(fim)o.estado='feita';else if(ini&&o.estado==='pendente')o.estado='em_curso';
+  }
   try{await gravar('al_tarefas',o);fechar('mTar');render();toast(S.editT?'Tarefa atualizada ✓':'Tarefa criada ✓');}catch(e){toast('Não foi possível guardar: '+(e.message||e),4500);}
 }
 async function apagarTarefa(){
   if(!S.editT||!confirm('Apagar esta tarefa?'))return;
   try{await apagarDe('al_tarefas',S.editT);fechar('mTar');render();toast('Tarefa apagada');}catch(e){toast('Erro: '+(e.message||e),4500);}
+}
+
+/* ================= EQUIPA DE LIMPEZA (link Comecei / Terminei) — v3.5 ================= */
+const limpDisponivel=()=>!nuvem()||S.limpOk;
+const nomeLimp=id=>(S.limp.find(l=>l.id===id)||{}).nome||'';
+const tokenNovo=()=>Array.from(crypto.getRandomValues(new Uint8Array(24)),b=>b.toString(16).padStart(2,'0')).join('');
+const linkLimp=l=>new URL('limpeza.html?c='+encodeURIComponent(l.token),location.href).href;
+const minutosT=t=>t&&t.inicio&&t.fim?Math.max(0,Math.round((new Date(t.fim)-new Date(t.inicio))/6e4)):0;
+const durFmt=m=>{m=Math.round(m||0);return Math.floor(m/60)+'h'+String(m%60).padStart(2,'0');};
+const horaL=x=>new Date(x).toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});
+const paraInput=x=>{const d=new Date(x);return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,16);};
+function tTipoMudou(){const l=$('tTipo').value==='limpeza'&&limpDisponivel();$('tLimpBox').classList.toggle('hide',!l);$('tRespBox').classList.toggle('hide',l&&S.limp.length>0);}
+function semSQL(){toast('Falta ativar a Equipa de limpeza na base de dados (ficheiro 05_al_limpezas.sql).',5500);}
+
+function abrirEquipa(){if(!limpDisponivel()){semSQL();return;}desenharEquipa();abrir('mEquipa');}
+function desenharEquipa(){
+  $('eqLista').innerHTML=S.limp.length?S.limp.map(l=>{
+    const aj=S.aloj.filter(a=>a.limpador_id===l.id).map(a=>a.nome);
+    return`<div class="eqc"><div class="t">🧽 ${esc(l.nome)} ${l.ativo?'':'<span class="tagoff">LINK DESLIGADO</span>'}</div>
+      <div class="s">${aj.length?'Imóveis: '+aj.map(esc).join(', '):'Sem imóvel atribuído'}${l.preco_hora!=null&&l.preco_hora!==''?' · '+eur(l.preco_hora)+'/hora':''}${l.telefone?' · 📞 '+esc(l.telefone):''}</div>
+      <div class="b">${l.ativo?`<button class="btn" onclick="enviarLink('${l.id}')">📤 Enviar link</button><button class="btn" onclick="copiarLink('${l.id}')">📋 Copiar</button>`:''}<button class="btn" onclick="abrirLimp('${l.id}')">✏️ Editar</button></div></div>`;
+  }).join(''):`<div class="empty" style="padding:18px">Ainda não há ninguém na equipa.<br><small>Adiciona a senhora ou a empresa que faz as limpezas.</small></div>`;
+}
+function abrirLimp(id){
+  const l=id?S.limp.find(x=>x.id===id):null;S.editL=l?l.id:null;
+  $('lTitulo').textContent=l?'Editar — '+l.nome:'Nova pessoa ou empresa';
+  $('lNome').value=l?l.nome:'';$('lTel').value=l?(l.telefone||''):'';
+  $('lPreco').value=l&&l.preco_hora!=null?String(l.preco_hora).replace('.',','):'';
+  $('lAtivo').checked=l?l.ativo!==false:true;
+  $('lAlojs').innerHTML=S.aloj.length?S.aloj.map(a=>{const outro=a.limpador_id&&a.limpador_id!==(l&&l.id)?nomeLimp(a.limpador_id):'';
+    return`<label><input type="checkbox" value="${a.id}"${l&&a.limpador_id===l.id?' checked':''}><span style="width:10px;height:10px;border-radius:50%;background:${esc(a.cor||'#2FB5A5')}"></span>${esc(a.nome)}${outro?`<small>agora: ${esc(outro)}</small>`:''}</label>`;}).join(''):'<div class="note">Ainda não tens alojamentos.</div>';
+  $('lLinkBox').classList.toggle('hide',!l||!l.ativo);if(l)$('lLink').textContent=linkLimp(l);
+  $('lDel').classList.toggle('hide',!l);
+  abrir('mLimp');
+}
+async function guardarLimp(){
+  const nome=$('lNome').value.trim();if(!nome){toast('Escreve o nome.');return;}
+  const pt=$('lPreco').value.trim().replace(/\s|€/g,'').replace(',','.');let preco=null;
+  if(pt){preco=+pt;if(!isFinite(preco)||preco<0){toast('Preço por hora inválido.');return;}}
+  const o={nome,telefone:$('lTel').value.trim()||null,preco_hora:preco,ativo:$('lAtivo').checked};
+  const marcados=[...$('lAlojs').querySelectorAll('input:checked')].map(x=>x.value);
+  try{
+    let id=S.editL;
+    if(!nuvem()){
+      if(id)Object.assign(S.limp.find(x=>x.id===id),o);else{id=uuid();S.limp.push({...o,id,token:tokenNovo()});}
+    }else if(id){const{error}=await S.sb.from('al_limpadores').update(o).eq('id',id);if(error)throw error;}
+    else{const{data,error}=await S.sb.from('al_limpadores').insert(o).select().single();if(error)throw error;id=data.id;}
+    await atribuirImoveis(id,marcados);
+    if(nuvem())await carregar();
+    const novo=!S.editL;S.editL=id;fechar('mLimp');desenharEquipa();render();
+    toast(novo?'Adicionado ✓ Agora envia-lhe o link.':'Guardado ✓');
+    if(novo&&o.ativo)setTimeout(()=>abrirLimp(id),350);
+  }catch(e){toast('Não foi possível guardar: '+(e.message||e),5000);}
+}
+/* imóveis marcados → esta pessoa; limpezas ainda por começar (de hoje em diante) acompanham */
+async function atribuirImoveis(id,marcados){
+  const T=hoje(),mudar=[];
+  S.aloj.forEach(a=>{const tem=marcados.includes(a.id);
+    if(tem&&a.limpador_id!==id)mudar.push([a.id,id,null]);
+    else if(!tem&&a.limpador_id===id)mudar.push([a.id,null,id]);});
+  for(const[aid,novo,antigo]of mudar){
+    if(!nuvem()){
+      S.aloj.find(a=>a.id===aid).limpador_id=novo;
+      S.tar.forEach(t=>{if(t.tipo==='limpeza'&&t.alojamento_id===aid&&!t.inicio&&t.estado!=='feita'&&t.data&&t.data>=T&&(!antigo||t.limpador_id===antigo))t.limpador_id=novo;});
+      continue;
+    }
+    const r1=await S.sb.from('al_alojamentos').update({limpador_id:novo}).eq('id',aid);if(r1.error)throw r1.error;
+    let q=S.sb.from('al_tarefas').update({limpador_id:novo}).eq('alojamento_id',aid).eq('tipo','limpeza').is('inicio',null).neq('estado','feita').gte('data',T);
+    if(antigo)q=q.eq('limpador_id',antigo);
+    const r2=await q;if(r2.error)throw r2.error;
+  }
+}
+async function trocarLink(){
+  const l=S.limp.find(x=>x.id===S.editL);if(!l)return;
+  if(!confirm('Criar um link novo para '+l.nome+'?\n\nO link antigo deixa de funcionar logo. Depois envia-lhe o novo.'))return;
+  const token=tokenNovo();
+  try{if(nuvem()){const{error}=await S.sb.from('al_limpadores').update({token}).eq('id',l.id);if(error)throw error;await carregar();}else l.token=token;
+    abrirLimp(l.id);toast('Link novo criado ✓ Envia-o à pessoa.');}catch(e){toast('Erro: '+(e.message||e),4500);}
+}
+async function apagarLimp(){
+  const l=S.limp.find(x=>x.id===S.editL);if(!l)return;
+  if(!confirm('Apagar '+l.nome+' da equipa?\n\nO link deixa de funcionar e as limpezas ficam sem pessoa atribuída (as horas já registadas ficam, mas sem o nome).\n\nSe só queres bloquear o acesso, desliga o "Link ativo" em vez de apagar.'))return;
+  try{
+    if(nuvem()){const{error}=await S.sb.from('al_limpadores').delete().eq('id',l.id);if(error)throw error;await carregar();}
+    else{S.limp=S.limp.filter(x=>x!==l);S.aloj.forEach(a=>{if(a.limpador_id===l.id)a.limpador_id=null;});S.tar.forEach(t=>{if(t.limpador_id===l.id)t.limpador_id=null;});}
+    S.editL=null;fechar('mLimp');desenharEquipa();render();toast('Apagado');
+  }catch(e){toast('Erro: '+(e.message||e),4500);}
+}
+function msgLink(l){return'Olá '+l.nome+'! 👋\nEste é o seu link para registar as limpezas'+(S.aloj.some(a=>a.limpador_id===l.id)?' ('+S.aloj.filter(a=>a.limpador_id===l.id).map(a=>a.nome).join(', ')+')':'')+':\n'+linkLimp(l)+'\n\n1) Abra o link e carregue em «📲 Pôr ícone no telemóvel» — fica com o ícone Limpezas no ecrã.\n2) Ao chegar ao imóvel carregue em ▶ Comecei; ao sair, em ■ Terminei.\n\nObrigado!';}
+function telWhats(t){let d=String(t||'').replace(/\D/g,'');if(d.startsWith('00'))d=d.slice(2);if(d.length===9&&/^9/.test(d))d='351'+d;return d;}
+function enviarLink(id){const l=S.limp.find(x=>x.id===id);if(!l)return;window.open('https://wa.me/'+telWhats(l.telefone)+'?text='+encodeURIComponent(msgLink(l)),'_blank','noopener');}
+async function copiarLink(id){const l=S.limp.find(x=>x.id===id);if(!l)return;const t=msgLink(l);
+  try{await navigator.clipboard.writeText(t);toast('Mensagem com o link copiada ✓ Cola-a no WhatsApp ou SMS.');}catch(e){prompt('Copia a mensagem:',t);}}
+
+/* ---------- horas por mês ---------- */
+function abrirHoras(){if(!limpDisponivel()){semSQL();return;}desenharHoras();abrir('mHoras');}
+function mudaMesH(d){const f=S.fHr;f.m+=d;if(f.m<0){f.m=11;f.y--;}if(f.m>11){f.m=0;f.y++;}desenharHoras();}
+function limpezasDoMes(){const f=S.fHr,p=f.y+'-'+String(f.m+1).padStart(2,'0');return S.tar.filter(t=>t.tipo==='limpeza'&&t.data&&t.data.slice(0,7)===p);}
+function desenharHoras(){
+  const f=S.fHr,T=hoje(),L=limpezasDoMes().sort((a,b)=>a.data<b.data?-1:1);
+  $('hrMes').textContent=MESES[f.m]+' '+f.y;
+  if(!L.length){$('hrCorpo').innerHTML=`<div class="empty" style="padding:18px">Sem limpezas neste mês.</div>`;return;}
+  const grupos={};L.forEach(t=>{(grupos[t.limpador_id||'']=grupos[t.limpador_id||'']||[]).push(t);});
+  const ids=Object.keys(grupos).sort((a,b)=>!a?1:!b?-1:nomeLimp(a).localeCompare(nomeLimp(b)));
+  let totM=0,h='';
+  ids.forEach(id=>{
+    const G=grupos[id],l=S.limp.find(x=>x.id===id),feitas=G.filter(t=>t.fim||t.estado==='feita'),m=G.reduce((s,t)=>s+minutosT(t),0);totM+=m;
+    const semH=feitas.filter(t=>!t.fim).length,falta=G.filter(t=>!t.fim&&t.estado!=='feita'&&t.data<T).length;
+    const custo=l&&l.preco_hora!=null&&l.preco_hora!==''?m/60*(+l.preco_hora):null;
+    const porAj={};G.forEach(t=>{const k=t.alojamento_id||'';porAj[k]=porAj[k]||{n:0,m:0};if(t.fim||t.estado==='feita')porAj[k].n++;porAj[k].m+=minutosT(t);});
+    h+=`<div class="hrp"><div class="t"><span>${id?'🧽 '+esc(nomeLimp(id)):'Sem pessoa atribuída'}</span><span>${durFmt(m)}</span></div>
+      <div class="s">${feitas.length} limpeza${feitas.length===1?'':'s'} feita${feitas.length===1?'':'s'}${custo?' · '+eur(custo)+' ('+eur(l.preco_hora)+'/h)':''}${semH?' · '+semH+' sem horas registadas':''}${falta?' · <b style="color:var(--red)">'+falta+' por fazer</b>':''}</div>
+      ${Object.values(porAj).some(v=>v.n)?`<div class="s">${Object.entries(porAj).filter(([a,v])=>v.n).map(([a,v])=>esc(a?nomeAloj(a):'—')+': '+v.n+' · '+durFmt(v.m)).join(' &nbsp;|&nbsp; ')}</div>`:''}
+      <table>${G.map(t=>`<tr><td>${fd(t.data)}</td><td>${esc(nomeAloj(t.alojamento_id))}</td><td class="r">${t.inicio?horaL(t.inicio)+'–'+(t.fim?horaL(t.fim):'…'):(t.estado==='feita'?'feita':(t.data<T?'<span style="color:var(--red)">por fazer</span>':'—'))}</td><td class="r"><b>${t.fim?durFmt(minutosT(t)):''}</b></td></tr>`).join('')}</table>
+      ${custo?`<button class="btn full" style="margin-top:8px" onclick="lancarHoras('${id}')">💶 Lançar ${eur(custo)} em Contas (despesa)</button>`:''}</div>`;
+  });
+  $('hrCorpo').innerHTML=chips([[durFmt(totM),'total de horas'],[L.filter(t=>t.fim||t.estado==='feita').length,'limpezas feitas'],[L.filter(t=>!t.fim&&t.estado!=='feita'&&t.data<T).length,'por fazer',L.some(t=>!t.fim&&t.estado!=='feita'&&t.data<T)?'var(--red)':'']])+h;
+}
+async function lancarHoras(id){
+  const l=S.limp.find(x=>x.id===id);if(!l)return;const f=S.fHr,G=limpezasDoMes().filter(t=>t.limpador_id===id&&t.fim);
+  const ref='Limpezas '+MESES[f.m]+' '+f.y+' — '+l.nome;
+  if(S.mov.some(x=>(x.descricao||'').startsWith(ref))&&!confirm('Já há despesas lançadas para "'+ref+'".\nLançar outra vez?'))return;
+  const porAj={};G.forEach(t=>{porAj[t.alojamento_id||'']=(porAj[t.alojamento_id||'']||0)+minutosT(t);});
+  const ult=new Date(Date.UTC(f.y,f.m+1,0)).toISOString().slice(0,10),data=ult<hoje()?ult:hoje();
+  try{
+    for(const[aj,m]of Object.entries(porAj)){if(!m)continue;
+      await gravar('al_movimentos',{tipo:'despesa',categoria:'Limpeza',alojamento_id:aj||null,data,valor:Math.round(m/60*(+l.preco_hora)*100)/100,descricao:ref+' ('+durFmt(m)+')'});}
+    desenharHoras();render();toast('Despesa lançada em Contas ✓');
+  }catch(e){toast('Erro: '+(e.message||e),4500);}
 }
 
 /* ============================ CONTAS ============================ */
@@ -992,7 +1213,8 @@ async function gContaLigada(){
 /* ---------- conteúdo da cópia ---------- */
 function dadosCopia(){
   return{app:'Gestão AL',versao:VERSAO,criado_em:new Date().toISOString(),conta:S.user&&S.user.email,
-    alojamentos:S.aloj,reservas:S.res,hospedes:S.hosp,tarefas:S.tar,movimentos:S.mov,notas:S.notas,ical:S.fontes};
+    alojamentos:S.aloj,reservas:S.res,hospedes:S.hosp,tarefas:S.tar,movimentos:S.mov,notas:S.notas,ical:S.fontes,
+    equipa_limpeza:S.limp.map(({token,...l})=>l)};   // o link secreto não vai para a cópia
 }
 function excelCopia(){
   if(typeof XLSX==='undefined')return null;
@@ -1000,7 +1222,8 @@ function excelCopia(){
   const wb=XLSX.utils.book_new(),add=(nome,linhas)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(linhas.length?linhas:[{'(vazio)':''}]),nome);
   add('Reservas',S.res.slice().sort((a,b)=>a.checkin<b.checkin?-1:1).map(r=>({Alojamento:nA(r.alojamento_id),'Hóspede':nH(r.hospede_id),Nacionalidade:(()=>{const h=S.hosp.find(x=>x.id===r.hospede_id);return h&&h.pais?nomePais(h.pais):'';})(),'Check-in':r.checkin,'Check-out':r.checkout,Noites:diffD(r.checkin,r.checkout),Origem:ORIG[r.origem]||r.origem,Estado:r.estado,'Nº hóspedes':r.num_hospedes||'','Valor (€)':r.valor_total==null?'':+r.valor_total,Notas:r.notas||''})));
   add('Contas',S.mov.slice().sort((a,b)=>a.data<b.data?-1:1).map(x=>({Data:x.data,Tipo:x.tipo,Alojamento:x.alojamento_id?nA(x.alojamento_id):'Geral',Categoria:x.categoria||'',Reserva:(()=>{const r=x.reserva_id&&S.res.find(v=>v.id===x.reserva_id);return r?rotuloRes(r):'';})(),'Descrição':x.descricao||'','Valor (€)':x.tipo==='despesa'?-(+x.valor):+x.valor})));
-  add('Tarefas',S.tar.slice().sort((a,b)=>(a.data||'')<(b.data||'')?-1:1).map(t=>({Data:t.data||'',Tipo:t.tipo,Tarefa:t.titulo,Alojamento:nA(t.alojamento_id),Estado:EST_T[t.estado]||t.estado,'Responsável':t.responsavel||'',Notas:t.notas||''})));
+  add('Tarefas',S.tar.slice().sort((a,b)=>(a.data||'')<(b.data||'')?-1:1).map(t=>({Data:t.data||'',Tipo:t.tipo,Tarefa:t.titulo,Alojamento:nA(t.alojamento_id),Estado:EST_T[t.estado]||t.estado,'Responsável':t.limpador_id?nomeLimp(t.limpador_id):(t.responsavel||''),'Começou':t.inicio?new Date(t.inicio).toLocaleString('pt-PT'):'','Terminou':t.fim?new Date(t.fim).toLocaleString('pt-PT'):'','Horas':t.fim?+(minutosT(t)/60).toFixed(2):'','Nota da limpeza':t.nota_limpeza||'',Notas:t.notas||''})));
+  add('Equipa limpeza',S.limp.map(l=>({Nome:l.nome,'Telemóvel':l.telefone||'','Preço/hora (€)':l.preco_hora==null?'':+l.preco_hora,'Link ativo':l.ativo?'Sim':'Não','Imóveis':S.aloj.filter(a=>a.limpador_id===l.id).map(a=>a.nome).join(', ')})));
   add('Hóspedes',S.hosp.map(h=>({Nome:h.nome,Email:h.email||'',Telefone:h.telefone||'',Nacionalidade:h.pais?nomePais(h.pais):'',Estadias:estadiasDe(h.id).length,Notas:h.notas||''})));
   add('Notas',S.notas.map(n=>({Alojamento:n.alojamento_id?nA(n.alojamento_id):'Geral',Título:n.titulo,Texto:n.texto||'',Fixada:n.fixada?'Sim':''})));
   add('Alojamentos',S.aloj.map(a=>({Nome:a.nome,'Lotação':a.capacidade||'',Morada:a.morada||''})));
@@ -1106,6 +1329,27 @@ function optsPais(sel){
   if(sel&&!codPais(sel))h+=`<option value="${esc(sel)}" selected>${esc(sel)}</option>`;
   return h+'<optgroup label="Mais frequentes">'+PAIS_TOP.map(op).join('')+'</optgroup><optgroup label="Todos os países">'+ord.map(op).join('')+'</optgroup>';
 }
+/* ---------- estado da limpeza por imóvel (hoje) ---------- */
+function estadoLimp(ajId){
+  const T=hoje(),L=S.tar.filter(t=>t.tipo==='limpeza'&&t.alojamento_id===ajId);
+  const quem=t=>t.limpador_id?nomeLimp(t.limpador_id):(t.responsavel||'');
+  const c=L.find(t=>t.inicio&&!t.fim&&t.estado!=='feita');
+  if(c)return{k:'curso',ic:'🧽',txt:'Em curso desde '+horaL(c.inicio),q:quem(c),t:c};
+  const at=L.filter(t=>t.data&&t.data<T&&t.estado!=='feita'&&!t.fim).sort((a,b)=>a.data<b.data?-1:1)[0];
+  if(at)return{k:'atrasada',ic:'⚠️',txt:'Por fazer desde '+fd(at.data),q:quem(at),t:at};
+  const hj=L.find(t=>t.data===T&&t.estado!=='feita'&&!t.fim);
+  if(hj)return{k:'falta',ic:'⏳',txt:'Por limpar hoje',q:quem(hj),t:hj};
+  const f=L.filter(t=>(t.fim&&iso(Date.parse(t.fim)-new Date(t.fim).getTimezoneOffset()*6e4)===T)||(t.data===T&&t.estado==='feita')).sort((a,b)=>(a.fim||'')<(b.fim||'')?1:-1)[0];
+  if(f)return{k:'feita',ic:'✅',txt:f.fim?'Limpa às '+horaL(f.fim)+(f.inicio?' ('+durFmt(minutosT(f))+')':''):'Limpa',q:quem(f),t:f};
+  return null;
+}
+function blocoLimpezas(){
+  const E=S.aloj.map(a=>[a,estadoLimp(a.id)]).filter(([a,e])=>e);
+  if(!E.length)return'';
+  const ordem={curso:0,atrasada:1,falta:2,feita:3};E.sort((x,y)=>ordem[x[1].k]-ordem[y[1].k]);
+  return`<div class="lstat"><div class="h">🧽 Limpezas — hoje</div>${E.map(([a,e])=>`<div class="r ${e.k}" onclick="abrirTarefa('${e.t.id}')"><i style="background:${esc(a.cor)}"></i><b>${esc(a.nome)}</b><span class="e">${e.ic} ${esc(e.txt)}${e.q?`<small>${esc(e.q)}</small>`:''}</span></div>`).join('')}</div>`;
+}
+const badgeLimp=ajId=>{const e=estadoLimp(ajId);return e?`<em class="lb ${e.k}" title="${esc(e.txt+(e.q?' · '+e.q:''))}" aria-label="${esc(e.txt)}" onclick="event.stopPropagation();abrirTarefa('${e.t.id}')">🧹<u></u></em>`:'';};
 /* ---------- navegação ---------- */
 function tab(t){
   S.tab=t;
@@ -1147,6 +1391,7 @@ function render(){
   if(cf.length){const c=cf[0];h+=`<div class="alert" onclick="abrirRes('${c.a.id}')"><span>⚠️</span><div>${cf.length===1?'1 sobreposição':cf.length+' sobreposições'} de reservas<small>${esc(nomeAloj(c.a.alojamento_id))} · ${fd(c.de)} → ${fd(c.ate)} · ${esc(nomeHosp(c.a)||ORIG[c.a.origem])} × ${esc(nomeHosp(c.b)||ORIG[c.b.origem])}${cf.length>1?' (e mais '+(cf.length-1)+')':''}</small></div></div>`;}
 
   /* barra do mês */
+  h+=blocoLimpezas();
   h+=`<div class="bar-top"><button class="nb" onclick="mudaMes(-1)" aria-label="Mês anterior">‹</button><h2>${MESES[mes]} ${y}</h2><button class="nb today-btn" onclick="irHoje()">Hoje</button><button class="nb" onclick="mudaMes(1)" aria-label="Mês seguinte">›</button></div>`;
 
   /* colunas de fim de semana / hoje */
@@ -1171,11 +1416,12 @@ function render(){
       bars+=`<div class="res ${r.origem} ${r.estado==='bloqueio'?'bloqueio':''} ${r.estado==='pendente'?'pendente':''} ${emConf.has(r.id)?'conflito':''} ${ci<0?'cl':''} ${co>n?'cr':''}" style="left:${x0}px;width:${Math.max(18,x1-x0)}px;top:${4+ln*30}px" onclick="event.stopPropagation();abrirRes('${r.id}')" title="${esc(nm)} · ${fd(r.checkin)} → ${fd(r.checkout)}">${emConf.has(r.id)?'⚠ ':''}${esc(nm)}<small>${noi}n</small></div>`;
     });
     const hgt=Math.max(1,lanes.length)*30+8;
-    h+=`<div class="rw"><div class="lab" style="min-height:${hgt}px" onclick="abrirAloj('${a.id}')" title="Editar alojamento"><i style="background:${esc(a.cor)}"></i><span>${esc(a.nome)}</span></div>
+    h+=`<div class="rw"><div class="lab" style="min-height:${hgt}px" onclick="abrirAloj('${a.id}')" title="Editar alojamento"><i style="background:${esc(a.cor)}"></i><span>${esc(a.nome)}</span>${badgeLimp(a.id)}</div>
         <div class="cells" data-aj="${a.id}" style="width:${W}px;height:${hgt}px" onclick="cliqueDia(event,'${a.id}','${ini}',${dw})">${cols}${bars}</div></div>`;
   });
   h+=`</div></div>
     <div class="legend"><span><i style="background:var(--airbnb)"></i>Airbnb</span><span><i style="background:var(--booking)"></i>Booking</span><span><i style="background:var(--direta)"></i>Direta</span><span><i style="background:var(--outra)"></i>Outra</span><span><i style="background:#B8BFC7"></i>Bloqueio</span></div>
+    <div class="legend lgl"><span>🧹 Limpeza:</span><span><u style="background:var(--red)"></u>por fazer</span><span><u style="background:#F2C230"></u>em curso</span><span><u style="background:var(--direta)"></u>feita</span></div>
     <div style="display:flex;gap:8px;margin-top:10px"><button class="btn pri" style="flex:1" onclick="abrirRes()">+ Nova reserva</button><button class="btn" onclick="abrirAloj()">+ Alojamento</button></div>`;
 
   /* próximos movimentos */
@@ -1356,6 +1602,14 @@ async function arranque(){
   const{data}=await S.sb.auth.getSession();
   if(!data.session)mostrar('auth');
 }
+/* atualização automática (para ver as limpezas a mudar: em curso → feita) */
+async function atualizarSozinho(){
+  if(!nuvem()||document.hidden||$('app').classList.contains('hide')||document.querySelector('.ov:not(.hide)'))return;
+  const antes=JSON.stringify(S.tar);S._semCopia=true;
+  try{await carregar();if(!document.querySelector('.ov:not(.hide)'))render();if(JSON.stringify(S.tar)!==antes)agendarCopia();}catch(e){}finally{S._semCopia=false;}
+}
+setInterval(atualizarSozinho,90000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)atualizarSozinho();});
 window.addEventListener('resize',()=>{clearTimeout(window._rz);window._rz=setTimeout(()=>{if(!$('app').classList.contains('hide'))render();},150);});
 arranque();
 </script>
