@@ -216,7 +216,7 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 <!-- APP -->
 <div id="app" class="hide">
   <header>
-    <div class="t"><div class="logo" style="width:32px;height:32px;font-size:13px;border-radius:9px">AL</div> Gestão AL <span class="badge hide" id="demoBadge">EXEMPLO</span><small style="font-size:10px;color:var(--ink3);font-weight:600">v3.2</small></div>
+    <div class="t"><div class="logo" style="width:32px;height:32px;font-size:13px;border-radius:9px">AL</div> Gestão AL <span class="badge hide" id="demoBadge">EXEMPLO</span><small style="font-size:10px;color:var(--ink3);font-weight:600">v3.3</small></div>
     <a class="lnk hide" id="lnkGerirmais" href="index.html" title="Ir para a Gestão de Negócio (mesma conta)">Gerirmais ↗</a>
     <button class="ibtn" id="copiaBtn" onclick="abrirCopias()" title="Cópias na Google Drive">☁️</button>
     <button class="ibtn" onclick="sair()" title="Sair">⏻</button>
@@ -253,6 +253,7 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
   </div>
   <label class="fld"><span>Notas</span><textarea id="rNotas" rows="2"></textarea></label>
   <div id="rAviso"></div>
+  <div id="rContas"></div>
   <div class="acts">
     <button class="btn red hide" id="rDel" onclick="apagarRes()">Apagar</button>
     <button class="btn" onclick="fechar('mRes')">Cancelar</button>
@@ -309,8 +310,9 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
   </div>
   <div class="row2">
     <label class="fld"><span>Data</span><input id="mData" type="date"></label>
-    <label class="fld"><span>Alojamento</span><select id="mAlojSel"></select></label>
+    <label class="fld"><span>Alojamento</span><select id="mAlojSel" onchange="mReservas()"></select></label>
   </div>
+  <label class="fld"><span>Reserva associada (opcional)</span><select id="mResSel" onchange="mResEscolhida()"></select></label>
   <label class="fld"><span>Categoria</span><input id="mCat" list="dlCat" placeholder="Escolhe ou escreve" autocomplete="off"></label>
   <datalist id="dlCat"></datalist>
   <label class="fld"><span>Descrição (opcional)</span><input id="mDesc"></label>
@@ -422,6 +424,7 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
     <li><b>+ Receita</b> ou <b>+ Despesa</b>: valor, data, alojamento e categoria (podes escolher da lista ou escrever).</li>
     <li>As reservas com valor que ainda não lançaste aparecem em <b>"Reservas por lançar"</b> — carrega em <b>Lançar</b> (ou em <b>"Lançar as … de uma vez"</b>, para todas).</li>
     <li>Em cima tens o total de receitas, despesas e a <b>margem</b>. "Por alojamento" mostra cada casa; toca numa para a ver sozinha.</li>
+    <li>Numa receita ou despesa podes escolher a <b>Reserva associada</b> (opcional) — ex.: a limpeza ou a comissão daquela estadia. Ao abrir a reserva no calendário vês as <b>contas dessa reserva</b> (receitas, despesas e margem) e tens o botão <b>+ Despesa desta reserva</b>.</li>
     <li>Toca num movimento para o <b>editar</b> ou <b>apagar</b>.</li>
   </ol></details>
 
@@ -468,7 +471,7 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
    ==================================================================== */
 const SUPA_URL='https://xkfshzlcwiuvztfdwvjm.supabase.co';   // MESMO projeto da gerirmais (Gestao de Negocio) → mesma conta, sem novo login
 const SUPA_KEY='sb_publishable_SGjww6C455tzA6wpIevT-w_t2X9lqMJ';   // chave publishable da gerirmais (pública; a segurança está no RLS)
-const VERSAO='3.2';
+const VERSAO='3.3';
 const GERIRMAIS_URL='index.html';
 
 /* ---------- utilitários ---------- */
@@ -778,26 +781,36 @@ function renderContas(m){
       return`<div class="mes" onclick="S.fC.modo='mes';S.fC.m=${i};render()" title="${MESES[i]}: receitas ${eur(r)}, despesas ${eur(d)}"><div class="bb"><i class="r" style="height:${Math.round(100*r/max)}%"></i><i class="d" style="height:${Math.round(100*d/max)}%"></i></div><span>${nm}</span></div>`;}).join('')+`</div>`;
   }
   h+=`<h3 class="sec">Movimentos (${L.length})</h3>`;
-  h+=L.length?L.slice(0,200).map(x=>`<div class="ev" onclick="abrirMov('${x.id}')"><div class="d"><b>${new Date(pd(x.data)).getUTCDate()}</b><span>${MS[new Date(pd(x.data)).getUTCMonth()]}</span></div><div class="x"><div>${esc(x.categoria||(x.tipo==='receita'?'Receita':'Despesa'))}${x.descricao?' · '+esc(x.descricao):''}</div><div>${esc(x.alojamento_id?nomeAloj(x.alojamento_id):'Geral')}</div></div><b class="${x.tipo==='receita'?'pos':'neg'}" style="white-space:nowrap">${x.tipo==='receita'?'+':'−'}${eur(x.valor)}</b></div>`).join('')
+  h+=L.length?L.slice(0,200).map(x=>`<div class="ev" onclick="abrirMov('${x.id}')"><div class="d"><b>${new Date(pd(x.data)).getUTCDate()}</b><span>${MS[new Date(pd(x.data)).getUTCMonth()]}</span></div><div class="x"><div>${esc(x.categoria||(x.tipo==='receita'?'Receita':'Despesa'))}${x.descricao?' · '+esc(x.descricao):''}</div><div>${esc(x.alojamento_id?nomeAloj(x.alojamento_id):'Geral')}${(()=>{const r=x.reserva_id&&S.res.find(v=>v.id===x.reserva_id);return r?' · 🔗 '+esc(nomeHosp(r)||ORIG[r.origem])+' ('+fd(r.checkin)+')':'';})()}</div></div><b class="${x.tipo==='receita'?'pos':'neg'}" style="white-space:nowrap">${x.tipo==='receita'?'+':'−'}${eur(x.valor)}</b></div>`).join('')
     :`<div class="empty" style="padding:18px">Sem movimentos em ${P.nome.toLowerCase()}.</div>`;
   m.innerHTML=h;
 }
-function abrirMov(id,tipo){
+function abrirMov(id,tipo,resId){
   const x=id?S.mov.find(v=>v.id===id):null;S.editM=x?x.id:null;
+  const rPre=!x&&resId?S.res.find(r=>r.id===resId):null;
   const tp=x?x.tipo:tipo;$('mTipo').value=tp;
   $('mTitulo').textContent=(x?'Editar ':'Nova ')+(tp==='receita'?'receita':'despesa');
-  $('mAlojSel').innerHTML=optsAloj(x?x.alojamento_id:(S.fC.aj||(S.aloj[0]||{}).id),'Geral (sem alojamento)');
-  $('mData').value=x?x.data:hoje();$('mVal').value=x?x.valor:'';$('mDesc').value=x?(x.descricao||''):'';
+  $('mAlojSel').innerHTML=optsAloj(x?x.alojamento_id:(rPre?rPre.alojamento_id:(S.fC.aj||(S.aloj[0]||{}).id)),'Geral (sem alojamento)');
+  $('mData').value=x?x.data:hoje();mReservas(x?(x.reserva_id||''):(rPre?rPre.id:''));$('mVal').value=x?x.valor:'';$('mDesc').value=x?(x.descricao||''):'';
   $('mCat').value=x?(x.categoria||''):'';mCats();$('mDel').classList.toggle('hide',!x);
   abrir('mMov');setTimeout(()=>{if(!x)$('mVal').focus();},50);
 }
+/* lista de reservas para associar a um lançamento (do alojamento escolhido; as mais próximas da data primeiro) */
+const rotuloRes=r=>(nomeHosp(r)||'Reserva '+ORIG[r.origem])+' · '+fd(r.checkin)+' → '+fd(r.checkout)+' '+new Date(pd(r.checkin)).getUTCFullYear()+' · '+ORIG[r.origem];
+function mReservas(sel){
+  const aj=$('mAlojSel').value,ref=$('mData').value||hoje(),atual=sel!==undefined?sel:$('mResSel').value;
+  const L=S.res.filter(r=>r.estado!=='bloqueio'&&(!aj||r.alojamento_id===aj)||r.id===atual)
+    .sort((a,b)=>Math.abs(diffD(ref,a.checkin))-Math.abs(diffD(ref,b.checkin))).slice(0,80);
+  $('mResSel').innerHTML='<option value="">— Nenhuma —</option>'+L.map(r=>`<option value="${r.id}"${r.id===atual?' selected':''}>${esc((aj?'':nomeAloj(r.alojamento_id)+' · ')+rotuloRes(r))}${r.estado==='cancelada'?' (cancelada)':''}</option>`).join('');
+}
+function mResEscolhida(){const r=S.res.find(x=>x.id===$('mResSel').value);if(r&&$('mAlojSel').value!==r.alojamento_id){$('mAlojSel').value=r.alojamento_id;mReservas(r.id);}}
 function mCats(){const tp=$('mTipo').value;$('dlCat').innerHTML=(tp==='receita'?CAT_REC:CAT_DES).map(c=>`<option value="${esc(c)}">`).join('');$('mTitulo').textContent=(S.editM?'Editar ':'Nova ')+(tp==='receita'?'receita':'despesa');}
 async function guardarMov(){
   const v=parseFloat(String($('mVal').value).replace(',','.'));if(!(v>=0)||$('mVal').value===''){toast('Indica o valor.');return;}
   if(!$('mData').value){toast('Indica a data.');return;}
-  const o={tipo:$('mTipo').value,alojamento_id:$('mAlojSel').value||null,data:$('mData').value,valor:Math.round(v*100)/100,categoria:$('mCat').value.trim()||null,descricao:$('mDesc').value.trim()||null};
+  const o={tipo:$('mTipo').value,alojamento_id:$('mAlojSel').value||null,reserva_id:$('mResSel').value||null,data:$('mData').value,valor:Math.round(v*100)/100,categoria:$('mCat').value.trim()||null,descricao:$('mDesc').value.trim()||null};
   if(S.editM)o.id=S.editM;
-  try{await gravar('al_movimentos',o);fechar('mMov');render();toast('Guardado ✓');}catch(e){toast('Não foi possível guardar: '+(e.message||e),4500);}
+  try{await gravar('al_movimentos',o);fechar('mMov');render();if(S.voltarRes){const v=S.voltarRes;S.voltarRes=null;abrirRes(v);}toast('Guardado ✓');}catch(e){toast('Não foi possível guardar: '+(e.message||e),4500);}
 }
 async function apagarMov(){
   if(!S.editM||!confirm('Apagar este movimento?'))return;
@@ -974,7 +987,7 @@ function excelCopia(){
   const nA=id=>nomeAloj(id),nH=id=>{const h=S.hosp.find(x=>x.id===id);return h?h.nome:'';};
   const wb=XLSX.utils.book_new(),add=(nome,linhas)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(linhas.length?linhas:[{'(vazio)':''}]),nome);
   add('Reservas',S.res.slice().sort((a,b)=>a.checkin<b.checkin?-1:1).map(r=>({Alojamento:nA(r.alojamento_id),'Hóspede':nH(r.hospede_id),'Check-in':r.checkin,'Check-out':r.checkout,Noites:diffD(r.checkin,r.checkout),Origem:ORIG[r.origem]||r.origem,Estado:r.estado,'Nº hóspedes':r.num_hospedes||'','Valor (€)':r.valor_total==null?'':+r.valor_total,Notas:r.notas||''})));
-  add('Contas',S.mov.slice().sort((a,b)=>a.data<b.data?-1:1).map(x=>({Data:x.data,Tipo:x.tipo,Alojamento:x.alojamento_id?nA(x.alojamento_id):'Geral',Categoria:x.categoria||'','Descrição':x.descricao||'','Valor (€)':x.tipo==='despesa'?-(+x.valor):+x.valor})));
+  add('Contas',S.mov.slice().sort((a,b)=>a.data<b.data?-1:1).map(x=>({Data:x.data,Tipo:x.tipo,Alojamento:x.alojamento_id?nA(x.alojamento_id):'Geral',Categoria:x.categoria||'',Reserva:(()=>{const r=x.reserva_id&&S.res.find(v=>v.id===x.reserva_id);return r?rotuloRes(r):'';})(),'Descrição':x.descricao||'','Valor (€)':x.tipo==='despesa'?-(+x.valor):+x.valor})));
   add('Tarefas',S.tar.slice().sort((a,b)=>(a.data||'')<(b.data||'')?-1:1).map(t=>({Data:t.data||'',Tipo:t.tipo,Tarefa:t.titulo,Alojamento:nA(t.alojamento_id),Estado:EST_T[t.estado]||t.estado,'Responsável':t.responsavel||'',Notas:t.notas||''})));
   add('Hóspedes',S.hosp.map(h=>({Nome:h.nome,Email:h.email||'',Telefone:h.telefone||'','País':h.pais||'',Estadias:estadiasDe(h.id).length,Notas:h.notas||''})));
   add('Notas',S.notas.map(n=>({Alojamento:n.alojamento_id?nA(n.alojamento_id):'Geral',Título:n.titulo,Texto:n.texto||'',Fixada:n.fixada?'Sim':''})));
@@ -1162,6 +1175,11 @@ function abrirRes(id,pre){
   $('rOrig').value=o.origem||'direta';$('rEst').value=o.estado||'confirmada';
   $('rPax').value=o.num_hospedes||'';$('rVal').value=o.valor_total==null?'':o.valor_total;$('rNotas').value=o.notas||'';
   $('rDel').classList.toggle('hide',!r);
+  if(r){const M=S.mov.filter(m=>m.reserva_id===r.id),rec=M.filter(m=>m.tipo==='receita').reduce((a,m)=>a+(+m.valor||0),0),des=M.filter(m=>m.tipo==='despesa').reduce((a,m)=>a+(+m.valor||0),0);
+    $('rContas').innerHTML=`<div class="note" style="margin-top:10px"><b>💶 Contas desta reserva</b><br>Receitas ${eur(rec)} · Despesas ${eur(des)} · <b>Margem ${eur(rec-des)}</b>`
+      +(M.length?'<br>'+M.map(m=>`<a href="#" onclick="S.voltarRes='${r.id}';fechar('mRes');abrirMov('${m.id}');return false" style="color:inherit">${m.tipo==='receita'?'+':'−'}${eur(m.valor)} ${esc(m.categoria||'')}</a>`).join(' · '):'')
+      +`<div style="display:flex;gap:6px;margin-top:6px"><button class="btn sm" onclick="S.voltarRes='${r.id}';fechar('mRes');abrirMov(null,'despesa','${r.id}')">+ Despesa desta reserva</button>${!M.some(m=>m.tipo==='receita')&&+r.valor_total>0?`<button class="btn sm" onclick="fechar('mRes');lancarReserva('${r.id}').then(()=>abrirRes('${r.id}'))">Lançar receita</button>`:''}</div></div>`;}
+  else $('rContas').innerHTML='';
   rCalc();abrir('mRes');
 }
 function rCalc(){
