@@ -163,6 +163,8 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 #copiaBtn.alerta::after{content:"";position:absolute;top:1px;right:1px;width:10px;height:10px;border-radius:50%;background:var(--red);border:2px solid #fff}
 .avisoCp{background:#EEF6FF;border:1px solid #C9DDF5;color:#1E4F86;border-radius:14px;padding:10px 13px;font-size:13px;margin-bottom:10px;display:flex;gap:10px;align-items:center}
 .avisoCp b{display:block}
+.chips.paises .chip{cursor:pointer;text-align:left;font:inherit;min-width:0}
+.chips.paises .chip b{font-size:15px}.chips.paises .chip.on{border-color:var(--accent);background:#E8F7F5}
 #ajudaFab{position:fixed;right:16px;bottom:78px;width:48px;height:48px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:22px;font-weight:800;box-shadow:0 6px 18px -4px rgba(31,28,24,.45);z-index:30;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
 #ajudaFab:active{cursor:grabbing}
 @media(min-width:760px){
@@ -216,7 +218,7 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 <!-- APP -->
 <div id="app" class="hide">
   <header>
-    <div class="t"><div class="logo" style="width:32px;height:32px;font-size:13px;border-radius:9px">AL</div> Gestão AL <span class="badge hide" id="demoBadge">EXEMPLO</span><small style="font-size:10px;color:var(--ink3);font-weight:600">v3.3</small></div>
+    <div class="t"><div class="logo" style="width:32px;height:32px;font-size:13px;border-radius:9px">AL</div> Gestão AL <span class="badge hide" id="demoBadge">EXEMPLO</span><small style="font-size:10px;color:var(--ink3);font-weight:600">v3.4</small></div>
     <a class="lnk hide" id="lnkGerirmais" href="index.html" title="Ir para a Gestão de Negócio (mesma conta)">Gerirmais ↗</a>
     <button class="ibtn" id="copiaBtn" onclick="abrirCopias()" title="Cópias na Google Drive">☁️</button>
     <button class="ibtn" onclick="sair()" title="Sair">⏻</button>
@@ -236,7 +238,10 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 <div id="mRes" class="ov hide" onclick="if(event.target===this)fechar('mRes')"><div class="sheet">
   <h2 id="rTitulo">Nova reserva</h2>
   <label class="fld"><span>Alojamento</span><select id="rAloj"></select></label>
-  <label class="fld"><span>Hóspede (nome)</span><input id="rNome" list="dlHosp" placeholder="Opcional" autocomplete="off"></label>
+  <div class="row2">
+    <label class="fld"><span>Hóspede (nome)</span><input id="rNome" list="dlHosp" placeholder="Opcional" autocomplete="off" oninput="rNomeMudou()"></label>
+    <label class="fld"><span>Nacionalidade</span><select id="rPais"></select></label>
+  </div>
   <datalist id="dlHosp"></datalist>
   <div class="row2">
     <label class="fld"><span>Check-in</span><input id="rIn" type="date" oninput="rCalc()"></label>
@@ -325,7 +330,7 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
   <label class="fld"><span>Nome</span><input id="hNome"></label>
   <div class="row2">
     <label class="fld"><span>Telefone</span><input id="hTel" type="tel" inputmode="tel" placeholder="+351…"></label>
-    <label class="fld"><span>País</span><input id="hPais"></label>
+    <label class="fld"><span>Nacionalidade</span><select id="hPais"></select></label>
   </div>
   <label class="fld"><span>Email</span><input id="hEmail" type="email" autocapitalize="off"></label>
   <label class="fld"><span>Notas (preferências, observações…)</span><textarea id="hNotas" rows="2"></textarea></label>
@@ -379,7 +384,7 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 
   <details class="aj"><summary><span class="n">3</span>Nova reserva</summary><ol>
     <li>Carrega em <b>+ Nova reserva</b> — ou toca diretamente no <b>dia</b> do alojamento no calendário (já vem preenchido).</li>
-    <li>Escolhe o alojamento, escreve o <b>nome do hóspede</b> e as datas de <b>check-in</b> e <b>check-out</b>.</li>
+    <li>Escolhe o alojamento, escreve o <b>nome do hóspede</b>, a <b>nacionalidade</b> (lista com bandeiras) e as datas de <b>check-in</b> e <b>check-out</b>.</li>
     <li>Escolhe a <b>origem</b> (Airbnb, Booking, Direta, Outra) e o <b>estado</b>.</li>
     <li>Opcional: nº de hóspedes, valor e notas. Carrega em <b>Guardar</b>.</li>
     <li>A <b>limpeza</b> do dia de saída fica criada sozinha (aparece no separador <b>Tarefas</b>).</li>
@@ -432,6 +437,7 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
     <li>Os hóspedes aparecem <b>sozinhos</b> quando escreves o nome numa reserva. Também podes criar com <b>+ Novo hóspede</b>.</li>
     <li>Toca num hóspede para ver a <b>ficha</b>: contactos, notas e todas as estadias. Os botões <b>Ligar / WhatsApp / Email</b> aparecem quando há contacto.</li>
     <li>Toca numa estadia da lista para abrir essa reserva.</li>
+    <li>A <b>nacionalidade</b> aparece com a bandeira no calendário e nas listas. Em cima tens quantos hóspedes há de cada país — toca num país para ver só esses.</li>
     <li>Apagar a ficha <b>não</b> apaga as reservas.</li>
   </ol></details>
 
@@ -471,7 +477,7 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
    ==================================================================== */
 const SUPA_URL='https://xkfshzlcwiuvztfdwvjm.supabase.co';   // MESMO projeto da gerirmais (Gestao de Negocio) → mesma conta, sem novo login
 const SUPA_KEY='sb_publishable_SGjww6C455tzA6wpIevT-w_t2X9lqMJ';   // chave publishable da gerirmais (pública; a segurança está no RLS)
-const VERSAO='3.3';
+const VERSAO='3.4';
 const GERIRMAIS_URL='index.html';
 
 /* ---------- utilitários ---------- */
@@ -673,6 +679,7 @@ function demoLimpeza(r){
   }else if(ex&&ex.estado==='pendente')S.tar=S.tar.filter(t=>t!==ex);
 }
 function demoExtra(){
+  ['Portugal','Reino Unido','Brasil','Alemanha','Portugal','França'].forEach((p,i)=>{if(S.hosp[i])S.hosp[i].pais=p;});
   S.tar=[];S.res.forEach(demoLimpeza);
   const t=hoje(),A=S.aloj[0].id,B=S.aloj[1].id,C=S.aloj[2].id;
   const passada=S.tar.find(x=>x.data<t);if(passada)passada.estado='feita';
@@ -832,22 +839,27 @@ async function lancarTodas(){
 /* ============================ HÓSPEDES ============================ */
 function estadiasDe(id){return S.res.filter(r=>r.hospede_id===id&&r.estado!=='bloqueio').sort((a,b)=>a.checkin<b.checkin?1:-1);}
 function renderHospedes(m){
-  const q=S.fH.trim().toLowerCase();
-  const L=S.hosp.filter(h=>!q||[h.nome,h.email,h.telefone,h.pais].some(v=>(v||'').toLowerCase().includes(q)))
+  const q=S.fH.trim().toLowerCase(),fp=S.fHP||'';
+  const L=S.hosp.filter(h=>(!q||[h.nome,h.email,h.telefone,h.pais,nomePais(h.pais)].some(v=>(v||'').toLowerCase().includes(q)))&&(!fp||(fp==='?'?!h.pais:nomePais(h.pais)===fp)))
     .map(h=>{const E=estadiasDe(h.id).filter(r=>r.estado!=='cancelada');return{h,n:E.length,ult:E[0],tot:E.reduce((s,r)=>s+(+r.valor_total||0),0)};})
     .sort((a,b)=>(b.ult?b.ult.checkin:'')<(a.ult?a.ult.checkin:'')?-1:(b.ult?b.ult.checkin:'')>(a.ult?a.ult.checkin:'')?1:a.h.nome.localeCompare(b.h.nome));
   const rep=L.filter(x=>x.n>1).length;
-  let h=chips([[S.hosp.length,'hóspedes'],[rep,'repetentes'],[S.hosp.filter(x=>x.telefone||x.email).length,'com contacto']]);
+  const porP={};S.hosp.forEach(x=>{const k=x.pais?nomePais(x.pais):'?';(porP[k]=porP[k]||{n:0,e:0});porP[k].n++;porP[k].e+=estadiasDe(x.id).filter(r=>r.estado!=='cancelada').length;});
+  const nPaises=Object.keys(porP).filter(k=>k!=='?').length;
+  let h=chips([[S.hosp.length,'hóspedes'],[nPaises,nPaises===1?'nacionalidade':'nacionalidades'],[rep,'repetentes']]);
+  const lp=Object.entries(porP).sort((a,b)=>b[1].n-a[1].n||a[0].localeCompare(b[0]));
+  if(lp.length)h+=`<div class="chips paises">`+lp.map(([k,v])=>`<button class="chip${fp===k?' on':''}" data-p="${esc(k)}" onclick="S.fHP=S.fHP===this.dataset.p?'':this.dataset.p;render()"><b>${k==='?'?'❔':bandeira(codPais(k))||'🏳️'} ${v.n}</b><span>${k==='?'?'sem nacionalidade':esc(k)}</span></button>`).join('')+`</div>`;
   h+=`<div class="filtros"><input type="search" placeholder="🔍 Procurar nome, email, telefone…" value="${esc(S.fH)}" oninput="S.fH=this.value;clearTimeout(window._hq);window._hq=setTimeout(()=>{render();const i=document.querySelector('.filtros input');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length);}},250)"></div>`;
   h+=`<button class="btn pri full" style="margin-top:4px" onclick="abrirHosp()">+ Novo hóspede</button>`;
-  h+=L.length?L.map(({h:x,n,ult,tot})=>`<div class="ev" onclick="abrirHosp('${x.id}')"><div class="av">${esc((x.nome||'?').trim().charAt(0).toUpperCase())}</div><div class="x"><div>${esc(x.nome)}${n>1?' <span class="tag in" style="font-size:9px">'+n+'×</span>':''}</div><div>${ult?'Última: '+esc(nomeAloj(ult.alojamento_id))+' · '+fdl(ult.checkin):'Sem estadias'}${x.pais?' · '+esc(x.pais):''}</div></div>${tot?`<b style="font-size:12px;white-space:nowrap">${eur(tot)}</b>`:''}</div>`).join('')
-    :`<div class="empty" style="padding:22px">${q?'Ninguém encontrado com “'+esc(S.fH)+'”.':'Ainda não há hóspedes. Aparecem sozinhos quando escreves o nome numa reserva.'}</div>`;
+  h+=L.length?L.map(({h:x,n,ult,tot})=>`<div class="ev" onclick="abrirHosp('${x.id}')"><div class="av">${esc((x.nome||'?').trim().charAt(0).toUpperCase())}</div><div class="x"><div>${flagHosp(x.id)}${esc(x.nome)}${n>1?' <span class="tag in" style="font-size:9px">'+n+'×</span>':''}</div><div>${x.pais?esc(nomePais(x.pais))+' · ':''}${ult?'Última: '+esc(nomeAloj(ult.alojamento_id))+' · '+fdl(ult.checkin):'Sem estadias'}</div></div>${tot?`<b style="font-size:12px;white-space:nowrap">${eur(tot)}</b>`:''}</div>`).join('')
+    :`<div class="empty" style="padding:22px">${q||fp?(q?'Ninguém encontrado com “'+esc(S.fH)+'”.':'Ninguém com esta nacionalidade.'):'Ainda não há hóspedes. Aparecem sozinhos quando escreves o nome numa reserva.'}</div>`;
   m.innerHTML=h;
 }
 function abrirHosp(id){
   const x=id?S.hosp.find(v=>v.id===id):null;S.editH=x?x.id:null;
   $('hTitulo').textContent=x?'Ficha do hóspede':'Novo hóspede';
-  ['Nome','Email','Tel','Pais','Notas'].forEach(k=>$('h'+k).value=x?(x[{Nome:'nome',Email:'email',Tel:'telefone',Pais:'pais',Notas:'notas'}[k]]||''):'');
+  ['Nome','Email','Tel','Notas'].forEach(k=>$('h'+k).value=x?(x[{Nome:'nome',Email:'email',Tel:'telefone',Notas:'notas'}[k]]||''):'');
+  $('hPais').innerHTML=optsPais(x?x.pais:'');
   const E=x?estadiasDe(x.id):[];
   $('hHist').innerHTML=x?(`<div class="fld"><span>Estadias (${E.length})</span></div>`+(E.length?E.map(r=>`<div class="mini" onclick="fechar('mHosp');abrirRes('${r.id}')"><span>${fdl(r.checkin)} → ${fd(r.checkout)} · ${esc(nomeAloj(r.alojamento_id))}${r.estado==='cancelada'?' (cancelada)':''}</span><b>${r.valor_total?eur(r.valor_total):''}</b></div>`).join(''):'<p class="note" style="margin-top:4px">Ainda sem estadias.</p>')):'';
   const tel=x&&x.telefone?x.telefone.replace(/[^\d+]/g,''):'';
@@ -856,7 +868,7 @@ function abrirHosp(id){
 }
 async function guardarHosp(){
   const nome=$('hNome').value.trim();if(!nome){toast('Escreve o nome.');return;}
-  const o={nome,email:$('hEmail').value.trim()||null,telefone:$('hTel').value.trim()||null,pais:$('hPais').value.trim()||null,notas:$('hNotas').value.trim()||null};
+  const o={nome,email:$('hEmail').value.trim()||null,telefone:$('hTel').value.trim()||null,pais:$('hPais').value||null,notas:$('hNotas').value.trim()||null};
   if(S.editH)o.id=S.editH;
   try{await gravar('al_hospedes',o);fechar('mHosp');render();toast('Hóspede guardado ✓');}catch(e){toast('Não foi possível guardar: '+(e.message||e),4500);}
 }
@@ -986,10 +998,10 @@ function excelCopia(){
   if(typeof XLSX==='undefined')return null;
   const nA=id=>nomeAloj(id),nH=id=>{const h=S.hosp.find(x=>x.id===id);return h?h.nome:'';};
   const wb=XLSX.utils.book_new(),add=(nome,linhas)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(linhas.length?linhas:[{'(vazio)':''}]),nome);
-  add('Reservas',S.res.slice().sort((a,b)=>a.checkin<b.checkin?-1:1).map(r=>({Alojamento:nA(r.alojamento_id),'Hóspede':nH(r.hospede_id),'Check-in':r.checkin,'Check-out':r.checkout,Noites:diffD(r.checkin,r.checkout),Origem:ORIG[r.origem]||r.origem,Estado:r.estado,'Nº hóspedes':r.num_hospedes||'','Valor (€)':r.valor_total==null?'':+r.valor_total,Notas:r.notas||''})));
+  add('Reservas',S.res.slice().sort((a,b)=>a.checkin<b.checkin?-1:1).map(r=>({Alojamento:nA(r.alojamento_id),'Hóspede':nH(r.hospede_id),Nacionalidade:(()=>{const h=S.hosp.find(x=>x.id===r.hospede_id);return h&&h.pais?nomePais(h.pais):'';})(),'Check-in':r.checkin,'Check-out':r.checkout,Noites:diffD(r.checkin,r.checkout),Origem:ORIG[r.origem]||r.origem,Estado:r.estado,'Nº hóspedes':r.num_hospedes||'','Valor (€)':r.valor_total==null?'':+r.valor_total,Notas:r.notas||''})));
   add('Contas',S.mov.slice().sort((a,b)=>a.data<b.data?-1:1).map(x=>({Data:x.data,Tipo:x.tipo,Alojamento:x.alojamento_id?nA(x.alojamento_id):'Geral',Categoria:x.categoria||'',Reserva:(()=>{const r=x.reserva_id&&S.res.find(v=>v.id===x.reserva_id);return r?rotuloRes(r):'';})(),'Descrição':x.descricao||'','Valor (€)':x.tipo==='despesa'?-(+x.valor):+x.valor})));
   add('Tarefas',S.tar.slice().sort((a,b)=>(a.data||'')<(b.data||'')?-1:1).map(t=>({Data:t.data||'',Tipo:t.tipo,Tarefa:t.titulo,Alojamento:nA(t.alojamento_id),Estado:EST_T[t.estado]||t.estado,'Responsável':t.responsavel||'',Notas:t.notas||''})));
-  add('Hóspedes',S.hosp.map(h=>({Nome:h.nome,Email:h.email||'',Telefone:h.telefone||'','País':h.pais||'',Estadias:estadiasDe(h.id).length,Notas:h.notas||''})));
+  add('Hóspedes',S.hosp.map(h=>({Nome:h.nome,Email:h.email||'',Telefone:h.telefone||'',Nacionalidade:h.pais?nomePais(h.pais):'',Estadias:estadiasDe(h.id).length,Notas:h.notas||''})));
   add('Notas',S.notas.map(n=>({Alojamento:n.alojamento_id?nA(n.alojamento_id):'Geral',Título:n.titulo,Texto:n.texto||'',Fixada:n.fixada?'Sim':''})));
   add('Alojamentos',S.aloj.map(a=>({Nome:a.nome,'Lotação':a.capacidade||'',Morada:a.morada||''})));
   return new Blob([XLSX.write(wb,{type:'array',bookType:'xlsx'})],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
@@ -1072,6 +1084,28 @@ function descarregarExcel(){
   const a=document.createElement('a');a.href=URL.createObjectURL(x);a.download='GestaoAL_'+hoje()+'.xlsx';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
 }
 
+/* ---------- NACIONALIDADES (guardadas pelo nome em português; bandeira automática) ---------- */
+const ISO_P='AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM US UY UZ VA VC VE VG VI VN VU WF WS XK YE YT ZA ZM ZW'.split(' ');
+const PAIS_TOP=['PT','ES','FR','GB','DE','BR','US','IT','NL','BE','CH','IE','CA','PL','AT','SE','DK','NO','FI','AO','MZ','CV','CN','JP','IL','AU'];
+const PAIS_NOME=(()=>{const o={};let dn=null;try{dn=new Intl.DisplayNames(['pt-PT'],{type:'region'});}catch(e){}
+  ISO_P.forEach(c=>{let n=c;try{n=dn?dn.of(c):c;}catch(e){}o[c]=n;});
+  if(!dn)Object.assign(o,{PT:'Portugal',ES:'Espanha',FR:'França',GB:'Reino Unido',DE:'Alemanha',BR:'Brasil',US:'Estados Unidos',IT:'Itália',NL:'Países Baixos',BE:'Bélgica',CH:'Suíça',IE:'Irlanda',CA:'Canadá'});
+  return o;})();
+const normP=t=>String(t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z]/g,'');
+const PAIS_ALIAS={inglaterra:'GB',escocia:'GB',uk:'GB',gb:'GB',holanda:'NL',eua:'US',usa:'US',estadosunidosdaamerica:'US',alemanha:'DE',germany:'DE',france:'FR',spain:'ES',espana:'ES',italy:'IT',netherlands:'NL',unitedkingdom:'GB',unitedstates:'US',brazil:'BR',switzerland:'CH',belgium:'BE',ireland:'IE',poland:'PL',coreiadosul:'KR',russia:'RU'};
+const PAIS_POR_NOME=(()=>{const o={...PAIS_ALIAS};ISO_P.forEach(c=>{o[normP(PAIS_NOME[c])]=c;o[c.toLowerCase()]=c;});return o;})();
+const codPais=t=>t?PAIS_POR_NOME[normP(t)]||null:null;
+const bandeira=c=>c&&/^[A-Z]{2}$/.test(c)?String.fromCodePoint(...[...c].map(x=>127397+x.charCodeAt(0))):'';
+const nomePais=t=>{const c=codPais(t);return c?PAIS_NOME[c]:(t||'');};
+const paisFmt=t=>{if(!t)return'';const c=codPais(t);return c?bandeira(c)+' '+PAIS_NOME[c]:t;};
+const flagHosp=id=>{const h=S.hosp.find(x=>x.id===id);const c=h&&codPais(h.pais);return c?bandeira(c)+' ':'';};
+function optsPais(sel){
+  const atual=nomePais(sel),ord=ISO_P.filter(c=>!PAIS_TOP.includes(c)&&!['AQ','BV','HM','UM','TF','GS','IO','CC','CX','NF','PN','SJ'].includes(c)).sort((a,b)=>PAIS_NOME[a].localeCompare(PAIS_NOME[b],'pt'));
+  const op=c=>`<option value="${esc(PAIS_NOME[c])}"${PAIS_NOME[c]===atual?' selected':''}>${bandeira(c)} ${esc(PAIS_NOME[c])}</option>`;
+  let h='<option value="">— Nacionalidade —</option>';
+  if(sel&&!codPais(sel))h+=`<option value="${esc(sel)}" selected>${esc(sel)}</option>`;
+  return h+'<optgroup label="Mais frequentes">'+PAIS_TOP.map(op).join('')+'</optgroup><optgroup label="Todos os países">'+ord.map(op).join('')+'</optgroup>';
+}
 /* ---------- navegação ---------- */
 function tab(t){
   S.tab=t;
@@ -1132,7 +1166,7 @@ function render(){
       const ci=diffD(ini,r.checkin),co=diffD(ini,r.checkout);
       const x0=ci<0?0:(ci+.5)*dw,x1=co>n?W:(co+.5)*dw;
       let ln=lanes.findIndex(e=>e<=x0+1);if(ln<0){ln=lanes.length;lanes.push(0);}lanes[ln]=x1;
-      const nm=r.estado==='bloqueio'?'Bloqueado':(nomeHosp(r)||(r.origem==='direta'?'Reserva':'Reservado'));
+      const nm=r.estado==='bloqueio'?'Bloqueado':(flagHosp(r.hospede_id)+(nomeHosp(r)||(r.origem==='direta'?'Reserva':'Reservado')));
       const noi=diffD(r.checkin,r.checkout);
       bars+=`<div class="res ${r.origem} ${r.estado==='bloqueio'?'bloqueio':''} ${r.estado==='pendente'?'pendente':''} ${emConf.has(r.id)?'conflito':''} ${ci<0?'cl':''} ${co>n?'cr':''}" style="left:${x0}px;width:${Math.max(18,x1-x0)}px;top:${4+ln*30}px" onclick="event.stopPropagation();abrirRes('${r.id}')" title="${esc(nm)} · ${fd(r.checkin)} → ${fd(r.checkout)}">${emConf.has(r.id)?'⚠ ':''}${esc(nm)}<small>${noi}n</small></div>`;
     });
@@ -1151,7 +1185,7 @@ function render(){
   evs.sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:(a.t==='out'?-1:1));
   h+=`<h3 class="sec">Próximos 14 dias</h3>`;
   h+=evs.length?evs.slice(0,12).map(e=>{const d=new Date(pd(e.d));
-    return`<div class="ev" onclick="abrirRes('${e.r.id}')"><div class="d"><b>${d.getUTCDate()}</b><span>${MS[d.getUTCMonth()]}</span></div><div class="x"><div>${esc(nomeHosp(e.r)||'Reserva '+ORIG[e.r.origem])}</div><div>${esc(nomeAloj(e.r.alojamento_id))} · ${ORIG[e.r.origem]}</div></div><span class="tag ${e.t}">${e.t==='in'?'ENTRADA':'SAÍDA'}</span></div>`;}).join('')
+    return`<div class="ev" onclick="abrirRes('${e.r.id}')"><div class="d"><b>${d.getUTCDate()}</b><span>${MS[d.getUTCMonth()]}</span></div><div class="x"><div>${flagHosp(e.r.hospede_id)}${esc(nomeHosp(e.r)||'Reserva '+ORIG[e.r.origem])}</div><div>${esc(nomeAloj(e.r.alojamento_id))} · ${ORIG[e.r.origem]}</div></div><span class="tag ${e.t}">${e.t==='in'?'ENTRADA':'SAÍDA'}</span></div>`;}).join('')
     :`<div class="empty" style="padding:18px">Sem entradas nem saídas nos próximos 14 dias.</div>`;
   m.innerHTML=h;
   const tl=$('tl');if(tl&&ti>=0&&tl.scrollWidth>tl.clientWidth+2)tl.scrollLeft=Math.max(0,(ti-2)*dw);
@@ -1171,6 +1205,7 @@ function abrirRes(id,pre){
   const o=r||pre||{};
   $('rAloj').value=o.alojamento_id||S.aloj[0].id;
   $('rNome').value=r?nomeHosp(r):'';
+  {const hh=r&&S.hosp.find(x=>x.id===r.hospede_id);$('rPais').innerHTML=optsPais(hh?hh.pais:'');}
   $('rIn').value=o.checkin||hoje();$('rOut').value=o.checkout||addD(hoje(),1);
   $('rOrig').value=o.origem||'direta';$('rEst').value=o.estado||'confirmada';
   $('rPax').value=o.num_hospedes||'';$('rVal').value=o.valor_total==null?'':o.valor_total;$('rNotas').value=o.notas||'';
@@ -1194,12 +1229,14 @@ function rCalc(){
   $('rNoites').textContent=t;$('rAviso').innerHTML=av;
 }
 $('rAloj').addEventListener('change',rCalc);
+function rNomeMudou(){const n=$('rNome').value.trim().toLowerCase(),h=S.hosp.find(x=>x.nome.toLowerCase()===n);if(h&&h.pais)$('rPais').innerHTML=optsPais(h.pais);}
 async function guardarRes(){
   const a=$('rIn').value,b=$('rOut').value;
   if(!a||!b||diffD(a,b)<=0){toast('Verifica as datas: o check-out tem de ser depois do check-in.',3400);return;}
   try{
     const est=$('rEst').value;
     const hid=est==='bloqueio'?null:await acharOuCriarHospede($('rNome').value);
+    if(hid&&$('rPais').value){const hh=S.hosp.find(x=>x.id===hid);if(hh&&hh.pais!==$('rPais').value)await gravar('al_hospedes',{id:hid,pais:$('rPais').value});}
     const o={alojamento_id:$('rAloj').value,hospede_id:hid,origem:$('rOrig').value,estado:est,checkin:a,checkout:b,
       num_hospedes:$('rPax').value?+$('rPax').value:null,valor_total:$('rVal').value===''?null:+$('rVal').value,notas:$('rNotas').value.trim()||null};
     if(S.editRes)o.id=S.editRes;
