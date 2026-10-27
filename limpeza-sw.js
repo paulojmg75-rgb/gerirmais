@@ -1,6 +1,6 @@
 /* Limpezas — Gestão AL: guarda a página para abrir depressa (e mesmo com rede fraca).
    Os dados vêm sempre da internet; só a "casca" da página fica guardada. */
-const CACHE = 'limpezas-v1';
+const CACHE = 'limpezas-v2';
 const CASCA = ['/limpeza.html', '/limpeza.webmanifest', '/limpeza-192.png', '/limpeza-512.png', '/limpeza-180.png'];
 
 self.addEventListener('install', e => {

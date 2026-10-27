@@ -127,6 +127,10 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 .eqc{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:11px 12px;margin-top:8px}.eqc .t{display:flex;align-items:center;gap:8px;font-weight:700}.eqc .s{font-size:12px;color:var(--ink2);margin-top:3px}.eqc .b{display:flex;gap:6px;margin-top:9px}.eqc .b .btn{flex:1;padding:8px 6px;font-size:13px}
 .tagoff{font-size:11px;background:#F6DCDA;color:var(--red);border-radius:6px;padding:1px 6px;font-weight:700}
 .hrp{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:11px 12px;margin-top:10px}.hrp .t{display:flex;justify-content:space-between;font-weight:700;font-size:15px}.hrp .s{font-size:12px;color:var(--ink2);margin-top:2px}.hrp table{width:100%;border-collapse:collapse;margin-top:8px;font-size:12px}.hrp td{padding:5px 2px;border-top:1px solid var(--line)}.hrp td.r{text-align:right;white-space:nowrap}
+.chips.topo{flex-wrap:wrap;overflow:visible}
+.chip.lchip{cursor:pointer;max-width:200px}.chip.lchip b{font-size:13px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:2px 0 4px}
+.chip.lchip span{display:flex;align-items:center;gap:6px;white-space:nowrap}.chip.lchip u{display:block;width:16px;height:5px;border-radius:3px;background:var(--red);flex:none}
+.chip.lchip.curso{border-color:#F2C230}.chip.lchip.curso u{background:#F2C230;animation:lbp 1.4s ease-in-out infinite}.chip.lchip.feita{border-color:var(--direta)}.chip.lchip.feita u{background:var(--direta)}.chip.lchip.atrasada,.chip.lchip.falta{border-color:#EBB3AF}
 .lstat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 10px;margin:0 0 10px}.lstat .h{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink2);margin:2px 2px 6px}
 .lstat .r{display:flex;align-items:center;gap:8px;padding:8px 6px;border-top:1px solid var(--line);cursor:pointer;font-size:13px}.lstat .r i{width:10px;height:10px;border-radius:50%;flex:none}.lstat .r b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lstat .e{font-weight:700;text-align:right;white-space:nowrap}.lstat .e small{display:block;font-weight:400;color:var(--ink3);font-size:11px}
@@ -145,6 +149,9 @@ em.lb.curso u{background:#F2C230;animation:lbp 1.4s ease-in-out infinite}em.lb.f
 .aj[open] summary::after{content:"－"}
 .aj ol,.aj ul{margin:0;padding:4px 14px 12px 34px;font-size:13.5px;line-height:1.6;color:var(--ink)}
 .aj li{margin-top:4px}
+.ajbusca{width:100%;margin-top:10px;padding:11px 12px;border:1px solid var(--line2);border-radius:12px;font-size:15px;background:#fff}
+.ajtop{display:flex;gap:8px;margin:8px 0 2px}.ajtop .btn{flex:1}
+h3.ajg{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--accent-d);margin:16px 2px 6px}
 .aj .n{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;display:grid;place-items:center;flex:0 0 24px}
 .dica{font-size:12px;color:var(--ink2);background:#F7F2E9;border-radius:11px;padding:8px 11px;margin-top:10px;line-height:1.5}
 .filtros{display:flex;gap:8px;margin:0 0 8px;flex-wrap:wrap}
@@ -232,7 +239,7 @@ em.lb.curso u{background:#F2C230;animation:lbp 1.4s ease-in-out infinite}em.lb.f
 <!-- APP -->
 <div id="app" class="hide">
   <header>
-    <div class="t"><div class="logo" style="width:32px;height:32px;font-size:13px;border-radius:9px">AL</div> Gestão AL <span class="badge hide" id="demoBadge">EXEMPLO</span><small style="font-size:10px;color:var(--ink3);font-weight:600">v3.5</small></div>
+    <div class="t"><div class="logo" style="width:32px;height:32px;font-size:13px;border-radius:9px">AL</div> Gestão AL <span class="badge hide" id="demoBadge">EXEMPLO</span><small style="font-size:10px;color:var(--ink3);font-weight:600">v3.6</small></div>
     <a class="lnk hide" id="lnkGerirmais" href="index.html" title="Ir para a Gestão de Negócio (mesma conta)">Gerirmais ↗</a>
     <button class="ibtn" id="copiaBtn" onclick="abrirCopias()" title="Cópias na Google Drive">☁️</button>
     <button class="ibtn" onclick="sair()" title="Sair">⏻</button>
@@ -427,111 +434,185 @@ em.lb.curso u{background:#F2C230;animation:lbp 1.4s ease-in-out infinite}em.lb.f
 
 <!-- JANELA: AJUDA -->
 <div id="mAjuda" class="ov hide" onclick="if(event.target===this)fechar('mAjuda')"><div class="sheet">
-  <h2>Ajuda — passo a passo</h2>
-  <p style="font-size:13px;color:var(--ink2);margin-top:2px">Toca num tema para ver os passos. O botão <b>?</b> pode ser arrastado para onde não estorve.</p>
+  <h2>Ajuda — todas as funções, passo a passo</h2>
+  <p style="font-size:13px;color:var(--ink2);margin-top:2px">Escreve o que procuras ou toca num tema. O botão <b>?</b> abre logo o tema do separador onde estás e pode ser arrastado para onde não estorve.</p>
+  <input id="ajBusca" class="ajbusca" type="search" placeholder="🔎 Procurar na ajuda (ex.: limpeza, Excel, link, Booking…)" oninput="ajudaProcurar(this.value)" autocomplete="off">
+  <div class="ajtop"><button class="btn sm" onclick="ajudaTodos(true)">Abrir tudo</button><button class="btn sm" onclick="ajudaTodos(false)">Fechar tudo</button></div>
+  <div id="ajNada" class="note hide">Nada encontrado. Experimenta outra palavra (ex.: "reserva", "horas", "cópia").</div>
 
-  <details class="aj" open><summary><span class="n">1</span>Começar: criar o primeiro alojamento</summary><ol>
-    <li>Carrega em <b>+ Alojamento</b> (por baixo do calendário).</li>
+  <h3 class="ajg">🚀 Primeiros passos</h3>
+  <details class="aj" data-t="inicio"><summary><span class="n">1</span>O que é a Gestão AL e onde está cada coisa</summary><ul>
+    <li>Em baixo tens 5 separadores: <b>📅 Calendário</b> (reservas), <b>👥 Hóspedes</b>, <b>🧹 Tarefas</b> (limpezas e equipa), <b>💶 Contas</b> e <b>🔧 Notas</b>.</li>
+    <li>Em cima: <b>Gerirmais ↗</b> (passa para a Gestão de Negócio, se tiveres acesso), <b>☁️</b> (cópias na Google Drive) e <b>⏻</b> (sair).</li>
+    <li>O botão <b>?</b> abre esta ajuda. Arrasta-o com o dedo para o mudar de sítio.</li>
+    <li>Tudo o que gravas fica guardado na tua conta e aparece em qualquer aparelho onde entres.</li>
+  </ul></details>
+  <details class="aj"><summary><span class="n">2</span>Criar o primeiro alojamento (imóvel)</summary><ol>
+    <li>No <b>Calendário</b>, carrega em <b>+ Alojamento</b> (por baixo do calendário).</li>
     <li>Escreve o <b>nome</b> (ex.: Casa do Centro) e, se quiseres, a lotação.</li>
     <li>Escolhe uma <b>cor</b> e carrega em <b>Guardar</b>.</li>
-    <li>O alojamento aparece como uma linha no calendário. Repete para os outros.</li>
+    <li>Aparece uma linha nova no calendário. Repete para cada imóvel — podes ter quantos quiseres.</li>
   </ol></details>
-
-  <details class="aj"><summary><span class="n">2</span>Editar ou remover um alojamento</summary><ol>
+  <details class="aj"><summary><span class="n">3</span>Editar ou remover um alojamento</summary><ol>
     <li>No calendário, <b>toca no nome do alojamento</b> (coluna da esquerda).</li>
-    <li>Muda o que quiseres e carrega em <b>Guardar</b>.</li>
-    <li>Para apagar: carrega em <b>Remover</b> e escreve o nome do alojamento para confirmar. <b>Atenção:</b> apaga também as reservas desse alojamento e não se pode desfazer.</li>
+    <li>Muda o nome, a lotação ou a cor e carrega em <b>Guardar</b>.</li>
+    <li>Para apagar: <b>Remover</b> e escreve o nome para confirmar. <b>Atenção:</b> apaga também as reservas desse alojamento e não se pode desfazer.</li>
+  </ol></details>
+  <details class="aj"><summary><span class="n">4</span>Usar no telemóvel e experimentar com exemplos</summary><ol>
+    <li>Abre <b>gerirmais.com/al.html</b> no telemóvel e entra com o teu email e password.</li>
+    <li>Para ficar com um ícone no ecrã: <b>iPhone</b> — botão Partilhar ⬆︎ → <b>Adicionar ao ecrã principal</b>; <b>Android</b> — ⋮ → <b>Adicionar ao ecrã principal</b>.</li>
+    <li>Para experimentar sem mexer nos teus dados: no ecrã de entrada carrega em <b>Ver com dados de exemplo</b> (nada do que fizeres aí fica gravado).</li>
   </ol></details>
 
-  <details class="aj"><summary><span class="n">3</span>Nova reserva</summary><ol>
+  <h3 class="ajg">📅 Calendário e reservas</h3>
+  <details class="aj"><summary><span class="n">5</span>Nova reserva</summary><ol>
     <li>Carrega em <b>+ Nova reserva</b> — ou toca diretamente no <b>dia</b> do alojamento no calendário (já vem preenchido).</li>
-    <li>Escolhe o alojamento, escreve o <b>nome do hóspede</b>, a <b>nacionalidade</b> (lista com bandeiras) e as datas de <b>check-in</b> e <b>check-out</b>.</li>
-    <li>Escolhe a <b>origem</b> (Airbnb, Booking, Direta, Outra) e o <b>estado</b>.</li>
+    <li>Escolhe o alojamento, escreve o <b>nome do hóspede</b> e a <b>nacionalidade</b> (lista com bandeiras). Se o hóspede já existir, a nacionalidade aparece sozinha.</li>
+    <li>Põe as datas de <b>check-in</b> e <b>check-out</b> (as noites são contadas sozinhas).</li>
+    <li>Escolhe a <b>origem</b> (Airbnb, Booking, Direta, Outra) e o <b>estado</b> (Confirmada, Pendente, Bloqueio, Cancelada).</li>
     <li>Opcional: nº de hóspedes, valor e notas. Carrega em <b>Guardar</b>.</li>
-    <li>A <b>limpeza</b> do dia de saída fica criada sozinha (aparece no separador <b>Tarefas</b>).</li>
+    <li>Se a reserva estiver <b>confirmada</b>, a <b>limpeza</b> do dia de saída fica criada sozinha (em Tarefas), já com a pessoa que limpa esse imóvel.</li>
   </ol></details>
-
-  <details class="aj"><summary><span class="n">4</span>Editar ou apagar uma reserva</summary><ol>
+  <details class="aj"><summary><span class="n">6</span>Editar, cancelar ou apagar uma reserva</summary><ol>
     <li><b>Toca na barra colorida</b> da reserva no calendário (ou na lista "Próximos 14 dias").</li>
-    <li>Muda o que quiseres e carrega em <b>Guardar</b>.</li>
-    <li>Para apagar: carrega em <b>Apagar</b> e confirma.</li>
-    <li>Dica: se a reserva foi só cancelada, muda o <b>Estado</b> para <b>Cancelada</b> em vez de apagar — fica o registo.</li>
+    <li>Muda o que quiseres e carrega em <b>Guardar</b>. Se mudares as datas, a limpeza acompanha.</li>
+    <li>Se o hóspede cancelou: muda o <b>Estado</b> para <b>Cancelada</b> (fica o registo e a limpeza por começar desaparece).</li>
+    <li>Para apagar de vez: <b>Apagar</b> e confirma.</li>
+    <li>Em baixo vês as <b>Contas desta reserva</b> (receitas, despesas e margem) e o botão <b>+ Despesa desta reserva</b>.</li>
   </ol></details>
-
-  <details class="aj"><summary><span class="n">5</span>Bloquear dias (sem hóspede)</summary><ol>
+  <details class="aj"><summary><span class="n">7</span>Bloquear dias (obras, uso próprio…)</summary><ol>
     <li>Cria uma reserva normal e escolhe o estado <b>Bloqueio (sem hóspede)</b>.</li>
-    <li>Aparece às riscas cinzentas. Serve para obras, uso próprio, etc.</li>
+    <li>Aparece às riscas cinzentas e não conta como ocupação.</li>
   </ol></details>
-
-  <details class="aj"><summary><span class="n">6</span>Trazer reservas do Airbnb / Booking</summary><ol>
+  <details class="aj"><summary><span class="n">8</span>Trazer reservas do Airbnb / Booking</summary><ol>
     <li>No Airbnb ou Booking, procura <b>Exportar calendário</b> / <b>iCal</b> e descarrega o ficheiro <b>.ics</b>.</li>
     <li>Aqui, toca no nome do alojamento → em <b>Ficheiro .ics</b> escolhe o ficheiro → escolhe a <b>origem</b> → <b>Guardar</b>.</li>
     <li>As reservas entram no calendário. Se importares outra vez, não duplica — atualiza.</li>
-    <li>Podes também guardar os <b>links iCal</b> no alojamento; a atualização automática chega numa próxima versão.</li>
+    <li>Podes guardar também os <b>links iCal</b> no alojamento; a atualização automática chega numa próxima versão.</li>
   </ol></details>
-
-  <details class="aj"><summary><span class="n">7</span>Ler o calendário</summary><ul>
-    <li><b>Cores</b>: Airbnb (laranja), Booking (azul), Direta (verde), Outra (roxo), Bloqueio (riscas).</li>
-    <li><b>Tracejado</b> = reserva pendente. <b>Contorno vermelho ⚠</b> = duas reservas sobrepostas no mesmo alojamento.</li>
-    <li>O dia de saída de um hóspede pode ser o dia de entrada do seguinte — isso <b>não</b> é sobreposição.</li>
-    <li><b>Vassoura 🧹</b> ao lado do nome do imóvel = limpeza de hoje: barra <b>vermelha</b> por fazer, <b>amarela</b> em curso, <b>verde</b> feita. Toca na vassoura para ver quem limpa e as horas.</li>
-    <li>Usa <b>‹ ›</b> para mudar de mês e <b>Hoje</b> para voltar ao mês atual.</li>
+  <details class="aj" data-t="cal"><summary><span class="n">9</span>Ler o calendário (cores, avisos e vassoura)</summary><ul>
+    <li>Em cima: <b>entradas e saídas de hoje</b>, imóveis <b>ocupados hoje</b> e a <b>ocupação do mês</b>.</li>
+    <li><b>Cores</b>: Airbnb (laranja), Booking (azul), Direta (verde), Outra (roxo), Bloqueio (riscas). <b>Tracejado</b> = pendente.</li>
+    <li><b>Contorno vermelho ⚠</b> = duas reservas sobrepostas no mesmo alojamento (toca no aviso para abrir). O dia de saída de um pode ser o de entrada do seguinte — isso <b>não</b> é sobreposição.</li>
+    <li>A <b>bandeira</b> na barra é a nacionalidade do hóspede.</li>
+    <li><b>Vassoura 🧹</b> ao lado do nome do imóvel = limpeza de hoje: barra <b>vermelha</b> por fazer (ou atrasada), <b>amarela</b> a piscar em curso, <b>verde</b> feita. Toca na vassoura para ver quem limpa e as horas.</li>
+    <li>Ao lado dos números do topo aparece um cartão <b>🧹 por imóvel</b> com limpeza hoje (por fazer, em curso ou feita, com a hora). Com muitos imóveis, os cartões passam para a linha de baixo. Toca num para abrir essa limpeza.</li>
+    <li><b>‹ ›</b> muda de mês; <b>Hoje</b> volta ao mês atual. Em baixo: <b>Próximos 14 dias</b> (entradas e saídas).</li>
   </ul></details>
 
-  <details class="aj"><summary><span class="n">8</span>🧹 Tarefas e limpezas</summary><ol>
-    <li>Cada reserva <b>confirmada</b> cria sozinha uma <b>limpeza</b> no dia de saída. Se mudares as datas da reserva, a limpeza acompanha.</li>
-    <li>Para criar outra tarefa (avaria, compra, lembrete): <b>+ Nova tarefa</b>.</li>
+  <h3 class="ajg">🧹 Limpezas, equipa e tarefas</h3>
+  <details class="aj" data-t="tar"><summary><span class="n">10</span>Tarefas: limpezas, avarias, compras e lembretes</summary><ol>
+    <li>As <b>limpezas</b> aparecem sozinhas no dia de saída de cada reserva confirmada.</li>
+    <li>Para outra tarefa: <b>+ Nova tarefa</b> → tipo (Limpeza, Avaria, Compra, Lembrete), o que fazer, alojamento, data → <b>Guardar</b>.</li>
     <li>Toca no <b>círculo ◯</b> à direita para marcar como <b>feita</b> (toca outra vez para desfazer).</li>
-    <li>Toca na tarefa para <b>editar</b> (data, responsável, estado) ou <b>apagar</b>.</li>
-    <li>Em cima vês as <b>atrasadas</b> (a vermelho), as de <b>hoje</b> e as <b>próximas</b>. Usa os filtros para ver só um alojamento ou um tipo.</li>
-    <li>Numa limpeza vês <b>quem limpa</b> 🧽 e as <b>horas</b> registadas (podes corrigi-las).</li>
+    <li>Toca na tarefa para <b>editar</b> ou <b>apagar</b>.</li>
+    <li>Em cima: <b>atrasadas</b> (a vermelho), <b>para hoje</b>, <b>próximas</b> e <b>feitas</b>. Usa os filtros para ver só um alojamento ou um tipo.</li>
   </ol></details>
-
-  <details class="aj"><summary><span class="n">9</span>🧽 Equipa de limpeza: link Comecei / Terminei</summary><ol>
+  <details class="aj"><summary><span class="n">11</span>Equipa de limpeza: adicionar pessoa ou empresa</summary><ol>
     <li>Em <b>Tarefas</b> carrega em <b>👥 Equipa de limpeza</b> → <b>+ Adicionar pessoa ou empresa</b>.</li>
-    <li>Escreve o <b>nome</b>, o <b>telemóvel</b>, o <b>preço por hora</b> (opcional) e marca os <b>imóveis</b> que essa pessoa limpa. <b>Guardar</b>.</li>
-    <li>Carrega em <b>📤 Enviar link</b>: abre o WhatsApp com a mensagem pronta (ou <b>📋 Copiar</b> para enviar por SMS).</li>
-    <li>A pessoa abre o link, carrega em <b>📲 Pôr ícone no telemóvel</b> e fica com o ícone <b>Limpezas</b>. No dia, carrega em <b>▶ Comecei</b> ao chegar e <b>■ Terminei</b> ao sair (pode deixar uma nota).</li>
-    <li>Pelo link ela só vê <b>os dias e o imóvel</b> das limpezas dela — nada de hóspedes, valores ou contas.</li>
-    <li>Em <b>⏱ Horas de limpeza</b> vês, por mês, as horas de cada pessoa e de cada imóvel, o custo e as limpezas por fazer. O botão <b>💶 Lançar em Contas</b> cria a despesa.</li>
-    <li>Para bloquear o acesso: <b>Editar</b> → desliga <b>Link ativo</b>. Para dar um link novo: <b>🔄 Trocar link</b> (o antigo deixa de funcionar).</li>
+    <li>Escreve o <b>nome</b>, o <b>telemóvel</b> (para o WhatsApp) e, se quiseres, o <b>preço por hora</b>.</li>
+    <li>Marca os <b>imóveis</b> que essa pessoa limpa normalmente (um ou vários). Cada imóvel pode ter uma pessoa diferente.</li>
+    <li>Carrega em <b>Guardar</b>. As limpezas desses imóveis (de hoje em diante e as novas) ficam atribuídas a ela.</li>
+  </ol></details>
+  <details class="aj"><summary><span class="n">12</span>Enviar o link à pessoa da limpeza</summary><ol>
+    <li>Na <b>Equipa de limpeza</b>, carrega em <b>📤 Enviar link</b> ao lado da pessoa: abre o WhatsApp com a mensagem pronta — só tens de carregar em enviar.</li>
+    <li>Sem WhatsApp? Carrega em <b>📋 Copiar</b> e cola a mensagem numa SMS ou email.</li>
+    <li>A pessoa abre o link e carrega em <b>📲 Pôr ícone no telemóvel</b>: fica com o ícone <b>Limpezas</b> no ecrã (Android: 1 toque; iPhone: Partilhar → Adicionar ao ecrã principal; a página explica).</li>
+    <li>Cada pessoa tem o seu link. Não é preciso email nem password.</li>
+  </ol></details>
+  <details class="aj"><summary><span class="n">13</span>O que a pessoa da limpeza vê e faz no link</summary><ol>
+    <li>Vê <b>só os dias e o imóvel</b> das limpezas que lhe estão atribuídas — nada de hóspedes, valores ou contas.</li>
+    <li>Ao chegar ao imóvel: <b>▶ Comecei</b> → confirma. Aparece o cronómetro.</li>
+    <li>Ao sair: <b>■ Terminei</b> → pode deixar uma nota (ex.: "falta detergente") → confirma.</li>
+    <li>Se carregou em Comecei por engano, tem <b>15 minutos</b> para "anular".</li>
+    <li>A hora registada é a do servidor (não dá para alterar no telemóvel). Só pode começar da véspera até 2 dias depois da data da limpeza.</li>
+  </ol></details>
+  <details class="aj"><summary><span class="n">14</span>Ver como estão as limpezas (em curso / feitas)</summary><ul>
+    <li>No <b>Calendário</b>: cartões <b>🧹 por imóvel</b> ao lado dos números do topo e a <b>vassoura 🧹</b> ao lado de cada imóvel (vermelho / amarelo / verde). Em <b>Tarefas</b>: quadro <b>Limpezas — hoje</b>.</li>
+    <li>A app <b>atualiza-se sozinha</b> de 1,5 em 1,5 minutos — quando a pessoa carrega em Comecei ou Terminei, vês a cor mudar.</li>
+    <li>Na lista de Tarefas, cada limpeza mostra <b>🧽 quem limpa</b>, as <b>horas</b> e a <b>💬 nota</b>.</li>
+  </ul></details>
+  <details class="aj"><summary><span class="n">15</span>Horas de limpeza e pagamento à equipa</summary><ol>
+    <li>Em <b>Tarefas</b> carrega em <b>⏱ Horas de limpeza</b>. Usa <b>‹ ›</b> para mudar de mês.</li>
+    <li>Vês o total de horas, as limpezas feitas e as <b>por fazer</b>; para cada pessoa: horas, custo (se tiver preço/hora) e as horas por imóvel.</li>
+    <li>Em baixo de cada pessoa está a lista das limpezas, com hora de início, fim e duração.</li>
+    <li>Para registar o pagamento: <b>💶 Lançar … em Contas</b> — cria a despesa "Limpeza" (uma por imóvel).</li>
+  </ol></details>
+  <details class="aj"><summary><span class="n">16</span>Corrigir horas ou mudar quem limpa uma limpeza</summary><ol>
+    <li>Em <b>Tarefas</b>, toca na limpeza.</li>
+    <li>Em <b>🧽 Quem limpa</b> escolhe a pessoa (só esta limpeza muda).</li>
+    <li>Em <b>Começou</b> e <b>Terminou</b> corrige a data e hora (ex.: se a pessoa se esqueceu de carregar). Com hora de fim, a limpeza fica <b>feita</b>.</li>
+    <li>Carrega em <b>Guardar</b>.</li>
+  </ol></details>
+  <details class="aj"><summary><span class="n">17</span>Bloquear, trocar ou apagar o link de uma pessoa</summary><ol>
+    <li>Na <b>Equipa de limpeza</b>, carrega em <b>✏️ Editar</b> ao lado da pessoa.</li>
+    <li><b>Bloquear</b>: desliga <b>Link ativo</b> → Guardar. O link deixa de funcionar (as horas ficam).</li>
+    <li><b>Link novo</b> (ex.: perdeu o telemóvel): <b>🔄 Trocar link</b>. O antigo deixa logo de funcionar — envia-lhe o novo.</li>
+    <li><b>Apagar</b>: a pessoa sai da equipa e as limpezas ficam sem pessoa atribuída. Para manter o histórico, prefere desligar o link.</li>
   </ol></details>
 
-  <details class="aj"><summary><span class="n">10</span>💶 Contas (receitas e despesas)</summary><ol>
-    <li>Escolhe <b>Mês</b> ou <b>Ano</b> e usa <b>‹ ›</b> para mudar de período.</li>
-    <li><b>+ Receita</b> ou <b>+ Despesa</b>: valor, data, alojamento e categoria (podes escolher da lista ou escrever).</li>
-    <li>As reservas com valor que ainda não lançaste aparecem em <b>"Reservas por lançar"</b> — carrega em <b>Lançar</b> (ou em <b>"Lançar as … de uma vez"</b>, para todas).</li>
+  <h3 class="ajg">💶 Contas</h3>
+  <details class="aj" data-t="con"><summary><span class="n">18</span>Receitas e despesas</summary><ol>
+    <li>Escolhe <b>Mês</b> ou <b>Ano</b> e usa <b>‹ ›</b> para mudar de período. O filtro mostra só um alojamento.</li>
+    <li><b>+ Receita</b> ou <b>+ Despesa</b>: valor (podes usar vírgula), data, alojamento, categoria (escolhe ou escreve) e descrição → <b>Guardar</b>.</li>
     <li>Em cima tens o total de receitas, despesas e a <b>margem</b>. "Por alojamento" mostra cada casa; toca numa para a ver sozinha.</li>
-    <li>Numa receita ou despesa podes escolher a <b>Reserva associada</b> (opcional) — ex.: a limpeza ou a comissão daquela estadia. Ao abrir a reserva no calendário vês as <b>contas dessa reserva</b> (receitas, despesas e margem) e tens o botão <b>+ Despesa desta reserva</b>.</li>
     <li>Toca num movimento para o <b>editar</b> ou <b>apagar</b>.</li>
   </ol></details>
-
-  <details class="aj"><summary><span class="n">11</span>👥 Hóspedes</summary><ol>
-    <li>Os hóspedes aparecem <b>sozinhos</b> quando escreves o nome numa reserva. Também podes criar com <b>+ Novo hóspede</b>.</li>
-    <li>Toca num hóspede para ver a <b>ficha</b>: contactos, notas e todas as estadias. Os botões <b>Ligar / WhatsApp / Email</b> aparecem quando há contacto.</li>
-    <li>Toca numa estadia da lista para abrir essa reserva.</li>
-    <li>A <b>nacionalidade</b> aparece com a bandeira no calendário e nas listas. Em cima tens quantos hóspedes há de cada país — toca num país para ver só esses.</li>
-    <li>Apagar a ficha <b>não</b> apaga as reservas.</li>
+  <details class="aj"><summary><span class="n">19</span>Lançar o valor das reservas como receita</summary><ol>
+    <li>As reservas com valor que ainda não lançaste aparecem em <b>Reservas por lançar como receita</b>.</li>
+    <li>Carrega em <b>Lançar</b> numa delas, ou em <b>Lançar as … de uma vez</b> para todas.</li>
+  </ol></details>
+  <details class="aj"><summary><span class="n">20</span>Associar uma despesa ou receita a uma reserva</summary><ol>
+    <li>Ao criar o movimento, escolhe a <b>Reserva associada</b> (opcional) — ex.: a limpeza ou a comissão dessa estadia. Aparece 🔗 na lista.</li>
+    <li>Ou abre a reserva no calendário e usa <b>+ Despesa desta reserva</b>.</li>
+    <li>Na reserva vês as <b>Contas desta reserva</b>: receitas, despesas e margem dessa estadia.</li>
   </ol></details>
 
-  <details class="aj"><summary><span class="n">12</span>📝 Notas</summary><ol>
-    <li>Guarda informação útil: Wi-Fi, códigos, contactos, regras da casa…</li>
-    <li><b>+ Nova nota</b> → título, texto e alojamento (ou "Geral"). Marca <b>📌 Fixar</b> para ficar sempre no topo.</li>
+  <h3 class="ajg">👥 Hóspedes e notas</h3>
+  <details class="aj" data-t="hosp"><summary><span class="n">21</span>Hóspedes: ficha, contactos e estadias</summary><ol>
+    <li>Os hóspedes aparecem <b>sozinhos</b> quando escreves o nome numa reserva. Também podes criar com <b>+ Novo hóspede</b>.</li>
+    <li>Toca num hóspede: telefone, email, nacionalidade, notas e <b>todas as estadias</b>. Os botões <b>Ligar / WhatsApp / Email</b> aparecem quando há contacto.</li>
+    <li>Toca numa estadia para abrir essa reserva. Usa a pesquisa para encontrar um nome.</li>
+    <li>Apagar a ficha <b>não</b> apaga as reservas.</li>
+  </ol></details>
+  <details class="aj"><summary><span class="n">22</span>Nacionalidades e filtro por país</summary><ol>
+    <li>Escolhe a <b>nacionalidade</b> na reserva ou na ficha do hóspede (os países mais frequentes estão no topo da lista).</li>
+    <li>A bandeira aparece no calendário, nos "Próximos 14 dias" e na lista de hóspedes.</li>
+    <li>Em <b>Hóspedes</b>, os botões com bandeiras mostram quantos há de cada país — toca num para ver só esses.</li>
+  </ol></details>
+  <details class="aj" data-t="not"><summary><span class="n">23</span>Notas (Wi-Fi, códigos, contactos…)</summary><ol>
+    <li><b>+ Nova nota</b> → título, texto e alojamento (ou "Geral") → <b>Guardar</b>.</li>
+    <li>Marca <b>📌 Fixar no topo</b> para ficar sempre em primeiro.</li>
     <li>Toca numa nota para <b>editar</b> ou <b>apagar</b>.</li>
   </ol></details>
 
-  <details class="aj"><summary><span class="n">13</span>☁️ Cópias de segurança na Google Drive</summary><ol>
+  <h3 class="ajg">☁️ Cópias e conta</h3>
+  <details class="aj"><summary><span class="n">24</span>Cópias de segurança automáticas na Google Drive</summary><ol>
     <li>Toca na <b>nuvem ☁️</b> no topo (um ponto vermelho quer dizer "por ligar" ou "falhou").</li>
     <li>Escreve o <b>email da conta Google</b> onde queres guardar e carrega em <b>Ligar / Guardar cópia agora</b>.</li>
-    <li>Na janela da Google escolhe essa conta e aceita. Pronto: a partir daqui é <b>automático</b>.</li>
-    <li>Na tua Drive aparece a pasta <b>GestaoNegocio › GestaoAL</b> com 2 ficheiros: o <b>Excel</b> (abre em qualquer aparelho) e a cópia completa. São sempre substituídos pela versão mais recente — nunca se acumulam.</li>
-    <li>Também podes <b>Descarregar Excel</b> para o aparelho quando quiseres.</li>
+    <li>Na janela da Google escolhe essa conta e aceita. A partir daqui é <b>automático</b>.</li>
+    <li>Na Drive fica a pasta <b>GestaoNegocio › GestaoAL</b> com o <b>Excel</b> e a cópia completa — sempre substituídos pela versão mais recente (nunca se acumulam).</li>
   </ol></details>
+  <details class="aj"><summary><span class="n">25</span>Descarregar o Excel</summary><ol>
+    <li>Toca na <b>nuvem ☁️</b> → <b>⬇️ Descarregar Excel</b>.</li>
+    <li>Tem folhas de Reservas, Contas, Tarefas (com quem limpou, horas e notas), Equipa limpeza, Hóspedes, Notas e Alojamentos.</li>
+  </ol></details>
+  <details class="aj"><summary><span class="n">26</span>Passar para a Gerirmais, sair e password</summary><ul>
+    <li><b>Gerirmais ↗</b> (em cima) leva-te à Gestão de Negócio sem novo login — só aparece se tiveres acesso.</li>
+    <li><b>⏻</b> termina a sessão neste aparelho.</li>
+    <li>A conta e a password são as mesmas da Gerirmais. Esqueceste-te? Usa "Esqueci-me da password" no ecrã de entrada.</li>
+  </ul></details>
 
-  <details class="aj"><summary><span class="n">14</span>Passar para a Gerirmais e sair</summary><ul>
-    <li>O botão <b>Gerirmais ↗</b> (em cima) leva-te à Gestão de Negócio, sem novo login — só aparece se tiveres acesso.</li>
-    <li>O botão <b>⏻</b> termina a sessão nas duas aplicações neste aparelho.</li>
-    <li>A conta e a password são as mesmas da Gerirmais. Esqueceste-te? Usa "Esqueci-me da password" na Gerirmais.</li>
+  <h3 class="ajg">❓ Problemas e dúvidas</h3>
+  <details class="aj"><summary><span class="n">27</span>Perguntas frequentes</summary><ul>
+    <li><b>A limpeza não aparece no link da pessoa</b> — confirma em Tarefas que a limpeza tem essa pessoa em "Quem limpa" e que a reserva está <b>Confirmada</b>.</li>
+    <li><b>A pessoa diz "Link desativado"</b> — o link foi desligado ou trocado: em Equipa de limpeza → Editar → liga "Link ativo" ou envia o link novo.</li>
+    <li><b>A pessoa mudou de telemóvel</b> — envia-lhe outra vez o link (📤 Enviar link) e ela volta a pôr o ícone.</li>
+    <li><b>Esqueceu-se de carregar em Comecei/Terminei</b> — corrige as horas tu (tema 16).</li>
+    <li><b>Vassoura vermelha numa limpeza antiga</b> — há uma limpeza por marcar como feita; abre-a em Tarefas e marca-a.</li>
+    <li><b>Sem internet</b> — nada é registado; tenta de novo quando houver rede (a página avisa).</li>
+    <li><b>Contorno vermelho ⚠ no calendário</b> — duas reservas no mesmo imóvel nos mesmos dias; abre-as e corrige as datas.</li>
+    <li><b>O botão ? tapa alguma coisa</b> — arrasta-o com o dedo para outro sítio.</li>
   </ul></details>
 
   <div class="acts"><button class="btn pri" onclick="fechar('mAjuda')">Fechar</button></div>
@@ -550,7 +631,7 @@ em.lb.curso u{background:#F2C230;animation:lbp 1.4s ease-in-out infinite}em.lb.f
    ==================================================================== */
 const SUPA_URL='https://xkfshzlcwiuvztfdwvjm.supabase.co';   // MESMO projeto da gerirmais (Gestao de Negocio) → mesma conta, sem novo login
 const SUPA_KEY='sb_publishable_SGjww6C455tzA6wpIevT-w_t2X9lqMJ';   // chave publishable da gerirmais (pública; a segurança está no RLS)
-const VERSAO='3.5';
+const VERSAO='3.6';
 const GERIRMAIS_URL='index.html';
 
 /* ---------- utilitários ---------- */
@@ -570,7 +651,22 @@ const fd=s=>{const d=new Date(pd(s));return d.getUTCDate()+' '+MS[d.getUTCMonth(
 const uuid=()=>(crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c=='x'?r:(r&3|8)).toString(16);}));
 function toast(t,ms){const e=$('toast');e.textContent=t;e.classList.remove('hide');clearTimeout(toast._t);toast._t=setTimeout(()=>e.classList.add('hide'),ms||2800);}
 function abrir(id){$(id).classList.remove('hide');}
-function abrirAjuda(){abrir('mAjuda');}
+/* ajuda: abre no tema do separador onde estás; pesquisa por palavras */
+function abrirAjuda(){
+  const b=$('ajBusca');if(b&&b.value){b.value='';ajudaProcurar('');}
+  const alvo=document.querySelector('#mAjuda details[data-t="'+(($('app')&&!$('app').classList.contains('hide'))?S.tab:'inicio')+'"]')||document.querySelector('#mAjuda details[data-t="inicio"]');
+  document.querySelectorAll('#mAjuda details.aj').forEach(d=>d.open=d===alvo);
+  abrir('mAjuda');
+  if(alvo)setTimeout(()=>alvo.scrollIntoView({block:'start'}),60);
+}
+const semAc=t=>String(t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+function ajudaProcurar(q){
+  const p=semAc(q).trim().split(/\s+/).filter(Boolean);let n=0;
+  document.querySelectorAll('#mAjuda details.aj').forEach(d=>{const ok=!p.length||p.every(w=>semAc(d.textContent).includes(w));d.classList.toggle('hide',!ok);d.open=!!p.length&&ok;if(ok)n++;});
+  document.querySelectorAll('#mAjuda h3.ajg').forEach(h=>{let e=h.nextElementSibling,v=false;while(e&&!e.matches('h3.ajg')){if(e.matches('details.aj')&&!e.classList.contains('hide'))v=true;e=e.nextElementSibling;}h.classList.toggle('hide',!v);});
+  $('ajNada').classList.toggle('hide',n>0);
+}
+function ajudaTodos(abre){document.querySelectorAll('#mAjuda details.aj:not(.hide)').forEach(d=>d.open=abre);}
 /* Botão de ajuda flutuante: toca para abrir, arrasta para mudar de sítio (fica lembrado neste aparelho) */
 (function(){
   const b=document.getElementById('ajudaFab');if(!b)return;
@@ -1349,6 +1445,12 @@ function blocoLimpezas(){
   const ordem={curso:0,atrasada:1,falta:2,feita:3};E.sort((x,y)=>ordem[x[1].k]-ordem[y[1].k]);
   return`<div class="lstat"><div class="h">🧽 Limpezas — hoje</div>${E.map(([a,e])=>`<div class="r ${e.k}" onclick="abrirTarefa('${e.t.id}')"><i style="background:${esc(a.cor)}"></i><b>${esc(a.nome)}</b><span class="e">${e.ic} ${esc(e.txt)}${e.q?`<small>${esc(e.q)}</small>`:''}</span></div>`).join('')}</div>`;
 }
+/* um cartão por imóvel com limpeza hoje, ao lado dos números do topo (passa para a linha de baixo se não couber) */
+function chipsLimpeza(){
+  const curto={curso:e=>'em curso · '+horaL(e.t.inicio),atrasada:e=>'atrasada · '+fd(e.t.data),falta:()=>'por fazer hoje',feita:e=>e.t.fim?'feita · '+horaL(e.t.fim):'feita'};
+  return S.aloj.map(a=>[a,estadoLimp(a.id)]).filter(([a,e])=>e).map(([a,e])=>
+    `<div class="chip lchip ${e.k}" onclick="abrirTarefa('${e.t.id}')" title="${esc(e.txt+(e.q?' · '+e.q:''))}"><b>🧹 ${esc(a.nome)}</b><span><u></u>${esc(curto[e.k](e))}</span></div>`).join('');
+}
 const badgeLimp=ajId=>{const e=estadoLimp(ajId);return e?`<em class="lb ${e.k}" title="${esc(e.txt+(e.q?' · '+e.q:''))}" aria-label="${esc(e.txt)}" onclick="event.stopPropagation();abrirTarefa('${e.t.id}')">🧹<u></u></em>`:'';};
 /* ---------- navegação ---------- */
 function tab(t){
@@ -1382,16 +1484,15 @@ function render(){
   let noites=0;S.aloj.forEach(a=>{const dias=new Set();S.res.filter(r=>r.alojamento_id===a.id&&ativa(r)).forEach(r=>{
     for(let d=Math.max(0,diffD(ini,r.checkin));d<Math.min(n,diffD(ini,r.checkout));d++)dias.add(d);});noites+=dias.size;});
   const ocup=Math.round(100*noites/(n*S.aloj.length));
-  let h=`<div class="chips">
+  let h=`<div class="chips topo">
     <div class="chip"><b>${entr}</b><span>entradas hoje</span></div>
     <div class="chip"><b>${said}</b><span>saídas hoje</span></div>
     <div class="chip"><b>${ocHoje}/${S.aloj.length}</b><span>ocupados hoje</span></div>
-    <div class="chip"><b>${ocup}%</b><span>ocupação de ${MESES[mes].toLowerCase()}</span></div></div>`;
+    <div class="chip"><b>${ocup}%</b><span>ocupação de ${MESES[mes].toLowerCase()}</span></div>${chipsLimpeza()}</div>`;
   if(nuvem()&&!copiaCfg().ligada&&!copiaCfg().dispensado)h+=`<div class="avisoCp"><span style="font-size:22px">☁️</span><div style="flex:1"><b>Guarda uma cópia automática na tua Google Drive</b>Se alguma vez houver uma falha, tens sempre os teus dados lá.</div><button class="btn sm pri" onclick="abrirCopias()">Ligar</button><button class="btn sm" title="Agora não" onclick="copiaCfgSet({dispensado:true});render()">✕</button></div>`;
   if(cf.length){const c=cf[0];h+=`<div class="alert" onclick="abrirRes('${c.a.id}')"><span>⚠️</span><div>${cf.length===1?'1 sobreposição':cf.length+' sobreposições'} de reservas<small>${esc(nomeAloj(c.a.alojamento_id))} · ${fd(c.de)} → ${fd(c.ate)} · ${esc(nomeHosp(c.a)||ORIG[c.a.origem])} × ${esc(nomeHosp(c.b)||ORIG[c.b.origem])}${cf.length>1?' (e mais '+(cf.length-1)+')':''}</small></div></div>`;}
 
   /* barra do mês */
-  h+=blocoLimpezas();
   h+=`<div class="bar-top"><button class="nb" onclick="mudaMes(-1)" aria-label="Mês anterior">‹</button><h2>${MESES[mes]} ${y}</h2><button class="nb today-btn" onclick="irHoje()">Hoje</button><button class="nb" onclick="mudaMes(1)" aria-label="Mês seguinte">›</button></div>`;
 
   /* colunas de fim de semana / hoje */

@@ -59,6 +59,8 @@ ol.passos li{counter-increment:p;display:flex;gap:12px;align-items:flex-start;ma
 ol.passos li:before{content:counter(p);flex:none;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center}
 .ico{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:28px;border-radius:7px;background:#EEF5F4;border:1px solid #CFE6E2;font-weight:700;padding:0 5px;vertical-align:middle}
 .nota{font-size:13px;background:#FFF7E6;border-radius:10px;padding:9px 11px;margin-top:10px;color:#7A5A12}
+#ajuda{position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom));width:52px;height:52px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-size:24px;font-weight:800;box-shadow:0 6px 18px -4px rgba(31,28,24,.45);z-index:15}
+main{padding-bottom:80px}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1F1C18;color:#fff;padding:12px 18px;border-radius:12px;font-size:15px;z-index:30;max-width:92vw;text-align:center}
 </style>
 </head>
@@ -82,6 +84,33 @@ ol.passos li:before{content:counter(p);flex:none;width:28px;height:28px;border-r
   <h3>📲 Pôr o ícone no telemóvel</h3>
   <div id="instTxt"></div>
   <div class="acts"><button class="pri" onclick="fecharInst()">Percebi</button></div>
+</div></div>
+
+<button id="ajuda" onclick="abrirAjuda()" aria-label="Ajuda" title="Ajuda">?</button>
+
+<!-- ajuda -->
+<div id="mAjuda" class="ov hide" onclick="if(event.target===this)fecharAjuda()"><div class="sheet">
+  <h3>❓ Como funciona</h3>
+  <p>Esta página serve para registar a hora a que <b>começa</b> e <b>termina</b> cada limpeza.</p>
+  <ol class="passos">
+    <li><div><b>Só na 1.ª vez:</b> carregue em <b>📲 Pôr ícone no telemóvel</b> e siga os passos. Fica com o ícone <b>Limpezas</b> no ecrã — depois é só tocar nele.</div></li>
+    <li><div><b>Ao chegar ao imóvel:</b> carregue em <b>▶ Comecei</b> e confirme com <b>Sim, comecei</b>. Aparece o tempo a contar.</div></li>
+    <li><div><b>Ao sair:</b> carregue em <b>■ Terminei</b>. Se quiser, escreva uma nota (ex.: "falta detergente", "lâmpada fundida") e confirme com <b>Sim, terminei</b>.</div></li>
+    <li><div><b>Enganou-se no Comecei?</b> Tem 15 minutos para carregar em <b>"Carreguei por engano — anular"</b>.</div></li>
+  </ol>
+  <div class="nota" style="background:#EEF5F4;color:#1F5F57">
+    • Só aparecem as limpezas que lhe foram atribuídas: o <b>dia</b> e o <b>imóvel</b>.<br>
+    • O botão <b>Comecei</b> só aparece perto do dia da limpeza (da véspera até 2 dias depois).<br>
+    • A hora fica registada sozinha — não precisa de escrever nada.<br>
+    • <b>↻</b> (em cima, à direita) atualiza a lista.
+  </div>
+  <div class="nota">
+    <b>Problemas?</b><br>
+    • <b>Sem internet:</b> nada fica registado — tente de novo quando tiver rede.<br>
+    • <b>"Link desativado"</b> ou falta uma limpeza: fale com o responsável.<br>
+    • <b>Mudou de telemóvel:</b> peça ao responsável que lhe envie o link outra vez.
+  </div>
+  <div class="acts"><button class="pri" onclick="fecharAjuda()">Percebi</button></div>
 </div></div>
 
 <div id="toast" class="toast hide"></div>
@@ -243,6 +272,8 @@ async function instalar(){
   $('instTxt').innerHTML=h;$('mInst').classList.remove('hide');
 }
 function fecharInst(){$('mInst').classList.add('hide');}
+function abrirAjuda(){$('mAjuda').classList.remove('hide');}
+function fecharAjuda(){$('mAjuda').classList.add('hide');}
 
 /* ---------- arranque ---------- */
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)carregar();});
