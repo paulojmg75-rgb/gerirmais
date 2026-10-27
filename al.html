@@ -160,6 +160,7 @@ h3.ajg{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 .seg{display:flex;background:#fff;border:1px solid var(--line2);border-radius:12px;padding:3px;margin:0 auto 10px;width:max-content}
 .seg button{border:none;background:none;padding:7px 18px;border-radius:9px;font-weight:700;font-size:13px;color:var(--ink2)}
 .seg button.on{background:var(--accent);color:#fff}
+.seg.seg-dir{margin:0;flex:none}.seg.seg-dir button{padding:7px 13px}
 .chk{width:30px;height:30px;border-radius:50%;border:2px solid var(--line2);background:#fff;color:#fff;font-weight:800;flex:0 0 30px}
 .chk.on{background:var(--direta);border-color:var(--direta)}
 .ev.st-falta,.ev.st-atrasada{background:#FDECEA;border-color:#F3B9B3;border-left:5px solid var(--red)}.ev.st-amanha,.ev.st-curso{background:#FFF8DC;border-color:#F2D675;border-left:5px solid #F2C230}.ev.st-feita{background:#E9F6EE;border-color:#A9DBBC;border-left:5px solid var(--direta)}
@@ -241,7 +242,7 @@ h3.ajg{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 <!-- APP -->
 <div id="app" class="hide">
   <header>
-    <div class="t"><div class="logo" style="width:32px;height:32px;font-size:13px;border-radius:9px">AL</div> Gestão AL <span class="badge hide" id="demoBadge">EXEMPLO</span><small style="font-size:10px;color:var(--ink3);font-weight:600">v3.12</small></div>
+    <div class="t"><div class="logo" style="width:32px;height:32px;font-size:13px;border-radius:9px">AL</div> Gestão AL <span class="badge hide" id="demoBadge">EXEMPLO</span><small style="font-size:10px;color:var(--ink3);font-weight:600">v3.13</small></div>
     <a class="lnk hide" id="lnkGerirmais" href="index.html" title="Ir para a Gestão de Negócio (mesma conta)">Gerirmais ↗</a>
     <button class="ibtn" id="copiaBtn" onclick="abrirCopias()" title="Cópias na Google Drive">☁️</button>
     <button class="ibtn" onclick="sair()" title="Sair">⏻</button>
@@ -566,7 +567,7 @@ h3.ajg{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 
   <h3 class="ajg">💶 Contas</h3>
   <details class="aj" data-t="con"><summary><span class="n">18</span>Receitas e despesas</summary><ol>
-    <li>Escolhe <b>Mês</b> ou <b>Ano</b> e usa <b>‹ ›</b> para mudar de período. O filtro mostra só um alojamento.</li>
+    <li>Escolhe <b>Mês</b> ou <b>Ano</b> (à direita, ao lado do período) e usa <b>‹ ›</b> para mudar de período. O filtro mostra só um alojamento.</li>
     <li><b>+ Receita</b> ou <b>+ Despesa</b>: valor (podes usar vírgula), data, alojamento, categoria (escolhe ou escreve) e descrição → <b>Guardar</b>.</li>
     <li>Em cima tens o total de receitas, despesas e a <b>margem</b>. "Por alojamento" mostra cada casa; toca numa para a ver sozinha.</li>
     <li>Toca num movimento para o <b>editar</b> ou <b>apagar</b>.</li>
@@ -645,7 +646,7 @@ h3.ajg{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
    ==================================================================== */
 const SUPA_URL='https://xkfshzlcwiuvztfdwvjm.supabase.co';   // MESMO projeto da gerirmais (Gestao de Negocio) → mesma conta, sem novo login
 const SUPA_KEY='sb_publishable_SGjww6C455tzA6wpIevT-w_t2X9lqMJ';   // chave publishable da gerirmais (pública; a segurança está no RLS)
-const VERSAO='3.12';
+const VERSAO='3.13';
 const GERIRMAIS_URL='index.html';
 
 /* ---------- utilitários ---------- */
@@ -1124,8 +1125,8 @@ function renderContas(m){
   const f=S.fC,P=periodoC(),noP=x=>x.data>=P.ini&&x.data<P.fim,doAj=x=>!f.aj||x.alojamento_id===f.aj;
   const L=S.mov.filter(x=>noP(x)&&doAj(x)).sort((a,b)=>a.data<b.data?1:-1);
   const rec=L.filter(x=>x.tipo==='receita').reduce((s,x)=>s+(+x.valor||0),0),des=L.filter(x=>x.tipo==='despesa').reduce((s,x)=>s+(+x.valor||0),0),mg=rec-des;
-  let h=`<div class="seg"><button class="${f.modo==='mes'?'on':''}" onclick="S.fC.modo='mes';render()">Mês</button><button class="${f.modo==='ano'?'on':''}" onclick="S.fC.modo='ano';render()">Ano</button></div>`;
-  h+=`<div class="bar-top"><button class="nb" onclick="mudaPeriodo(-1)" aria-label="Anterior">‹</button><h2>${P.nome}</h2><button class="nb" onclick="mudaPeriodo(1)" aria-label="Seguinte">›</button></div>`;
+  let h=`<div class="bar-top"><button class="nb" onclick="mudaPeriodo(-1)" aria-label="Anterior">‹</button><h2>${P.nome}</h2><button class="nb" onclick="mudaPeriodo(1)" aria-label="Seguinte">›</button>
+    <div class="seg seg-dir"><button class="${f.modo==='mes'?'on':''}" onclick="S.fC.modo='mes';render()">Mês</button><button class="${f.modo==='ano'?'on':''}" onclick="S.fC.modo='ano';render()">Ano</button></div></div>`;
   h+=barraFiltro(`<select onchange="S.fC.aj=this.value;render()">${optsAloj(f.aj,'Todos os alojamentos')}</select>`);
   h+=chips([[eur(rec),'receitas','var(--direta)'],[eur(des),'despesas','var(--red)'],[eur(mg),'margem'+(rec?' ('+Math.round(100*mg/rec)+'%)':''),mg<0?'var(--red)':'var(--accent-d)']]);
   h+=`<div style="display:flex;gap:8px;margin:2px 0 6px"><button class="btn pri" style="flex:1;background:var(--direta);border-color:var(--direta)" onclick="abrirMov(null,'receita')">+ Receita</button><button class="btn pri" style="flex:1;background:var(--red);border-color:var(--red)" onclick="abrirMov(null,'despesa')">+ Despesa</button></div>`;
