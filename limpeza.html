@@ -61,6 +61,11 @@ ol.passos li:before{content:counter(p);flex:none;width:28px;height:28px;border-r
 .nota{font-size:13px;background:#FFF7E6;border-radius:10px;padding:9px 11px;margin-top:10px;color:#7A5A12}
 #ajuda{position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom));width:52px;height:52px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-size:24px;font-weight:800;box-shadow:0 6px 18px -4px rgba(31,28,24,.45);z-index:15}
 main{padding-bottom:80px}
+.avis{display:flex;align-items:center;gap:10px;width:100%;background:#FFF7E6;border:2px solid #F2C230;color:#6B4E00;border-radius:14px;padding:12px 14px;font-weight:700;font-size:16px;margin-bottom:14px;text-align:left}
+.avis span{font-size:24px}.avis small{display:block;font-weight:400;font-size:13px;color:#8A6D1E}
+.avok{font-size:13px;color:var(--ok);text-align:center;margin:-4px 0 12px}.avok button{background:none;border:0;color:var(--ink3);text-decoration:underline;font-size:12px}
+.avlista{margin-top:12px}.avlista div{display:flex;align-items:center;gap:10px;background:#F7F2E9;border-radius:12px;padding:12px;margin-bottom:8px;font-size:17px}
+.avlista i{width:12px;height:12px;border-radius:50%;flex:none}.avlista b{flex:1}.avlista small{font-weight:700;color:var(--accent-d)}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1F1C18;color:#fff;padding:12px 18px;border-radius:12px;font-size:15px;z-index:30;max-width:92vw;text-align:center}
 </style>
 </head>
@@ -88,6 +93,13 @@ main{padding-bottom:80px}
 
 <button id="ajuda" onclick="abrirAjuda()" aria-label="Ajuda" title="Ajuda">?</button>
 
+<!-- aviso de limpeza -->
+<div id="mAviso" class="ov hide" onclick="if(event.target===this)fecharAviso()"><div class="sheet">
+  <h3>📢 Aviso de limpeza</h3>
+  <div id="avTxt"></div>
+  <div class="acts"><button class="pri" onclick="fecharAviso()">Percebi</button></div>
+</div></div>
+
 <!-- ajuda -->
 <div id="mAjuda" class="ov hide" onclick="if(event.target===this)fecharAjuda()"><div class="sheet">
   <h3>❓ Como funciona</h3>
@@ -96,6 +108,7 @@ main{padding-bottom:80px}
     <li><div><b>Só na 1.ª vez:</b> carregue em <b>📲 Pôr ícone no telemóvel</b> e siga os passos. Fica com o ícone <b>Limpezas</b> no ecrã — depois é só tocar nele.</div></li>
     <li><div><b>Ao chegar ao imóvel:</b> carregue em <b>▶ Comecei</b> e confirme com <b>Sim, comecei</b>. Aparece o tempo a contar.</div></li>
     <li><div><b>Ao sair:</b> carregue em <b>■ Terminei</b>. Se quiser, escreva uma nota (ex.: "falta detergente", "lâmpada fundida") e confirme com <b>Sim, terminei</b>.</div></li>
+    <li><div><b>Avisos:</b> carregue em <b>🔔 Receber avisos</b> e aceite. Na véspera (fim da tarde) e na manhã de cada limpeza recebe uma notificação, e o ícone mostra um número. Ao abrir aparece o aviso com o dia e o imóvel.</div></li>
     <li><div><b>Enganou-se no Comecei?</b> Tem 15 minutos para carregar em <b>"Carreguei por engano — anular"</b>.</div></li>
   </ol>
   <div class="nota" style="background:#EEF5F4;color:#1F5F57">
@@ -178,6 +191,7 @@ function desenhar(){
   const feitas=L.filter(l=>l.fim||l.estado==='feita').sort((a,b)=>a.data<b.data?1:-1);
   let h='';
   if(mostrarBotaoInstalar())h+=`<button class="inst" onclick="instalar()"><span>📲</span>Pôr ícone no telemóvel<small style="margin-left:auto;font-weight:400;color:var(--ink2)">1 toque</small></button>`;
+  h+=blocoAvisos();
   if(curso.length){h+='<h2>⏳ A decorrer</h2>'+curso.map(l=>cartao(l,hoje,'curso')).join('');}
   if(atuais.length){h+='<h2>🧹 Para fazer</h2>'+atuais.map(l=>cartao(l,hoje,'fazer')).join('');}
   if(!curso.length&&!atuais.length)h+=`<div class="empty" style="margin-top:6px">✅ Não há limpezas para hoje.</div>`;
@@ -188,6 +202,7 @@ function desenhar(){
   h+=`<p class="rod">${E.quando?'Atualizado às '+hora(E.quando):''}${E.erro?' · <span style="color:var(--red)">sem ligação</span>':''}<br>Gestão AL · só vê as limpezas que lhe foram atribuídas</p>`;
   m.innerHTML=h;
   tique();
+  verAvisos(d);
 }
 function cartao(l,hoje,tipo){
   const cor=esc(l.cor||'#2FB5A5');
@@ -241,10 +256,9 @@ const ANDROID=/Android/i.test(UA);
 const APP=()=>window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
 const DENTRO_APP=/FBAN|FBAV|Instagram|WhatsApp|Line\/|; wv\)/i.test(UA);
 let promptInst=null;
-if(!IOS){ // no iPhone não se põe o manifesto: assim o ícone guarda o link completo
-  const lk=document.createElement('link');lk.rel='manifest';lk.href='limpeza.webmanifest';document.head.appendChild(lk);
-  if('serviceWorker' in navigator)navigator.serviceWorker.register('limpeza-sw.js',{scope:'/limpeza'}).catch(()=>{});
-}
+/* o manifesto não tem start_url: o ícone abre o endereço onde foi criado (com o link da pessoa) */
+{const lk=document.createElement('link');lk.rel='manifest';lk.href='limpeza.webmanifest';document.head.appendChild(lk);}
+const SW=('serviceWorker' in navigator)?navigator.serviceWorker.register('limpeza-sw.js',{scope:'/limpeza'}).catch(()=>null):Promise.resolve(null);
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();promptInst=e;desenhar();});
 window.addEventListener('appinstalled',()=>{promptInst=null;toast('Ícone criado ✓ Já pode abrir as Limpezas pelo ecrã do telemóvel.',5000);desenhar();});
 function mostrarBotaoInstalar(){return!APP()&&(IOS||ANDROID||!!promptInst)&&E.dados&&E.dados.ok;}
@@ -272,6 +286,70 @@ async function instalar(){
   $('instTxt').innerHTML=h;$('mInst').classList.remove('hide');
 }
 function fecharInst(){$('mInst').classList.add('hide');}
+
+/* ---------- avisos no telemóvel (notificações + número no ícone + popup) ---------- */
+const VAPID_PUB='BOhiZZQZKL12xlwnm6sNWHuoYlzpoS5iVlBHA7FwQ5slMrZF3Fpw2w7_dWWqccQehfuzqyrBNAjg0LE-b7NOEtE';   // chave pública (a privada está só no segredo do GitHub)
+const PUSH_OK='PushManager' in window&&'serviceWorker' in navigator&&'Notification' in window;
+const AV={sub:null,lido:false};
+const b64u=s=>{const p='='.repeat((4-s.length%4)%4),r=atob((s+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(r,c=>c.charCodeAt(0));};
+async function lerSub(){try{const r=await SW;if(!r)return null;await navigator.serviceWorker.ready;return await r.pushManager.getSubscription();}catch(e){return null;}}
+async function enviarSub(sub){const j=sub.toJSON();return rpc('limpeza_push_guardar',{p_token:TOKEN,p_endpoint:j.endpoint,p_p256dh:j.keys.p256dh,p_auth:j.keys.auth});}
+(async()=>{if(!PUSH_OK)return;AV.sub=await lerSub();AV.lido=true;
+  if(AV.sub&&Notification.permission==='granted'&&TOKEN){try{await enviarSub(AV.sub);}catch(e){}}  // mantém o registo em dia
+  desenhar();})();
+function blocoAvisos(){
+  if(!AV.lido&&PUSH_OK)return'';
+  if(AV.sub&&Notification.permission==='granted')return`<div class="avok">🔔 Avisos ligados neste telemóvel <button onclick="desligarAvisos()">desligar</button></div>`;
+  if(!PUSH_OK){
+    if(IOS&&!APP())return`<button class="avis" onclick="instalar()"><span>🔔</span><div>Quer receber avisos das limpezas?<small>No iPhone: primeiro ponha o ícone (📲) e abra a página pelo ícone.</small></div></button>`;
+    return'';
+  }
+  if(Notification.permission==='denied')return`<div class="avis"><span>🔕</span><div>Avisos bloqueados<small>Para os receber, permita as notificações deste site nas definições do telemóvel.</small></div></div>`;
+  if(IOS&&!APP())return`<button class="avis" onclick="instalar()"><span>🔔</span><div>Quer receber avisos das limpezas?<small>No iPhone: primeiro ponha o ícone (📲) e abra a página pelo ícone.</small></div></button>`;
+  return`<button class="avis" onclick="ligarAvisos()"><span>🔔</span><div>Receber avisos de limpeza<small>Notificação na véspera e no próprio dia — 1 toque.</small></div></button>`;
+}
+async function ligarAvisos(){
+  try{
+    const perm=await Notification.requestPermission();
+    if(perm!=='granted'){toast('Os avisos não foram autorizados.',4000);desenhar();return;}
+    const r=await SW;if(!r)throw new Error('sw');await navigator.serviceWorker.ready;
+    let sub=await r.pushManager.getSubscription();
+    if(!sub)sub=await r.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(VAPID_PUB)});
+    const res=await enviarSub(sub);if(!res||!res.ok)throw new Error('guardar');
+    AV.sub=sub;toast('🔔 Avisos ligados ✓ Vai receber uma notificação antes de cada limpeza.',5000);desenhar();
+  }catch(e){toast('Não foi possível ligar os avisos. Tente de novo.',4500);}
+}
+async function desligarAvisos(){
+  try{const s=AV.sub||await lerSub();if(s){try{await rpc('limpeza_push_remover',{p_token:TOKEN,p_endpoint:s.endpoint});}catch(e){}await s.unsubscribe();}}catch(e){}
+  AV.sub=null;toast('Avisos desligados neste telemóvel.');desenhar();
+}
+/* popup + número no ícone: limpezas de hoje e amanhã ainda por fazer que a pessoa ainda não viu */
+const LSV='gal_limpeza_vistos';
+const vistos=()=>{try{return JSON.parse(localStorage.getItem(LSV)||'[]');}catch(e){return[];}};
+let AVISO_ATUAL=[];
+function verAvisos(d){
+  if(!d||!d.ok)return;
+  const hoje=d.hoje,am=addD(hoje,1),V=vistos();
+  const pend=(d.limpezas||[]).filter(l=>!l.inicio&&!l.fim&&l.estado!=='feita'&&(l.data===hoje||l.data===am)).sort((a,b)=>a.data<b.data?-1:1);
+  const novos=pend.filter(l=>!V.includes(l.id+'|'+l.data));
+  const forcar=new URLSearchParams(location.search).get('aviso')==='1'&&!verAvisos._feito;
+  try{if(navigator.setAppBadge){novos.length?navigator.setAppBadge(novos.length):navigator.clearAppBadge();}}catch(e){}
+  const mostrar=forcar?pend:novos;
+  if(!mostrar.length||!$('mAviso').classList.contains('hide')||!$('mConf').classList.contains('hide'))return;
+  verAvisos._feito=true;AVISO_ATUAL=mostrar;
+  const nHoje=mostrar.filter(l=>l.data===hoje).length,nAm=mostrar.length-nHoje;
+  $('avTxt').innerHTML=`<p>${nHoje&&nAm?'Tem limpezas <b>hoje</b> e <b>amanhã</b>:':nHoje?`<b>Hoje</b> tem ${nHoje>1?nHoje+' limpezas':'limpeza'}:`:`<b>Amanhã</b> tem ${nAm>1?nAm+' limpezas':'limpeza'}:`}</p>
+    <div class="avlista">${mostrar.map(l=>`<div><i style="background:${esc(l.cor||'#2FB5A5')}"></i><b>${esc(l.imovel)}</b><small>${esc(rotuloDia(l.data,hoje))}</small></div>`).join('')}</div>
+    <p style="font-size:14px;margin-top:6px">${nHoje?'Ao chegar ao imóvel, carregue em <b>▶ Comecei</b>.':'No dia, ao chegar, carregue em <b>▶ Comecei</b>.'}</p>`;
+  $('mAviso').classList.remove('hide');
+}
+function fecharAviso(){
+  $('mAviso').classList.add('hide');
+  const V=vistos();AVISO_ATUAL.forEach(l=>{const k=l.id+'|'+l.data;if(!V.includes(k))V.push(k);});
+  try{localStorage.setItem(LSV,JSON.stringify(V.slice(-80)));}catch(e){}
+  try{if(navigator.clearAppBadge)navigator.clearAppBadge();}catch(e){}
+  if(new URLSearchParams(location.search).get('aviso')==='1'&&history.replaceState){const u=new URL(location.href);u.searchParams.delete('aviso');history.replaceState(null,'',u.pathname+u.search);}
+}
 function abrirAjuda(){$('mAjuda').classList.remove('hide');}
 function fecharAjuda(){$('mAjuda').classList.add('hide');}
 

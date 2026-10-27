@@ -128,9 +128,9 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 .tagoff{font-size:11px;background:#F6DCDA;color:var(--red);border-radius:6px;padding:1px 6px;font-weight:700}
 .hrp{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:11px 12px;margin-top:10px}.hrp .t{display:flex;justify-content:space-between;font-weight:700;font-size:15px}.hrp .s{font-size:12px;color:var(--ink2);margin-top:2px}.hrp table{width:100%;border-collapse:collapse;margin-top:8px;font-size:12px}.hrp td{padding:5px 2px;border-top:1px solid var(--line)}.hrp td.r{text-align:right;white-space:nowrap}
 .chips.topo{flex-wrap:wrap;overflow:visible}
-.chip.lchip{cursor:pointer;max-width:200px}.chip.lchip b{font-size:13px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:2px 0 4px}
+.chip.lchip{cursor:pointer;max-width:220px;background:#fff}.chip.lchip b{display:flex;align-items:center;gap:7px}.chip.lchip b i{font-style:normal;flex:none;display:grid;place-items:center;width:30px;height:22px;border-radius:6px;background:var(--cc);font-size:13px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}.chip.lchip b{font-size:13px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:2px 0 4px}
 .chip.lchip span{display:flex;align-items:center;gap:6px;white-space:nowrap}.chip.lchip u{display:block;width:16px;height:5px;border-radius:3px;background:var(--red);flex:none}
-.chip.lchip.curso{border-color:#F2C230}.chip.lchip.curso u{background:#F2C230;animation:lbp 1.4s ease-in-out infinite}.chip.lchip.feita{border-color:var(--direta)}.chip.lchip.feita u{background:var(--direta)}.chip.lchip.atrasada,.chip.lchip.falta{border-color:#EBB3AF}
+.chip.lchip{border-color:var(--line)}.chip.lchip u{width:22px;height:6px}.chip.lchip.curso u{background:#F2C230;animation:lbp 1.4s ease-in-out infinite}.chip.lchip.feita u{background:var(--direta)}
 .lstat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 10px;margin:0 0 10px}.lstat .h{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink2);margin:2px 2px 6px}
 .lstat .r{display:flex;align-items:center;gap:8px;padding:8px 6px;border-top:1px solid var(--line);cursor:pointer;font-size:13px}.lstat .r i{width:10px;height:10px;border-radius:50%;flex:none}.lstat .r b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lstat .e{font-weight:700;text-align:right;white-space:nowrap}.lstat .e small{display:block;font-weight:400;color:var(--ink3);font-size:11px}
@@ -239,7 +239,7 @@ h3.ajg{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 <!-- APP -->
 <div id="app" class="hide">
   <header>
-    <div class="t"><div class="logo" style="width:32px;height:32px;font-size:13px;border-radius:9px">AL</div> Gestão AL <span class="badge hide" id="demoBadge">EXEMPLO</span><small style="font-size:10px;color:var(--ink3);font-weight:600">v3.6</small></div>
+    <div class="t"><div class="logo" style="width:32px;height:32px;font-size:13px;border-radius:9px">AL</div> Gestão AL <span class="badge hide" id="demoBadge">EXEMPLO</span><small style="font-size:10px;color:var(--ink3);font-weight:600">v3.7</small></div>
     <a class="lnk hide" id="lnkGerirmais" href="index.html" title="Ir para a Gestão de Negócio (mesma conta)">Gerirmais ↗</a>
     <button class="ibtn" id="copiaBtn" onclick="abrirCopias()" title="Cópias na Google Drive">☁️</button>
     <button class="ibtn" onclick="sair()" title="Sair">⏻</button>
@@ -518,7 +518,17 @@ h3.ajg{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
     <li>Na <b>Equipa de limpeza</b>, carrega em <b>📤 Enviar link</b> ao lado da pessoa: abre o WhatsApp com a mensagem pronta — só tens de carregar em enviar.</li>
     <li>Sem WhatsApp? Carrega em <b>📋 Copiar</b> e cola a mensagem numa SMS ou email.</li>
     <li>A pessoa abre o link e carrega em <b>📲 Pôr ícone no telemóvel</b>: fica com o ícone <b>Limpezas</b> no ecrã (Android: 1 toque; iPhone: Partilhar → Adicionar ao ecrã principal; a página explica).</li>
+    <li>A mensagem também lhe pede para carregar em <b>🔔 Receber avisos</b> (notificação antes de cada limpeza).</li>
     <li>Cada pessoa tem o seu link. Não é preciso email nem password.</li>
+  </ol></details>
+  <details class="aj"><summary><span class="n">13</span>🔔 Avisos no telemóvel da equipa (notificação, número no ícone e aviso)</summary><ol>
+    <li>A pessoa abre o link dela e carrega em <b>🔔 Receber avisos</b> → <b>Permitir</b>. É só uma vez, em cada telemóvel. <b>iPhone:</b> primeiro tem de pôr o ícone 📲 e abrir a página pelo ícone (iOS 16.4 ou mais recente).</li>
+    <li>Todos os dias, <b>ao fim da tarde</b>, quem tem limpeza no dia seguinte recebe a notificação "🧹 Amanhã tem limpeza — Casa X". <b>De manhã cedo</b> recebe "Hoje tem limpeza" (se ainda não começou).</li>
+    <li>No ícone <b>Limpezas</b> do telemóvel aparece um <b>ponto ou número</b> com as limpezas por ver.</li>
+    <li>Ao tocar na notificação ou no ícone, abre a página com o <b>aviso</b>: dia e imóvel. Carrega em <b>Percebi</b> e o número desaparece.</li>
+    <li>Na <b>Equipa de limpeza</b> vês, para cada pessoa, se tem <b>🔔 avisos ligados</b> (e em quantos telemóveis) ou <b>🔕 ainda sem avisos</b>.</li>
+    <li>Em baixo, em <b>📅 Limpezas de amanhã</b>, tens <b>📤 Lembrar por WhatsApp</b> para quem não tem avisos (mensagem já escrita — só carregas em enviar).</li>
+    <li>É <b>grátis</b>: usa o serviço de notificações do próprio telemóvel e uma tarefa automática no GitHub (como a que mantém o site ativo).</li>
   </ol></details>
   <details class="aj"><summary><span class="n">13</span>O que a pessoa da limpeza vê e faz no link</summary><ol>
     <li>Vê <b>só os dias e o imóvel</b> das limpezas que lhe estão atribuídas — nada de hóspedes, valores ou contas.</li>
@@ -608,7 +618,8 @@ h3.ajg{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
     <li><b>A limpeza não aparece no link da pessoa</b> — confirma em Tarefas que a limpeza tem essa pessoa em "Quem limpa" e que a reserva está <b>Confirmada</b>.</li>
     <li><b>A pessoa diz "Link desativado"</b> — o link foi desligado ou trocado: em Equipa de limpeza → Editar → liga "Link ativo" ou envia o link novo.</li>
     <li><b>A pessoa mudou de telemóvel</b> — envia-lhe outra vez o link (📤 Enviar link) e ela volta a pôr o ícone.</li>
-    <li><b>Esqueceu-se de carregar em Comecei/Terminei</b> — corrige as horas tu (tema 16).</li>
+    <li><b>Esqueceu-se de carregar em Comecei/Terminei</b> — corrige as horas tu (tema "Corrigir horas ou mudar quem limpa").</li>
+    <li><b>A pessoa não recebe avisos</b> — na Equipa de limpeza vê se tem "🔔 avisos ligados". Se não: ela abre o link e carrega em 🔔 Receber avisos. Se tiver bloqueado as notificações, tem de as permitir nas definições do telemóvel. No iPhone só funciona pelo ícone no ecrã.</li>
     <li><b>Vassoura vermelha numa limpeza antiga</b> — há uma limpeza por marcar como feita; abre-a em Tarefas e marca-a.</li>
     <li><b>Sem internet</b> — nada é registado; tenta de novo quando houver rede (a página avisa).</li>
     <li><b>Contorno vermelho ⚠ no calendário</b> — duas reservas no mesmo imóvel nos mesmos dias; abre-as e corrige as datas.</li>
@@ -631,7 +642,7 @@ h3.ajg{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
    ==================================================================== */
 const SUPA_URL='https://xkfshzlcwiuvztfdwvjm.supabase.co';   // MESMO projeto da gerirmais (Gestao de Negocio) → mesma conta, sem novo login
 const SUPA_KEY='sb_publishable_SGjww6C455tzA6wpIevT-w_t2X9lqMJ';   // chave publishable da gerirmais (pública; a segurança está no RLS)
-const VERSAO='3.6';
+const VERSAO='3.7';
 const GERIRMAIS_URL='index.html';
 
 /* ---------- utilitários ---------- */
@@ -656,7 +667,7 @@ function abrirAjuda(){
   const b=$('ajBusca');if(b&&b.value){b.value='';ajudaProcurar('');}
   const alvo=document.querySelector('#mAjuda details[data-t="'+(($('app')&&!$('app').classList.contains('hide'))?S.tab:'inicio')+'"]')||document.querySelector('#mAjuda details[data-t="inicio"]');
   document.querySelectorAll('#mAjuda details.aj').forEach(d=>d.open=d===alvo);
-  abrir('mAjuda');
+  ajudaNumerar();abrir('mAjuda');
   if(alvo)setTimeout(()=>alvo.scrollIntoView({block:'start'}),60);
 }
 const semAc=t=>String(t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
@@ -666,6 +677,7 @@ function ajudaProcurar(q){
   document.querySelectorAll('#mAjuda h3.ajg').forEach(h=>{let e=h.nextElementSibling,v=false;while(e&&!e.matches('h3.ajg')){if(e.matches('details.aj')&&!e.classList.contains('hide'))v=true;e=e.nextElementSibling;}h.classList.toggle('hide',!v);});
   $('ajNada').classList.toggle('hide',n>0);
 }
+function ajudaNumerar(){document.querySelectorAll('#mAjuda details.aj .n').forEach((e,i)=>e.textContent=i+1);}
 function ajudaTodos(abre){document.querySelectorAll('#mAjuda details.aj:not(.hide)').forEach(d=>d.open=abre);}
 /* Botão de ajuda flutuante: toca para abrir, arrasta para mudar de sítio (fica lembrado neste aparelho) */
 (function(){
@@ -817,14 +829,16 @@ Object.assign(S,{tar:[],mov:[],notas:[],notasOk:true,fT:{aj:'',tipo:'',feitas:fa
 /* ---------- dados: carregar extra / gravar / apagar genéricos ---------- */
 async function carregarExtra(){
   if(!nuvem())return;
-  const sb=S.sb,[t,m,n,l]=await Promise.all([
+  const sb=S.sb,[t,m,n,l,pu]=await Promise.all([
     sb.from('al_tarefas').select('*').order('data',{ascending:true}),
     sb.from('al_movimentos').select('*').order('data',{ascending:false}),
     sb.from('al_notas').select('*').order('atualizado_em',{ascending:false}),
-    sb.from('al_limpadores').select('*').order('nome')]);
+    sb.from('al_limpadores').select('*').order('nome'),
+    sb.from('al_push').select('limpador_id,ultimo_aviso')]);
   if(t.error)throw t.error;if(m.error)throw m.error;
   S.tar=t.data;S.mov=m.data;
   if(l.error){S.limp=[];S.limpOk=false;}else{S.limp=l.data;S.limpOk=true;}
+  S.push=pu&&!pu.error?pu.data:null;
   if(n.error){S.notas=[];S.notasOk=false;}else{S.notas=n.data;S.notasOk=true;}
   if(S._jaCarregou&&!S._semCopia)agendarCopia();S._jaCarregou=true;
 }
@@ -960,9 +974,32 @@ function desenharEquipa(){
   $('eqLista').innerHTML=S.limp.length?S.limp.map(l=>{
     const aj=S.aloj.filter(a=>a.limpador_id===l.id).map(a=>a.nome);
     return`<div class="eqc"><div class="t">🧽 ${esc(l.nome)} ${l.ativo?'':'<span class="tagoff">LINK DESLIGADO</span>'}</div>
+      <div class="s">${avisosDe(l)}</div>
       <div class="s">${aj.length?'Imóveis: '+aj.map(esc).join(', '):'Sem imóvel atribuído'}${l.preco_hora!=null&&l.preco_hora!==''?' · '+eur(l.preco_hora)+'/hora':''}${l.telefone?' · 📞 '+esc(l.telefone):''}</div>
       <div class="b">${l.ativo?`<button class="btn" onclick="enviarLink('${l.id}')">📤 Enviar link</button><button class="btn" onclick="copiarLink('${l.id}')">📋 Copiar</button>`:''}<button class="btn" onclick="abrirLimp('${l.id}')">✏️ Editar</button></div></div>`;
-  }).join(''):`<div class="empty" style="padding:18px">Ainda não há ninguém na equipa.<br><small>Adiciona a senhora ou a empresa que faz as limpezas.</small></div>`;
+  }).join('')+lembretesAmanha():`<div class="empty" style="padding:18px">Ainda não há ninguém na equipa.<br><small>Adiciona a senhora ou a empresa que faz as limpezas.</small></div>`;
+}
+/* avisos no telemóvel da equipa (ligados pela própria pessoa na página do link) */
+function avisosDe(l){
+  if(!nuvem())return l.id===(S.limp[0]||{}).id?'🔔 Avisos ligados em 1 telemóvel':'🔕 Ainda sem avisos — a pessoa liga-os no link (botão 🔔)';
+  if(!S.push)return'';
+  const n=S.push.filter(x=>x.limpador_id===l.id).length;
+  return n?`🔔 Avisos ligados em ${n} telemóve${n>1?'is':'l'}`:'🔕 Ainda sem avisos — a pessoa liga-os no link (botão 🔔)';
+}
+function lembretesAmanha(){
+  const am=addD(hoje(),1),G={};
+  S.tar.filter(t=>t.tipo==='limpeza'&&t.data===am&&t.limpador_id&&!t.inicio&&t.estado!=='feita').forEach(t=>{(G[t.limpador_id]=G[t.limpador_id]||[]).push(nomeAloj(t.alojamento_id));});
+  const ids=Object.keys(G).filter(id=>S.limp.some(l=>l.id===id&&l.ativo));
+  if(!ids.length)return`<div class="note">📅 Amanhã (${fd(am)}) não há limpezas atribuídas à equipa.</div>`;
+  return`<h3 class="sec" style="margin-top:14px">📅 Limpezas de amanhã (${fd(am)})</h3>`+ids.map(id=>{const l=S.limp.find(x=>x.id===id);
+    return`<div class="eqc"><div class="t">🧽 ${esc(l.nome)}</div><div class="s">${G[id].map(esc).join(', ')}</div><div class="b"><button class="btn" onclick="lembrarWhats('${id}')">📤 Lembrar por WhatsApp</button></div></div>`;}).join('')
+    +`<div class="note">Quem tem <b>🔔 avisos ligados</b> recebe a notificação sozinho ao fim da tarde. O WhatsApp é para quem não tem avisos (ou se quiseres reforçar).</div>`;
+}
+function lembrarWhats(id){
+  const l=S.limp.find(x=>x.id===id);if(!l)return;const am=addD(hoje(),1);
+  const im=S.tar.filter(t=>t.tipo==='limpeza'&&t.data===am&&t.limpador_id===id&&!t.inicio&&t.estado!=='feita').map(t=>nomeAloj(t.alojamento_id));
+  const msg='Olá '+l.nome+'! 🧹 Lembrete: amanhã ('+fd(am)+') tem limpeza em '+im.join(', ')+'.\nAo chegar, abra o seu link (ou o ícone Limpezas) e carregue em ▶ Comecei:\n'+linkLimp(l);
+  window.open('https://wa.me/'+telWhats(l.telefone)+'?text='+encodeURIComponent(msg),'_blank','noopener');
 }
 function abrirLimp(id){
   const l=id?S.limp.find(x=>x.id===id):null;S.editL=l?l.id:null;
@@ -1029,7 +1066,7 @@ async function apagarLimp(){
     S.editL=null;fechar('mLimp');desenharEquipa();render();toast('Apagado');
   }catch(e){toast('Erro: '+(e.message||e),4500);}
 }
-function msgLink(l){return'Olá '+l.nome+'! 👋\nEste é o seu link para registar as limpezas'+(S.aloj.some(a=>a.limpador_id===l.id)?' ('+S.aloj.filter(a=>a.limpador_id===l.id).map(a=>a.nome).join(', ')+')':'')+':\n'+linkLimp(l)+'\n\n1) Abra o link e carregue em «📲 Pôr ícone no telemóvel» — fica com o ícone Limpezas no ecrã.\n2) Ao chegar ao imóvel carregue em ▶ Comecei; ao sair, em ■ Terminei.\n\nObrigado!';}
+function msgLink(l){return'Olá '+l.nome+'! 👋\nEste é o seu link para registar as limpezas'+(S.aloj.some(a=>a.limpador_id===l.id)?' ('+S.aloj.filter(a=>a.limpador_id===l.id).map(a=>a.nome).join(', ')+')':'')+':\n'+linkLimp(l)+'\n\n1) Abra o link e carregue em «📲 Pôr ícone no telemóvel» — fica com o ícone Limpezas no ecrã.\n2) Carregue em «🔔 Receber avisos» e aceite — recebe uma notificação antes de cada limpeza.\n3) Ao chegar ao imóvel carregue em ▶ Comecei; ao sair, em ■ Terminei.\n\nObrigado!';}
 function telWhats(t){let d=String(t||'').replace(/\D/g,'');if(d.startsWith('00'))d=d.slice(2);if(d.length===9&&/^9/.test(d))d='351'+d;return d;}
 function enviarLink(id){const l=S.limp.find(x=>x.id===id);if(!l)return;window.open('https://wa.me/'+telWhats(l.telefone)+'?text='+encodeURIComponent(msgLink(l)),'_blank','noopener');}
 async function copiarLink(id){const l=S.limp.find(x=>x.id===id);if(!l)return;const t=msgLink(l);
@@ -1449,7 +1486,7 @@ function blocoLimpezas(){
 function chipsLimpeza(){
   const curto={curso:e=>'em curso · '+horaL(e.t.inicio),atrasada:e=>'atrasada · '+fd(e.t.data),falta:()=>'por fazer hoje',feita:e=>e.t.fim?'feita · '+horaL(e.t.fim):'feita'};
   return S.aloj.map(a=>[a,estadoLimp(a.id)]).filter(([a,e])=>e).map(([a,e])=>
-    `<div class="chip lchip ${e.k}" onclick="abrirTarefa('${e.t.id}')" title="${esc(e.txt+(e.q?' · '+e.q:''))}"><b>🧹 ${esc(a.nome)}</b><span><u></u>${esc(curto[e.k](e))}</span></div>`).join('');
+    `<div class="chip lchip ${e.k}" style="--cc:${esc(a.cor||'#2FB5A5')}" onclick="abrirTarefa('${e.t.id}')" title="${esc(e.txt+(e.q?' · '+e.q:''))}"><b><i>🧹</i>${esc(a.nome)}</b><span><u></u>${esc(curto[e.k](e))}</span></div>`).join('');
 }
 const badgeLimp=ajId=>{const e=estadoLimp(ajId);return e?`<em class="lb ${e.k}" title="${esc(e.txt+(e.q?' · '+e.q:''))}" aria-label="${esc(e.txt)}" onclick="event.stopPropagation();abrirTarefa('${e.t.id}')">🧹<u></u></em>`:'';};
 /* ---------- navegação ---------- */

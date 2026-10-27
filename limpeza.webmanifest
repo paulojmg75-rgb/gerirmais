@@ -3,7 +3,6 @@
   "short_name": "Limpezas",
   "description": "Registar o início e o fim das limpezas",
   "lang": "pt-PT",
-  "start_url": "/limpeza.html?app=1",
   "scope": "/limpeza",
   "display": "standalone",
   "orientation": "portrait",
