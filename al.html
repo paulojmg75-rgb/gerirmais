@@ -128,9 +128,9 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 .tagoff{font-size:11px;background:#F6DCDA;color:var(--red);border-radius:6px;padding:1px 6px;font-weight:700}
 .hrp{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:11px 12px;margin-top:10px}.hrp .t{display:flex;justify-content:space-between;font-weight:700;font-size:15px}.hrp .s{font-size:12px;color:var(--ink2);margin-top:2px}.hrp table{width:100%;border-collapse:collapse;margin-top:8px;font-size:12px}.hrp td{padding:5px 2px;border-top:1px solid var(--line)}.hrp td.r{text-align:right;white-space:nowrap}
 .chips.topo{flex-wrap:wrap;overflow:visible}
-.chip.lchip{cursor:pointer;max-width:220px;background:#fff}.chip.lchip b{display:flex;align-items:center;gap:7px}.chip.lchip b i{font-style:normal;flex:none;display:grid;place-items:center;width:30px;height:22px;border-radius:6px;background:var(--cc);font-size:13px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}.chip.lchip b{font-size:13px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:2px 0 4px}
+.chip.lchip{cursor:pointer;max-width:220px}.chip.lchip b{display:flex;align-items:center;gap:7px}.chip.lchip b i{font-style:normal;flex:none;display:grid;place-items:center;width:30px;height:22px;border-radius:6px;background:var(--cc);font-size:13px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}.chip.lchip b{font-size:13px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:2px 0 4px}
 .chip.lchip span{display:flex;align-items:center;gap:6px;white-space:nowrap}.chip.lchip u{display:block;width:16px;height:5px;border-radius:3px;background:var(--red);flex:none}
-.chip.lchip{border-color:var(--line)}.chip.lchip u{width:22px;height:6px}.chip.lchip.curso u{background:#F2C230;animation:lbp 1.4s ease-in-out infinite}.chip.lchip.feita u{background:var(--direta)}
+.chip.lchip u{width:22px;height:6px}.chip.lchip.falta,.chip.lchip.atrasada{background:#FDECEA;border-color:#F3B9B3}.chip.lchip.falta span,.chip.lchip.atrasada span{color:#B3261E}.chip.lchip.curso{background:#FFF8DC;border-color:#F2D675}.chip.lchip.curso u{background:#F2C230;animation:lbp 1.4s ease-in-out infinite}.chip.lchip.curso span{color:#8A6D00}.chip.lchip.feita{background:#E9F6EE;border-color:#A9DBBC}.chip.lchip.feita u{background:var(--direta)}.chip.lchip.feita span{color:#1F7A45}
 .lstat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 10px;margin:0 0 10px}.lstat .h{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink2);margin:2px 2px 6px}
 .lstat .r{display:flex;align-items:center;gap:8px;padding:8px 6px;border-top:1px solid var(--line);cursor:pointer;font-size:13px}.lstat .r i{width:10px;height:10px;border-radius:50%;flex:none}.lstat .r b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lstat .e{font-weight:700;text-align:right;white-space:nowrap}.lstat .e small{display:block;font-weight:400;color:var(--ink3);font-size:11px}
@@ -239,7 +239,7 @@ h3.ajg{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 <!-- APP -->
 <div id="app" class="hide">
   <header>
-    <div class="t"><div class="logo" style="width:32px;height:32px;font-size:13px;border-radius:9px">AL</div> Gestão AL <span class="badge hide" id="demoBadge">EXEMPLO</span><small style="font-size:10px;color:var(--ink3);font-weight:600">v3.7</small></div>
+    <div class="t"><div class="logo" style="width:32px;height:32px;font-size:13px;border-radius:9px">AL</div> Gestão AL <span class="badge hide" id="demoBadge">EXEMPLO</span><small style="font-size:10px;color:var(--ink3);font-weight:600">v3.8</small></div>
     <a class="lnk hide" id="lnkGerirmais" href="index.html" title="Ir para a Gestão de Negócio (mesma conta)">Gerirmais ↗</a>
     <button class="ibtn" id="copiaBtn" onclick="abrirCopias()" title="Cópias na Google Drive">☁️</button>
     <button class="ibtn" onclick="sair()" title="Sair">⏻</button>
@@ -496,7 +496,7 @@ h3.ajg{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
     <li><b>Contorno vermelho ⚠</b> = duas reservas sobrepostas no mesmo alojamento (toca no aviso para abrir). O dia de saída de um pode ser o de entrada do seguinte — isso <b>não</b> é sobreposição.</li>
     <li>A <b>bandeira</b> na barra é a nacionalidade do hóspede.</li>
     <li><b>Vassoura 🧹</b> ao lado do nome do imóvel = limpeza de hoje: barra <b>vermelha</b> por fazer (ou atrasada), <b>amarela</b> a piscar em curso, <b>verde</b> feita. Toca na vassoura para ver quem limpa e as horas.</li>
-    <li>Ao lado dos números do topo aparece um cartão <b>🧹 por imóvel</b> com limpeza hoje (por fazer, em curso ou feita, com a hora). Com muitos imóveis, os cartões passam para a linha de baixo. Toca num para abrir essa limpeza.</li>
+    <li>Ao lado dos números do topo aparece um cartão <b>🧹 por imóvel</b> com limpeza hoje (por fazer, em curso ou feita, com a hora). O <b>quadrado com a vassoura</b> tem a cor da casa; o <b>fundo do cartão</b> e o traço mostram o estado: <b>vermelho</b> por fazer/atrasada, <b>amarelo</b> em curso, <b>verde</b> feita. Com muitos imóveis, os cartões passam para a linha de baixo. Toca num para abrir essa limpeza.</li>
     <li><b>‹ ›</b> muda de mês; <b>Hoje</b> volta ao mês atual. Em baixo: <b>Próximos 14 dias</b> (entradas e saídas).</li>
   </ul></details>
 
@@ -642,7 +642,7 @@ h3.ajg{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
    ==================================================================== */
 const SUPA_URL='https://xkfshzlcwiuvztfdwvjm.supabase.co';   // MESMO projeto da gerirmais (Gestao de Negocio) → mesma conta, sem novo login
 const SUPA_KEY='sb_publishable_SGjww6C455tzA6wpIevT-w_t2X9lqMJ';   // chave publishable da gerirmais (pública; a segurança está no RLS)
-const VERSAO='3.7';
+const VERSAO='3.8';
 const GERIRMAIS_URL='index.html';
 
 /* ---------- utilitários ---------- */
