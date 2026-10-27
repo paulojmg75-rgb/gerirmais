@@ -1,0 +1,49 @@
+# =====================================================================
+#  AVISOS DE LIMPEZA — envia notificações à equipa de limpeza da
+#  Gestão AL: ao fim da tarde (limpezas de amanhã) e de manhã cedo
+#  (limpezas de hoje ainda por começar). Grátis. Precisa do segredo
+#  LIMPEZA_AVISOS (Settings → Secrets and variables → Actions).
+#  Ficheiro: .github/workflows/avisos-limpeza.yml  (repo gerirmais)
+# =====================================================================
+name: Avisos de limpeza
+
+on:
+  schedule:
+    - cron: "41 17 * * *"   # véspera: ~17h40 (inverno) / ~18h40 (verão), hora de Portugal
+    - cron: "13 7 * * *"    # dia: ~7h15 (inverno) / ~8h15 (verão)
+  workflow_dispatch:
+    inputs:
+      tipo:
+        description: "vespera = limpezas de amanhã · dia = limpezas de hoje"
+        required: true
+        default: vespera
+        type: choice
+        options: [vespera, dia]
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  avisar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Preparar
+        run: npm install --no-save --no-audit --no-fund web-push@3.6.7
+      - name: Enviar avisos
+        env:
+          LIMPEZA_AVISOS: ${{ secrets.LIMPEZA_AVISOS }}
+          TIPO: ${{ github.event_name == 'workflow_dispatch' && inputs.tipo || (github.event.schedule == '13 7 * * *' && 'dia' || 'vespera') }}
+        run: node .github/avisos-limpeza.mjs
+      - name: Manter este agendamento ligado
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/avisos-limpeza.yml/enable" || true
