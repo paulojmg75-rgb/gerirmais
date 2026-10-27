@@ -128,7 +128,7 @@ h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 .tagoff{font-size:11px;background:#F6DCDA;color:var(--red);border-radius:6px;padding:1px 6px;font-weight:700}
 .hrp{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:11px 12px;margin-top:10px}.hrp .t{display:flex;justify-content:space-between;font-weight:700;font-size:15px}.hrp .s{font-size:12px;color:var(--ink2);margin-top:2px}.hrp table{width:100%;border-collapse:collapse;margin-top:8px;font-size:12px}.hrp td{padding:5px 2px;border-top:1px solid var(--line)}.hrp td.r{text-align:right;white-space:nowrap}
 .chips.topo{flex-wrap:wrap;overflow:visible}
-.chip.lchip{cursor:pointer;max-width:220px}.chip.lchip b{display:flex;align-items:center;gap:7px}.chip.lchip b i{font-style:normal;flex:none;display:grid;place-items:center;width:30px;height:22px;border-radius:6px;background:color-mix(in srgb,var(--cc) 10%,#fff);border:1px solid var(--cc);font-size:13px;box-sizing:border-box}.chip.lchip b{font-size:13px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:2px 0 4px}
+.chip.lchip{cursor:pointer;max-width:220px}.chip.lchip b{display:flex;align-items:center;gap:7px}.chip.lchip b i{font-style:normal;flex:none;display:grid;place-items:center;width:30px;height:22px;border-radius:6px;background:#fff;border:1px solid var(--cc);font-size:13px;box-sizing:border-box}.chip.lchip b{font-size:13px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:2px 0 4px}
 .chip.lchip span{display:flex;align-items:center;gap:6px;white-space:nowrap}.chip.lchip u{display:block;width:16px;height:5px;border-radius:3px;background:var(--red);flex:none}
 .chip.lchip u{width:22px;height:6px}.chip.lchip.falta,.chip.lchip.atrasada{background:#FDECEA;border-color:#F3B9B3}.chip.lchip.falta span,.chip.lchip.atrasada span{color:#B3261E}.chip.lchip.curso{background:#FFF8DC;border-color:#F2D675}.chip.lchip.curso u{background:#F2C230;animation:lbp 1.4s ease-in-out infinite}.chip.lchip.curso span{color:#8A6D00}.chip.lchip.amanha{background:#FFF8DC;border-color:#F2D675}.chip.lchip.amanha u{background:#F2C230}.chip.lchip.amanha span{color:#8A6D00}
 .chip.lchip.feita{background:#E9F6EE;border-color:#A9DBBC}.chip.lchip.feita u{background:var(--direta)}.chip.lchip.feita span{color:#1F7A45}
@@ -162,6 +162,7 @@ h3.ajg{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 .seg button.on{background:var(--accent);color:#fff}
 .chk{width:30px;height:30px;border-radius:50%;border:2px solid var(--line2);background:#fff;color:#fff;font-weight:800;flex:0 0 30px}
 .chk.on{background:var(--direta);border-color:var(--direta)}
+.ev.st-falta,.ev.st-atrasada{background:#FDECEA;border-color:#F3B9B3;border-left:5px solid var(--red)}.ev.st-amanha,.ev.st-curso{background:#FFF8DC;border-color:#F2D675;border-left:5px solid #F2C230}.ev.st-feita{background:#E9F6EE;border-color:#A9DBBC;border-left:5px solid var(--direta)}
 .ev.feita{opacity:.6}.ev.feita .x div:first-child{text-decoration:line-through}
 .av{width:38px;height:38px;border-radius:50%;background:var(--accent);color:#fff;font-weight:800;display:grid;place-items:center;flex:0 0 38px}
 .mini{display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;margin-top:6px;cursor:pointer;background:#FFFDF9}
@@ -240,7 +241,7 @@ h3.ajg{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
 <!-- APP -->
 <div id="app" class="hide">
   <header>
-    <div class="t"><div class="logo" style="width:32px;height:32px;font-size:13px;border-radius:9px">AL</div> Gestão AL <span class="badge hide" id="demoBadge">EXEMPLO</span><small style="font-size:10px;color:var(--ink3);font-weight:600">v3.11</small></div>
+    <div class="t"><div class="logo" style="width:32px;height:32px;font-size:13px;border-radius:9px">AL</div> Gestão AL <span class="badge hide" id="demoBadge">EXEMPLO</span><small style="font-size:10px;color:var(--ink3);font-weight:600">v3.12</small></div>
     <a class="lnk hide" id="lnkGerirmais" href="index.html" title="Ir para a Gestão de Negócio (mesma conta)">Gerirmais ↗</a>
     <button class="ibtn" id="copiaBtn" onclick="abrirCopias()" title="Cópias na Google Drive">☁️</button>
     <button class="ibtn" onclick="sair()" title="Sair">⏻</button>
@@ -508,6 +509,7 @@ h3.ajg{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
     <li>Toca no <b>círculo ◯</b> à direita para marcar como <b>feita</b> (toca outra vez para desfazer).</li>
     <li>Toca na tarefa para <b>editar</b> ou <b>apagar</b>.</li>
     <li>Em cima: <b>atrasadas</b> (a vermelho), <b>para hoje</b>, <b>próximas</b> e <b>feitas</b>. Usa os filtros para ver só um alojamento ou um tipo.</li>
+    <li>As <b>limpezas</b> têm a cor do estado: <b>vermelho</b> hoje/atrasada, <b>amarelo</b> amanhã ou em curso, <b>verde</b> feita.</li>
   </ol></details>
   <details class="aj"><summary><span class="n">11</span>Equipa de limpeza: adicionar pessoa ou empresa</summary><ol>
     <li>Em <b>Tarefas</b> carrega em <b>👥 Equipa de limpeza</b> → <b>+ Adicionar pessoa ou empresa</b>.</li>
@@ -643,7 +645,7 @@ h3.ajg{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--
    ==================================================================== */
 const SUPA_URL='https://xkfshzlcwiuvztfdwvjm.supabase.co';   // MESMO projeto da gerirmais (Gestao de Negocio) → mesma conta, sem novo login
 const SUPA_KEY='sb_publishable_SGjww6C455tzA6wpIevT-w_t2X9lqMJ';   // chave publishable da gerirmais (pública; a segurança está no RLS)
-const VERSAO='3.11';
+const VERSAO='3.12';
 const GERIRMAIS_URL='index.html';
 
 /* ---------- utilitários ---------- */
@@ -911,7 +913,8 @@ function cartaoTarefa(t){
   const lp=t.tipo==='limpeza'&&t.limpador_id?nomeLimp(t.limpador_id):'';
   const hrs=t.tipo==='limpeza'&&t.inicio?(t.fim?'⏱ '+horaL(t.inicio)+'–'+horaL(t.fim)+' ('+durFmt(minutosT(t))+')':'⏳ a limpar desde '+horaL(t.inicio)):'';
   const sub=[nomeAloj(t.alojamento_id),r&&nomeHosp(r)?'saída de '+nomeHosp(r):'',lp?'🧽 '+lp:'',t.responsavel&&!lp?'👤 '+t.responsavel:'',hrs,t.nota_limpeza?'💬 '+t.nota_limpeza:''].filter(Boolean).map(esc).join(' · ');
-  return`<div class="ev${feita?' feita':''}" onclick="abrirTarefa('${t.id}')">
+  const T0=hoje(),stl=t.tipo!=='limpeza'?'':feita||t.fim?' st-feita':t.inicio?' st-curso':!t.data?'':t.data<T0?' st-atrasada':t.data===T0?' st-falta':t.data===addD(T0,1)?' st-amanha':'';
+  return`<div class="ev${feita?' feita':''}${stl}" onclick="abrirTarefa('${t.id}')">
     <div class="d"><b>${t.data?new Date(pd(t.data)).getUTCDate():'—'}</b><span>${t.data?MS[new Date(pd(t.data)).getUTCMonth()]:''}</span></div>
     <div class="x"><div>${ic} ${esc(t.titulo)}</div><div>${sub||nm}</div></div>
     <button class="chk${feita?' on':''}" title="${feita?'Marcar como por fazer':'Marcar como feita'}" onclick="event.stopPropagation();marcarTarefa('${t.id}')">${feita?'✓':''}</button></div>`;

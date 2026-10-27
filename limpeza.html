@@ -31,6 +31,8 @@ main{max-width:560px;margin:0 auto;padding:14px 14px 0}
 h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink2);margin:18px 2px 8px}
 .card{background:var(--card);border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);border-left:7px solid var(--accent)}
 .card .top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.card.hoje,.card.atrasada{background:#FDECEA;box-shadow:0 0 0 1px #F3B9B3}.card.amanha,.card.curso{background:#FFF8DC;box-shadow:0 0 0 1px #F2D675}
+.mini.feita{background:#E9F6EE}
 .card .im{font-size:20px;font-weight:800}
 .card .dt{font-size:14px;color:var(--ink2);white-space:nowrap}
 .card .st{font-size:14px;color:var(--ink2);margin-top:4px}
@@ -109,6 +111,7 @@ main{padding-bottom:80px}
     <li><div><b>Ao chegar ao imóvel:</b> carregue em <b>▶ Comecei</b> e confirme com <b>Sim, comecei</b>. Aparece o tempo a contar.</div></li>
     <li><div><b>Ao sair:</b> carregue em <b>■ Terminei</b>. Se quiser, escreva uma nota (ex.: "falta detergente", "lâmpada fundida") e confirme com <b>Sim, terminei</b>.</div></li>
     <li><div><b>Avisos:</b> carregue em <b>🔔 Receber avisos</b> e aceite. Na véspera (fim da tarde) e na manhã de cada limpeza recebe uma notificação, e o ícone mostra um número. Ao abrir aparece o aviso com o dia e o imóvel.</div></li>
+    <li><div><b>Cores:</b> <b>vermelho</b> = limpeza de hoje (ou atrasada), <b>amarelo</b> = amanhã ou a decorrer, <b>verde</b> = feita.</div></li>
     <li><div><b>Enganou-se no Comecei?</b> Tem 15 minutos para carregar em <b>"Carreguei por engano — anular"</b>.</div></li>
   </ol>
   <div class="nota" style="background:#EEF5F4;color:#1F5F57">
@@ -198,7 +201,7 @@ function desenhar(){
   if(proximas.length){h+='<h2>📅 Próximas</h2>'+proximas.map(l=>{
     const amanha=l.data===addD(hoje,1);
     return amanha?cartao(l,hoje,'fazer'):`<div class="mini"><span class="dot" style="background:${esc(l.cor||'#2FB5A5')}"></span><b>${esc(l.imovel)}</b><small>${esc(rotuloDia(l.data,hoje))}</small></div>`;}).join('');}
-  if(feitas.length){h+='<h2>✅ Feitas (últimas 2 semanas)</h2>'+feitas.map(l=>`<div class="mini"><span class="dot" style="background:${esc(l.cor||'#2FB5A5')}"></span><b>${esc(l.imovel)}</b><small>${esc(rotuloDia(l.data,hoje))}<br>${l.inicio&&l.fim?`${hora(l.inicio)}–${hora(l.fim)} · <span class="ok">${dur(new Date(l.fim)-new Date(l.inicio))}</span>`:'<span class="ok">feita</span>'}</small></div>`).join('');}
+  if(feitas.length){h+='<h2>✅ Feitas (últimas 2 semanas)</h2>'+feitas.map(l=>`<div class="mini feita"><span class="dot" style="background:${esc(l.cor||'#2FB5A5')}"></span><b>${esc(l.imovel)}</b><small>${esc(rotuloDia(l.data,hoje))}<br>${l.inicio&&l.fim?`${hora(l.inicio)}–${hora(l.fim)} · <span class="ok">${dur(new Date(l.fim)-new Date(l.inicio))}</span>`:'<span class="ok">feita</span>'}</small></div>`).join('');}
   h+=`<p class="rod">${E.quando?'Atualizado às '+hora(E.quando):''}${E.erro?' · <span style="color:var(--red)">sem ligação</span>':''}<br>Gestão AL · só vê as limpezas que lhe foram atribuídas</p>`;
   m.innerHTML=h;
   tique();
@@ -206,7 +209,8 @@ function desenhar(){
 }
 function cartao(l,hoje,tipo){
   const cor=esc(l.cor||'#2FB5A5');
-  let h=`<div class="card" style="border-left-color:${cor}"><div class="top"><span class="im">${esc(l.imovel)}</span><span class="dt">${esc(rotuloDia(l.data,hoje))}</span></div>`;
+  const est=tipo==='curso'?'curso':l.data<hoje?'atrasada':l.data===hoje?'hoje':l.data===addD(hoje,1)?'amanha':'';
+  let h=`<div class="card ${est}" style="border-left-color:${cor}"><div class="top"><span class="im">${esc(l.imovel)}</span><span class="dt">${esc(rotuloDia(l.data,hoje))}</span></div>`;
   if(tipo==='curso'){
     h+=`<div class="st">Começou às <b>${hora(l.inicio)}</b></div><div class="timer" data-ini="${esc(l.inicio)}">—</div>
         <button class="big fim" onclick="pedir('fim','${l.id}')">■ Terminei</button>`;
